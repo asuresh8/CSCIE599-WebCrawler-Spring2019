@@ -3,6 +3,7 @@ services:
 
 stages:
   - test
+  - build
 
 test:
   stage: test
@@ -12,3 +13,13 @@ test:
     - export PYTHONPATH='.'
   script:
     - python tests/testMain.py
+
+buildBackend:
+  stage: build
+  image: docker:latest
+  before_script:
+    - apk add git bash nodejs nodejs-npm --no-cache
+  script:
+    - ./buildBackendImage
+  only:
+    - develop
