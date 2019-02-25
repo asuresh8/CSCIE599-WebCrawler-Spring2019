@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-FROM python:2.7.15-jessie
-=======
 FROM python:3.7.2-stretch
->>>>>>> internal/update-version-py
-
 
 COPY . /srv/www/web-crawler
 WORKDIR /srv/www/web-crawler
