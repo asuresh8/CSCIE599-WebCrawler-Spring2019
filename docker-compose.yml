@@ -1,0 +1,12 @@
+version: "3.2"
+services:
+  web-crawler:
+    build:
+      context: backend/
+      dockerfile: DockerFile-backend
+    container_name: web_crawler
+    environment:
+      - PYTHONPATH=.
+      - FLASK_ENV=development
+    ports:
+      - "8001:8001"
