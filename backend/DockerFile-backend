@@ -1,0 +1,11 @@
+FROM python:2.7.15-jessie
+
+
+COPY . /srv/www/web-crawler
+WORKDIR /srv/www/web-crawler
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+EXPOSE 8001
+
+CMD python app.py
