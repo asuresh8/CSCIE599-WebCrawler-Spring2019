@@ -1,12 +1,67 @@
 version: "3.2"
 services:
-  web-crawler:
+
+  crawler-mysql5:
+    hostname: mysql
+    image: mysql:5.6.21
+    ports:
+      -  "3306:3306"
+    volumes:
+      - "mysql5db:/var/lib/mysql"
+    environment:
+    - MYSQL_ROOT_PASSWORD=root
+    - MYSQL_USER=root
+    - MYSQL_PASSWORD=root
+
+  crawler-redis:
+    hostname: redis
+    image: redis:5.0.3
+    ports:
+      - "6379:6379"
+
+  main:
     build:
-      context: backend/
-      dockerfile: DockerFile-backend
-    container_name: web_crawler
+      context: main/
+      dockerfile: DockerFile
+    container_name: main-crawler
     environment:
       - PYTHONPATH=.
       - FLASK_ENV=development
     ports:
       - "8001:8001"
+    depends_on:
+      - crawler-redis
+      - crawler-mysql5
+
+  crawler-manager:
+    build:
+      context: crawler-manager/
+      dockerfile: DockerFile
+    container_name: crawler-manager
+    environment:
+      - PYTHONPATH=.
+      - FLASK_ENV=development
+    ports:
+      - "8002:8002"
+    depends_on:
+      - crawler-redis
+      - crawler-mysql5
+      - main
+
+  crawler:
+    build:
+      context: crawler/
+      dockerfile: DockerFile
+    container_name: crawler
+    environment:
+      - PYTHONPATH=.
+      - FLASK_ENV=development
+    ports:
+      - "8003:8003"
+    depends_on:
+      - crawler-redis
+      - crawler-mysql5
+      - main
+
+volumes:
+  mysql5db:

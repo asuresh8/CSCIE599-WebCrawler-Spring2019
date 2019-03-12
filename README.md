@@ -1,21 +1,22 @@
+### From folder  `web-crawler`
 
-### Project Structure
-```
-web-crawler/
-    /backend
-        /app_configure.py
-        /app.py
-        /requirements.txt
-        /DockerFile-backend
-        /static
-        /tests
-            /testMain.py
-        /templates/
-            /index.html
-    /docker-compose.yml
-    /.gitlab-ci.yml
-    /.gitignore
-```
-### Start web-crawler
+#### Start web-crawler
 
-``` docker-compose -f docker-compose.yml up -d web-crawler```
+```
+- docker-compose -f docker-compose.yml up --build --no-start
+- docker-compose -f docker-compose.yml start
+```
+
+URLS:
+```
+Main:
+    -http://localhost:8001/
+
+Crawler Manager:
+    - http://localhost:8001/crawler/manager
+    - http://localhost:8002/
+
+Crawler:
+    - http://localhost:8001/crawler
+    - http://localhost:8003/
+```

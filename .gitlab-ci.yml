@@ -9,17 +9,38 @@ test:
   stage: test
   image: python:3.7.2-stretch
   before_script:
-    - cd backend && pip install -r requirements.txt
+    - cd main && pip install -r requirements.txt
     - export PYTHONPATH='.'
   script:
     - python tests/testMain.py
 
-buildBackend:
+buildMain:
   stage: build
   image: docker:latest
   before_script:
     - apk add git bash nodejs nodejs-npm --no-cache
   script:
-    - ./buildBackendImage
+    - ./buildMainImage
+  only:
+    - develop
+
+buildCrawler:
+  stage: build
+  image: docker:latest
+  before_script:
+    - apk add git bash nodejs nodejs-npm --no-cache
+  script:
+    - ./buildCrawlerImage
+  only:
+    - develop
+
+
+buildCrawlerManager:
+  stage: build
+  image: docker:latest
+  before_script:
+    - apk add git bash nodejs nodejs-npm --no-cache
+  script:
+    - ./buildCrawlerManagerImage
   only:
     - develop

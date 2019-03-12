@@ -2,8 +2,8 @@
 IMAGE_NAME=$REPO_URL
 REPO=(${REPO_URL//// })
 TAG=${CI_COMMIT_REF_NAME//\//-}
-IMAGE_BUILD_NAME=$IMAGE_NAME/$TAG:$CI_PIPELINE_ID
+IMAGE_BUILD_NAME=$IMAGE_NAME/$TAG-crawler:$CI_PIPELINE_ID
 IMAGE_BUILD_NAME=${IMAGE_BUILD_NAME,,} #convert to lowercase
 docker login $REPO -u$DOCKER_REGISTRY_USER -p$DOCKER_REGISTRY_PASS
-docker build -t $IMAGE_BUILD_NAME -f backend/DockerFile-backend backend/
+docker build -t $IMAGE_BUILD_NAME -f crawler/DockerFile crawler/
 docker push $IMAGE_BUILD_NAME

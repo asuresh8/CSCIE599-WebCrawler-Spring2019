@@ -1,0 +1,12 @@
+FROM python:3.7.2-stretch
+
+COPY . /srv/www/web-crawler
+WORKDIR /srv/www/web-crawler
+
+RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update
+RUN apt-get install redis-server -y
+
+EXPOSE 8001
+
+CMD service redis-server start && python app.py
