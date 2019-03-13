@@ -1,22 +1,31 @@
-### From folder  `web-crawler`
+#### Local Dev Environment with Docker
 
-#### Start web-crawler
+The application requires the following containers:
+- Main Application
+- Crawler Manger
+- Crawler
+- MySQL
+- Redis
 
+In production, MySQL and Redis will not be ran on containers.
+Crawler container also has an internal Redis service.
+
+
+### Dependencies
+
+- Docker Desktop (2.x)
+
+
+### Steps
+
+1. Build and start the containers from the root of the repository:  
 ```
-- docker-compose -f docker-compose.yml up --build --no-start
-- docker-compose -f docker-compose.yml start
+docker-compose -f docker-compose.yml up --build --no-start
+docker-compose -f docker-compose.yml start
 ```
 
-URLS:
-```
-Main:
-    -http://localhost:8001/
+2. Once all container are runing, container will run on these endpoints:
 
-Crawler Manager:
-    - http://localhost:8001/crawler/manager
-    - http://localhost:8002/
-
-Crawler:
-    - http://localhost:8001/crawler
-    - http://localhost:8003/
-```
+Main: `http://localhost:8001/`  
+Crawler Manager: `http://localhost:8002/`  
+Crawler: `http://localhost:8003/`  
