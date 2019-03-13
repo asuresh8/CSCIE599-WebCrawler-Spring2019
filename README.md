@@ -7,7 +7,7 @@ The application requires the following containers:
 - MySQL
 - Redis
 
-In production, MySQL and Redis will not be ran on containers.
+In production, MySQL and Redis will not be ran on containers.   
 Crawler Manager container also has an internal Redis service.
 
 
@@ -26,9 +26,9 @@ docker-compose -f docker-compose.yml start
 
 2. Once all container are runing, container will run on these endpoints:
 
-Main: `http://localhost:8001/`
-Crawler Manager: `http://localhost:8002/`
-Crawler: `http://localhost:8003/`
+Main: `http://localhost:8001/`   
+Crawler Manager: `http://localhost:8002/`   
+Crawler: `http://localhost:8003/`   
 
 3. In order to reload code changes into the containers, run these comands:
 
