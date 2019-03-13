@@ -8,7 +8,7 @@ The application requires the following containers:
 - Redis
 
 In production, MySQL and Redis will not be ran on containers.
-Crawler container also has an internal Redis service.
+Crawler Manager container also has an internal Redis service.
 
 
 ### Dependencies
