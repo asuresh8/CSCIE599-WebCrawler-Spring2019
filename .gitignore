@@ -6,3 +6,6 @@
 
 # OSX system files
 .DS_Store
+
+# Pycharm folder
+.idea
