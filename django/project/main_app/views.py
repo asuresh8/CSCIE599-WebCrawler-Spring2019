@@ -7,9 +7,11 @@ from .forms import CrawlRequestForm
 
 @login_required()
 def home(request):
-    crawl_request = CrawlRequest(user=request.user)
+    user = request.user
+    crawl_request = CrawlRequest(user=user)
     form = CrawlRequestForm(instance=crawl_request)
-    return render(request, "main_app/home.html", {'form': form})
+    jobs = CrawlRequest.objects.filter(user=user)
+    return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
 
 '''
 @login_required()

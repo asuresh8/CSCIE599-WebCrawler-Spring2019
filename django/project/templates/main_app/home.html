@@ -18,20 +18,48 @@
             <div id="new_job" class="tab-pane fade in active">
                 <h3>New Job</h3>
                 <p>Set up a new crawl request.</p>
-                <form id="login-form" action="{% url 'home' %}" method="post">
+                <form id="new-job-form" action="{% url 'mainapp_home' %}" method="post">
                     {% csrf_token %}
                     <div class="form-group">
                        {{ form.as_p }}
                     </div>
                     <div class="form-group">
                         <input type="submit" name="new-job-submit" id="new-job-submit"
-                               class="form-control btn btn-login btn-primary" value="Create new job">
+                               class="form-control btn btn-login btn-primary" value="Create job">
                     </div>
                 </form>
             </div>
             <div id="jobs" class="tab-pane fade">
                 <h3>Jobs</h3>
-                <p>This is where a table ob current/finished crawl jobs will be displayed.</p>
+                <p>These are all the current jobs.</p>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Job date</th>
+                            <th>Docs collected</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for job in jobs %}
+                        <tr>
+                            <td>
+                                {{ job.name|escape }}
+                            </td>
+                            <td>
+                                {{ job.status|escape }}
+                            </td>
+                            <td>
+                                {{ job.created|escape }}
+                            </td>
+                            <td>
+                                {{ job.docs_collected|escape }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
             <div id="settings" class="tab-pane fade">
                 <h3>Settings</h3>

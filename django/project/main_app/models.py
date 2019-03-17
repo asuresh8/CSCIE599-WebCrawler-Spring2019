@@ -26,7 +26,12 @@ class CrawlRequest(models.Model):
         (1, 'All content from a single domain'),
         (2, 'Content from multiple URLs')
     )
-
+    STATUS = (
+        (1, 'Created'),
+        (2, 'In progress'),
+        (3, 'Finished'),
+        (4, 'Failed')
+    )
     name = models.CharField(max_length=128)
     type = models.PositiveSmallIntegerField("crawl type", default=1, choices=CRAWLTYPES)
     domain = models.URLField(default='', max_length=500, blank=True)
@@ -38,6 +43,8 @@ class CrawlRequest(models.Model):
     docs_pdf = models.BooleanField(default=False, blank=True)
     docs_xml = models.BooleanField(default=False, blank=True)
     docs_txt = models.BooleanField(default=False, blank=True)
+    docs_collected = models.PositiveIntegerField(default=0, blank=True)
+    status = models.PositiveSmallIntegerField("crawl status", default=1, choices=STATUS)
     # maybe we want to use keywords after we receive the crawl results for better search and sorting?
     #keywords = models.ManyToManyField(Keyword, help_text="Select a keyword for this resource", blank=True)
     user = models.ForeignKey(User, related_name="crawl_requests_user", on_delete=models.CASCADE)
@@ -51,17 +58,17 @@ class CrawlRequest(models.Model):
             self.created = timezone.now()
         # set modified whenever an instance is saved
         self.modified = timezone.now()
-        return super(Crawl, self).save(*args, **kwargs)
+        return super(CrawlRequest, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         """
         Returns the url to access a particular crawl request instance.
-        Example: "crawl/3"
+        Example: "crawl_request/3"
         """
-        return reverse('crawl', args=[str(self.id)])
+        return reverse('crawl_request', args=[str(self.id)])
 
     def __str__(self):
         """
         String for representing a Crawl Request.
         """
-        return f'{self.id} {self.name} ({self.link})'
+        return f'{self.id} {self.name}'
