@@ -19,6 +19,21 @@ def createDatabase(name):
     except mysql.connector.Error as err:
         print("Error connecting Mysql: {}".format(err))
 
+# The query here will likely involve joins to get all url's listed by the user
+def getJobMetadata(jobID):
+    connectConfig = config
+    try:
+        mydb = mysql.connector.connect(**connectConfig)
+        mycursor = mydb.cursor()
+        query = ("SELECT * FROM jobs WHERE  id = %s")
+        mycursor.execute(query, (jobID))
+        jobinfo = mycursor.fetchall()
+        mycursor.close()
+        mydb.close()
+        return jobinfo
+    except mysql.connector.Error as err:
+        print("Error connecting Mysql: {}".format(err))
+
 def getMysqlConnection():
     try:
         return mysql.connector.connect(**config)
