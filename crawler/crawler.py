@@ -49,7 +49,7 @@ def storePage(urlPage):
 # parsePage - parses the link tags using beautiful soup
 def parsePage(urlPage, links):
    soup = BeautifulSoup(urlPage)
-   for link in soup.findall('a', attrs={href:re.compile("^http://")})
+   for link in soup.findall('a', attrs={href:re.compile("^http://")}):
        links.append(link)
 
    return
@@ -71,5 +71,5 @@ def main():
      
 
    
-if  __name__== "__main__"
+if  __name__== "__main__":
    main()
