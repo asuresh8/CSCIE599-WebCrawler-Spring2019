@@ -25,7 +25,7 @@ SECRET_KEY = '7&)j(_tmu!m&@zncgk%mi8le5a$88cg84$j-&%n6l-2*z@i%i)'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -77,8 +77,13 @@ WSGI_APPLICATION = 'webcrawler.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'test',
+        'USER': 'root',
+        'PASSWORD': 'root',
+        'HOST': 'crawler-mysql5',
+        'DATABASE': 'test',
+        'PORT': 3306
     }
 }
 
@@ -118,7 +123,22 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
+'''
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+}
+AUTH_USER_MODEL = "users.User"
+JWT_AUTH = {
 
+    'JWT_VERIFY': True,
+    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=3000),
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer',
+
+}
+'''
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [

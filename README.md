@@ -49,3 +49,10 @@ Crawler:
 docker cp  crawler/. crawler:/srv/www/web-crawler/
 docker-compose -f docker-compose.yml restart crawler
 ```  
+
+4. After all containers are running, you need to run the `initialize-django.sh` script,
+to initialize the DB and set up a super user, so you can use the admin UI to create more users.
+
+```
+docker exec -it <your-MAIN-container-ID> bash -c "./initialize-django.sh"
+```
