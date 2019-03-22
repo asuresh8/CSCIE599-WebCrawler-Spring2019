@@ -3,7 +3,7 @@ from urllib.error import URLError
 from flask import Flask
 from flask import g
 from bs4 import BeautifulSoup
-
+import re
 import boto3
 import config
 import uuid
@@ -15,7 +15,7 @@ app = Flask(__name__)
 @app.route("/<string:url>")
 def fetchUrl():
    
-   curUrl =  {url}  /*"https://en.wikipedia.org/wiki/Crawler" */
+   curUrl = {url} # "https://en.wikipedia.org/wiki/Crawler"
    request = Request(curUrl)
    links = []
    try:
@@ -28,27 +28,25 @@ def fetchUrl():
       links = []
    return links
 
-/*
-* storePage -   stores the page in configured s3 bucket and returns unique  uri
-*/
+
+# storePage -   stores the page in configured s3 bucket and returns unique  uri
 def storePage(urlPage):
    
    key = "crawlpages/" + str(uuid.uuid4().hex[:6])  + '.html'
    g.s3client.put_object(Bucket = config.S3_BUCKET,
                         Key = key,
                         Body = urlPage)
-   /*
-     bucket = g.s3client.Bucket(config.S3_BUCKET)
-     location = g.s3client.get_bucket_location(Bucket = config.S3_BUCKET)['LocationConstraint']
-     s3uri = "https://s3-%s.amazonaws.com/%s/%s" % (location, bucket, key)
-   */
+
+   #  bucket = g.s3client.Bucket(config.S3_BUCKET)
+   #  location = g.s3client.get_bucket_location(Bucket = config.S3_BUCKET)['LocationConstraint']
+   #  s3uri = "https://s3-%s.amazonaws.com/%s/%s" % (location, bucket, key)
+  
    s3uri =  g.s3client.generate_presigned_url('get_object', Params = {'Bucket' : config.S3_BUCKET, 'Key': key})
    return s3uri
 
 
-/*
-* parsePage - parses the link tags using beautiful soup
-*/
+
+# parsePage - parses the link tags using beautiful soup
 def parsePage(urlPage, links):
    soup = BeautifulSoup(urlPage)
    for link in soup.findall('a', attrs={href:re.compile("^http://")})
@@ -56,9 +54,8 @@ def parsePage(urlPage, links):
 
    return
 
-/*
-* connect to redis cache server
-*/
+
+# connect to redis cache server
 def connectToRedis():
    try:
    	return redis.StrictRedis(host=config.REDIS_HOST, port=config.REDIS_PORT, db=0)
@@ -66,10 +63,7 @@ def connectToRedis():
         return None
    return r;
 
-/*
-* init function to connect to redis database and creates s3 bucket
-* and stores in session data
-*/
+# init function to connect to redis database and creates s3 bucket and stores in session data
 def main():
    g.db =  connectToRedis()
    g.s3client =boto3.client("s3") 
