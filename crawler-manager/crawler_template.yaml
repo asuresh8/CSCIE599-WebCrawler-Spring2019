@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  # crawler-manager-{job id}, assigned after template loaded
+  name: ""
+spec:
+  template:
+    metadata:
+      # same name as above
+      name: ""
+    spec:
+      containers:
+      # crawler-{job id}-{n}, assigned after template loaded
+      - name: ""
+        image: web-crawler_crawler:latest
+        command: ["export FLASK_APP=crawler.py && flask run"]
+        # pass neccessary args in
+        args: []
+        # add envionment variables as
+        # - name: "MY_ENV_VAR"
+        #   value: "some_value"
+        env: []
+      # Do not restart containers after they exit
+      restartPolicy: Never
