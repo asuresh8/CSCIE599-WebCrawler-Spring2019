@@ -8,6 +8,7 @@ chardet==3.0.4
 Click==7.0
 cssselect==1.0.3
 Flask==1.0.2
+google-cloud-container==0.2.1
 idna==2.8
 itsdangerous==1.1.0
 Jinja2==2.10
