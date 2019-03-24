@@ -5,14 +5,38 @@ stages:
   - test
   - build
 
-test:
+testMain:
   stage: test
   image: python:3.7.2-stretch
   before_script:
-    - cd main && pip install -r requirements.txt
+    - cd main
+    - pip install -r requirements.txt
+    - pip install -r test_requirements.txt
     - export PYTHONPATH='.'
   script:
-    - python tests/testMain.py
+    - python -m unittest discover -s tests -p "*_test.py"
+
+testCrawlerManager:
+  stage: test
+  image: python:3.7.2-stretch
+  before_script:
+    - cd crawler-manager
+    - pip install -r requirements.txt
+    - pip install -r test_requirements.txt
+    - export PYTHONPATH='.'
+  script:
+    - python -m unittest discover -s tests -p "*_test.py"
+
+testCrawler:
+  stage: test
+  image: python:3.7.2-stretch
+  before_script:
+    - cd crawler
+    - pip install -r requirements.txt
+    - pip install -r test_requirements.txt
+    - export PYTHONPATH='.'
+  script:
+    - python -m unittest discover -s tests -p "*_test.py"
 
 buildMain:
   stage: build
