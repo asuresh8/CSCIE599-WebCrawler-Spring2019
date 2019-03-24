@@ -1,5 +1,6 @@
 import os
-export FLASK_APP=crawler.py
-S3_BUCKET = 'e599crawler_bucket'
-REDIS_HOST= 'localhost'
-REDIS_PORT=  6739
+S3_BUCKET =  os.environ.get('S3_BUCKET')
+S3_KEY = os.environ.get('S3_ACCESS_KEY')
+S3_SECRET_KEY = os.environ.get('S3_SECRET_ACCESS_KEY')
+REDIS_HOST = os.environ.get('REDIS_HOST')
+REDIS_PORT = os.environ.get('REDIS_PORT')
