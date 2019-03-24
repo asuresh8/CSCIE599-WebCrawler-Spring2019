@@ -9,3 +9,6 @@
 
 # Pycharm folder
 .idea
+
+#vscode
+.vscode

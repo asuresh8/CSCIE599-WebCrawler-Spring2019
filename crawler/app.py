@@ -1,6 +1,5 @@
 import flask
 from redis_connect import testConnectionRedis
-from mysql_connect import getMysqlConnection
 
 app = flask.Flask(__name__)
 
@@ -10,10 +9,7 @@ def main():
 
 def testConnections():
     print(testConnectionRedis())
-    mysql = getMysqlConnection()
-    if mysql:
-        print('Connection successful (MySQL)')
-        mysql.close()
+
 
 if __name__ == "__main__":
     testConnections()
