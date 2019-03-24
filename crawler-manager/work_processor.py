@@ -27,7 +27,7 @@ def run_main():
     jobMetaData = [('jobID123','http://recurship.com/','img'),('jobID123','https://iamtrask.github.io/','img')]
     crawlURLs = []
     for (jobid, url, file_type) in jobMetaData:
-    print("{} needs to visit url {} and look at {} files".format(
+      print("{} needs to visit url {} and look at {} files".format(
         jobid, url, file_type))
     crawlURLs.append(url)
 
