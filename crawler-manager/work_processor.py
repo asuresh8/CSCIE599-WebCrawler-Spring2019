@@ -7,7 +7,6 @@ import time
 import uuid
 import os
 from redis_connect import testConnectionRedis, testLocalRedis, getVariable, setVariable
-from mysql_connect import getMysqlConnection, getJobMetadata
 from collections import deque
 
 

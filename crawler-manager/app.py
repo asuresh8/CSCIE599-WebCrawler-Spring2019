@@ -7,7 +7,6 @@ import time
 import uuid
 import os
 from redis_connect import testConnectionRedis, testLocalRedis, getVariable, setVariable
-from mysql_connect import getMysqlConnection, getJobMetadata
 from collections import deque
 
 app = flask.Flask(__name__)
@@ -23,10 +22,6 @@ def main():
 def testConnections():
     print(testConnectionRedis())
     print(testLocalRedis())
-    mysql = getMysqlConnection()
-    if mysql:
-        print('Connection successful (MySQL)')
-        mysql.close()
 
 
 if __name__ == "__main__":

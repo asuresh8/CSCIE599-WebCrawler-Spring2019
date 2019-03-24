@@ -30,7 +30,6 @@ services:
     ports:
       - "8001:8001"
     depends_on:
-      - crawler-redis
       - crawler-mysql5
 
   crawler-manager:
@@ -43,10 +42,6 @@ services:
       - FLASK_ENV=development
     ports:
       - "8002:8002"
-    depends_on:
-      - crawler-redis
-      - crawler-mysql5
-      - main
 
   crawler:
     build:
@@ -60,8 +55,6 @@ services:
       - "8003:8003"
     depends_on:
       - crawler-redis
-      - crawler-mysql5
-      - main
 
 volumes:
   mysql5db:
