@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}
+    User: {{ user.username }}
+{% endblock %}
+
+{% block content %}
+    <h2 class="text-primary">Hello {{ user.username }}</h2>
+
+    <div class="row">
+         <ul class="nav nav-tabs">
+             <li><a href="{% url 'mainapp_home' %}">Current Jobs</a></li>
+             <li class="active"><a href="{% url 'mainapp_new_job' %}">New Job</a></li>
+             <li><a href="{% url 'mainapp_settings' %}">Settings</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div id="new_job" class="tab-pane fade in active">
+                <h3>New Job</h3>
+                <p>Set up a new crawl request.</p>
+                <form id="new-job-form" action="{% url 'mainapp_new_job' %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                       {{ form.as_p }}
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" name="new-job-submit" id="new-job-submit"
+                               class="form-control btn btn-login btn-primary" value="Create job">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

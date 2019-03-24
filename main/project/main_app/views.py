@@ -13,7 +13,7 @@ def home(request):
     jobs = CrawlRequest.objects.filter(user=user)
     return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
 
-'''
+
 @login_required()
 def new_job(request):
     if request.method == "POST":
@@ -24,5 +24,9 @@ def new_job(request):
             return redirect('mainapp_home')
     else:
         form = CrawlRequestForm()
-    return render(request, "mainapp/new_job.html", {'form': form})
-'''
+    return render(request, "main_app/new_job.html", {'form': form})
+
+
+@login_required()
+def settings(request):
+    return render(request, "main_app/settings.html")

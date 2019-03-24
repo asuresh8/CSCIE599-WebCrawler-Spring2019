@@ -45,6 +45,7 @@ class CrawlRequest(models.Model):
     docs_txt = models.BooleanField(default=False, blank=True)
     docs_collected = models.PositiveIntegerField(default=0, blank=True)
     status = models.PositiveSmallIntegerField("crawl status", default=1, choices=STATUS)
+    s3_location = models.URLField(default='', max_length=500, blank=True)
     # maybe we want to use keywords after we receive the crawl results for better search and sorting?
     #keywords = models.ManyToManyField(Keyword, help_text="Select a keyword for this resource", blank=True)
     user = models.ForeignKey(User, related_name="crawl_requests_user", on_delete=models.CASCADE)
