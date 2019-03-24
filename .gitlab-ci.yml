@@ -12,7 +12,6 @@ testMain:
     - cd main
     - pip install -r requirements.txt
     - pip install -r test_requirements.txt
-    - export PYTHONPATH='.'
   script:
     - python -m unittest discover -s tests -p "*_test.py"
 
@@ -23,7 +22,6 @@ testCrawlerManager:
     - cd crawler-manager
     - pip install -r requirements.txt
     - pip install -r test_requirements.txt
-    - export PYTHONPATH='.'
   script:
     - python -m unittest discover -s tests -p "*_test.py"
 
@@ -34,7 +32,6 @@ testCrawler:
     - cd crawler
     - pip install -r requirements.txt
     - pip install -r test_requirements.txt
-    - export PYTHONPATH='.'
   script:
     - python -m unittest discover -s tests -p "*_test.py"
 
