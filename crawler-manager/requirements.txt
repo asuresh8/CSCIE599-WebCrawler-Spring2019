@@ -16,7 +16,6 @@ lxml==4.3.2
 MarkupSafe==1.1.1
 more-itertools==6.0.0
 multidict==4.5.2
-mysql-connector-python==8.0.15
 parsel==1.5.1
 pluggy==0.9.0
 protobuf==3.7.0
