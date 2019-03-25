@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 
 from .models import CrawlRequest
 from .forms import CrawlRequestForm
@@ -67,6 +68,18 @@ def new_job(request):
     else:
         form = CrawlRequestForm()
     return render(request, "main_app/new_job.html", {'form': form})
+
+
+@login_required()
+def job_details(request, job_id):
+    """
+        Displays details for a specific job ID
+        """
+    try:
+        job = CrawlRequest.objects.get(pk=job_id)
+    except CrawlRequest.DoesNotExist:
+        raise Http404("Job does not exist.")
+    return render(request, "main_app/job_details.html", {"job": job})
 
 
 @login_required()

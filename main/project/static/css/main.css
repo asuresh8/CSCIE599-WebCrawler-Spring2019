@@ -1,0 +1,3 @@
+/* uses a cursor pointer when hovering over clickable table rows */
+
+.table-row {cursor: pointer;}

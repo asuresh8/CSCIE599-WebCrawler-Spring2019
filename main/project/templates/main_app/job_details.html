@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    User: {{ user.username }}
+{% endblock %}
+
+{% block content %}
+    <h2 class="text-primary">Hello {{ user.username }}</h2>
+
+    <div class="row">
+         <ul class="nav nav-tabs">
+             <li class="active"><a href="{% url 'mainapp_home' %}">Current Jobs</a></li>
+             <li><a href="{% url 'mainapp_new_job' %}">New Job</a></li>
+             <li><a href="{% url 'mainapp_settings' %}">Settings</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div id="jobs" class="tab-pane fade in active">
+                <h3>Job Details for crawl job <b>{{ job.id }} {{ job.name }}</b></h3>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Domain</th>
+                            <th>Crawl Type</th>
+                            <th>Status</th>
+                            <th>Description</th>
+                            <th>Created on</th>
+                            <th>User</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                {{ job.id|escape }}
+                            </td>
+                            <td>
+                                {{ job.name|escape }}
+                            </td>
+                            <td>
+                                {{ job.domain|escape }}
+                            </td>
+                            <td>
+                                {{ job.get_type_display|escape }}
+                            </td>
+                            <td>
+                                {{ job.get_status_display|escape }}
+                            </td>
+                            <td>
+                                {{ job.description|escape }}
+                            </td>
+                            <td>
+                                {{ job.created|escape }}
+                            </td>
+                            <td>
+                                {{ job.user|escape }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>AWS S3 Location</th>
+                            <th>URLs crawled</th>
+                            <th>Resources collected</th>
+                            <th>Collect Everything</th>
+                            <th>Collect HTML</th>
+                            <th>Collect DOCX</th>
+                            <th>Collect PDF</th>
+                            <th>Collect XML</th>
+                            <th>Collect TXT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                {{ job.s3_location|escape }}
+                            </td>
+                            <td>
+                                {{ job.urls|escape }}
+                            </td>
+                            <td>
+                                {{ job.docs_collected|escape }}
+                            </td>
+                            <td>
+                                {{ job.docs_all|escape }}
+                            </td>
+                            <td>
+                                {{ job.docs_html|escape }}
+                            </td>
+                            <td>
+                                {{ job.docs_docx|escape }}
+                            </td>
+                            <td>
+                                {{ job.docs_pdf|escape }}
+                            </td>
+                            <td>
+                                {{ job.docs_xml|escape }}
+                            </td>
+                            <td>
+                                {{ job.docs_txt|escape }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

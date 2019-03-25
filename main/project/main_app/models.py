@@ -2,7 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 from django.contrib.auth.models import User
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 '''
 class Keyword(models.Model):
@@ -66,10 +67,49 @@ class CrawlRequest(models.Model):
         Returns the url to access a particular crawl request instance.
         Example: "crawl_request/3"
         """
-        return reverse('crawl_request', args=[str(self.id)])
+        return reverse('mainapp_jobdetails', args=[str(self.id)])
 
     def __str__(self):
         """
         String for representing a Crawl Request.
         """
         return f'{self.id} {self.name}'
+
+
+class Profile(models.Model):
+    """
+    The model to represent the user settings.
+    """
+    user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
+    s3_bucket = models.URLField(default='', max_length=500, blank=True)
+    api_key = models.CharField(max_length=512)
+    api_secret = models.CharField(max_length=512)
+    num_crawlers = models.PositiveIntegerField(default=1)
+    created = models.DateTimeField("profile creation time", editable=False)
+    modified = models.DateTimeField("profile modification time")
+
+    def save(self, *args, **kwargs):
+        """ Update created and modified timestamps whenever settings are saved """
+        # only in the beginning (when the object doesn't exist yet) set the creation time.
+        if not self.id:
+            self.created = timezone.now()
+        # set modified whenever an instance is saved
+        self.modified = timezone.now()
+        return super(Profile, self).save(*args, **kwargs)
+
+    def __str__(self):
+        """
+        String for representing a Profile.
+        """
+        return f'{self.id} {self.user.username}'
+
+    @receiver(post_save, sender=User)
+    def create_user_profile(sender, instance, created, **kwargs):
+        """ This method creates a profile instance as soon as a new user is created """
+        if created:
+            Profile.objects.create(user=instance)
+
+    @receiver(post_save, sender=User)
+    def save_user_profile(sender, instance, **kwargs):
+        """ This method saves that profile instance to the database """
+        instance.profile.save()
