@@ -81,7 +81,7 @@ DATABASES = {
         'NAME': 'test',
         'USER': 'root',
         'PASSWORD': 'root',
-        'HOST': '0.0.0.0',
+        'HOST': 'crawler-mysql5',
         'DATABASE': 'test',
         'PORT': 3306
     }
