@@ -12,11 +12,12 @@ class ProfileForm(ModelForm):
     class Meta:
         """ The meta class to set several important parameters for the form """
         model = Profile
-        fields = ['s3_bucket', 'api_key', 'api_secret']
+        fields = ['s3_bucket', 'api_key', 'api_secret', 'num_crawlers']
         labels = {
             's3_bucket': 'Enter AWS S3 URL',
             'api_key': 'S3 API Key',
             'api_secret': 'Secret',
+            'num_crawlers': 'Number of crawlers',
         }
         widgets = {
             'user': HiddenInput(),
@@ -28,3 +29,4 @@ class ProfileForm(ModelForm):
         self.fields['s3_bucket'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter AWS S3 URL'})
         self.fields['api_key'].widget.attrs.update({'class': 'form-control', 'placeholder': 'S3 API Key'})
         self.fields['api_secret'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Secret'})
+        self.fields['num_crawlers'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of concurrent crawler instances'})
