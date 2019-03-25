@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 
-from .models import CrawlRequest
-from .forms import CrawlRequestForm
+from .models import CrawlRequest, Profile
+from .forms import CrawlRequestForm, ProfileForm
 
 from rest_framework.response import Response
 from rest_framework.permissions import BasePermission, IsAuthenticated, AllowAny
@@ -83,11 +83,21 @@ def job_details(request, job_id):
 
 
 @login_required()
-def api_new_job(request):
-
+def update_profile(request, user_id):
     return
 
+@login_required()
+def api_new_job(request):
+    return
 
 @login_required()
 def settings(request):
-    return render(request, "main_app/settings.html")
+    if request.method == "POST":
+        profile = Profile(user=request.user)
+        form = ProfileForm(instance=profile, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('mainapp_home')
+    else:
+        form = ProfileForm()
+    return render(request, "main_app/settings.html", {'form': form})

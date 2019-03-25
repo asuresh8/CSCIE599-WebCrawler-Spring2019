@@ -81,10 +81,10 @@ class Profile(models.Model):
     The model to represent the user settings.
     """
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
-    s3_bucket = models.URLField(default='', max_length=500, blank=True)
-    api_key = models.CharField(max_length=512)
-    api_secret = models.CharField(max_length=512)
-    num_crawlers = models.PositiveIntegerField(default=1)
+    s3_bucket = models.URLField("AWS S3 Bucket", default='', max_length=500, blank=True)
+    api_key = models.CharField("API Key", max_length=512)
+    api_secret = models.CharField("API Secret", max_length=512)
+    num_crawlers = models.PositiveIntegerField("Number crawler instances", default=1)
     created = models.DateTimeField("profile creation time", editable=False)
     modified = models.DateTimeField("profile modification time")
 
