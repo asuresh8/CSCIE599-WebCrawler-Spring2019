@@ -28,5 +28,11 @@ def new_job(request):
 
 
 @login_required()
+def api_new_job(request):
+
+    return
+
+
+@login_required()
 def settings(request):
     return render(request, "main_app/settings.html")
