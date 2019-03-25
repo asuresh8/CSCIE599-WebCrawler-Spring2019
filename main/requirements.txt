@@ -6,3 +6,4 @@ kubernetes==9.0.0
 mysqlclient==1.4.2
 PyMySQL==0.9.3
 djangorestframework==3.9.2
+djangorestframework-jwt==1.11.0
