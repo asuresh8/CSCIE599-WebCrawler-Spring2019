@@ -16,6 +16,10 @@ import jwt
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 
+import requests
+from django.http import HttpResponse
+import json
+
 @login_required()
 def home(request):
     user = request.user
@@ -64,11 +68,25 @@ def new_job(request):
         form = CrawlRequestForm(instance=crawl_request, data=request.POST)
         if form.is_valid():
             form.save()
+            print("In new_job")
+            api_new_job(request)
             return redirect('mainapp_home')
     else:
         form = CrawlRequestForm()
     return render(request, "main_app/new_job.html", {'form': form})
 
+@login_required()
+def api_new_job(request):
+    print ("In api new job")
+    #res = requests.request("GET", "http://localhost:8002")
+    res = requests.request("GET", "http://crawler-manager:8002")
+    print(res.content)
+
+#@login_required()
+def api_job_status(request):
+    print ("In api job status")
+    response_data = {"Message" : "Status Received"}
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @login_required()
 def job_details(request, job_id):
@@ -84,10 +102,6 @@ def job_details(request, job_id):
 
 @login_required()
 def update_profile(request, user_id):
-    return
-
-@login_required()
-def api_new_job(request):
     return
 
 @login_required()
