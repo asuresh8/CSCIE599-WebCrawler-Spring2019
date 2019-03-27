@@ -7,12 +7,14 @@ POOL = redis.ConnectionPool(host='localhost', port=6379, db=0)
 
 def getVariable(variable_name):
     my_server = redis.Redis(connection_pool=POOL)
-    response = my_server.lrange(variable_name, 0, -1)
+    # response = my_server.lrange(variable_name, 0, -1)
+    response = my_server.hgetall(variable_name)
     return response
 
-def setVariable(parentURL, childurlList):
+def setVariable(parentURL, parentCrawl):
     my_server = redis.Redis(connection_pool=POOL)
-    my_server.rpush(parentURL, *childurlList)
+    # my_server.rpush(parentURL, *childurlList)
+    my_server.hmset(parentURL, parentCrawl)
     
 def testConnectionRedis():
     try:
