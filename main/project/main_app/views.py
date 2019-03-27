@@ -40,8 +40,8 @@ def authenticate_user(request):
         username = request.data['username']
         password = request.data['password']
         hashed_pass = make_password(password)
-
         user = User.objects.get(username=username, password=hashed_pass)
+        #user = User.objects.get(username=username)
         if user:
             try:
                 payload = jwt_payload_handler(user)
@@ -81,12 +81,14 @@ def new_job(request):
 @login_required()
 def api_new_job(request):
     print ("In api new job")
-    #res = requests.request("GET", "http://localhost:8002")
+    #res = requests.request("GET", "http://localhost:8004")
     res = requests.request("GET", "http://crawler-manager:8002")
     print(res.content)
 
 
 #@login_required()
+#@api_view(['GET'])
+#@permission_classes((IsAuthenticated, ))
 def api_job_status(request):
     print ("In api job status")
     response_data = {"Message" : "Status Received"}
