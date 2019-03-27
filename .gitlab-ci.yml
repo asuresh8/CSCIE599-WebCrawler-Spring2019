@@ -46,6 +46,7 @@ buildMain:
   only:
     - develop
 
+
 buildCrawler:
   stage: build
   image: docker:latest
@@ -71,15 +72,13 @@ buildCrawlerManager:
 kube_deploy:
   stage: deploy
   image: docker:latest
-  variables:
-    DEPLOY_TAG: 53857176
   before_script:
     - apk add --no-cache curl wget tar bash
     - ./kube_setup
   script:
     - helm init --service-account tiller
-    - helm upgrade --install --wait --set-string image.tag="$DEPLOY_TAG" 'main-application' ./charts/chart-main
-    - helm upgrade --install --wait --set-string image.tag="$DEPLOY_TAG" 'crawler-manager' ./charts/chart-manager
-    - helm upgrade --install --wait --set-string image.tag="$DEPLOY_TAG" --set replicaCount=5 'crawler' ./charts/chart-crawler
+    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'main-application' ./charts/chart-main
+    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'crawler-manager' ./charts/chart-manager
+    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set replicaCount=5 'crawler' ./charts/chart-crawler
   only:
-    - test
+    - develop
