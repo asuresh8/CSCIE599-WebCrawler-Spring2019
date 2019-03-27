@@ -70,7 +70,7 @@ buildCrawlerManager:
 
 kube_deploy:
   stage: deploy
-  # image: docker:latest
+  image: docker:latest
   variables:
     DEPLOY_TAG: 53857176
   before_script:
