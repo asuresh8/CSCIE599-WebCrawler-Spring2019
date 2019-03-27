@@ -1,11 +1,20 @@
-import flask
+from flask import Flask
+from flask import request
 from redis_connect import testConnectionRedis
+from crawler import crawlUrl
 
-app = flask.Flask(__name__)
+app = Flask(__name__)
 
 @app.route('/')
 def main():
     return 'Crawler'
+
+@app.route('/crawl/')
+def do_crawl():
+    
+    curUrl =  request.args.get('crawlurl')
+    print("start crawling")
+    return crawlUrl(curUrl)
 
 def testConnections():
     print(testConnectionRedis())

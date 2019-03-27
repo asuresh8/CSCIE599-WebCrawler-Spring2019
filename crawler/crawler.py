@@ -7,26 +7,19 @@ import requests
 import config
 from io import BytesIO
 from requests.exceptions import HTTPError
-from flask import Flask
-from flask import request
 from bs4 import BeautifulSoup
 
-
-app = Flask(__name__)
-
-@app.route("/crawl")
-def index():
-
+def crawlUrl(url):
     try:
-       url =  request.args.get('crawlurl') #http://en.wikipedia.org/wiki/Web_Crawler' 
        response = requests.get(url)
+       print("url is:" + url)
        s3uri = store_s3(response)
        links = get_links(response)
+       print(links)
        add_key_cache(url, s3uri)
        return json.dumps(links)
     except HTTPError as e:
        return {}
-    
 
 # store -
 def store_s3(r):  
@@ -38,7 +31,7 @@ def store_s3(r):
       s3_client.upload_fileobj(fp, config.S3_BUCKET, key)
       s3uri = s3_client.generate_presigned_url('get_object', 
                                                Params = {'Bucket' : config.S3_BUCKET, 'Key': key})  
-    
+      print ('s3uri' + s3uri)    
     except Exception as e:
       print(e.__traceback__)
       return None
@@ -62,8 +55,6 @@ def add_key_cache(url,s3uri):
         print(e.with_traceback)
     return
 
-if __name__ == '__main__'
-   app.run(debug=True, host = 0.0.0.0, port = 8003)
 
 """ 
 def write_file(url):
@@ -75,4 +66,4 @@ def write_file(url):
     return fname  
 """
 
-:
+
