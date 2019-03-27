@@ -45,6 +45,7 @@ buildMain:
     - ./buildMainImage
   only:
     - develop
+    - /^test-\w+/
 
 
 buildCrawler:
@@ -56,6 +57,7 @@ buildCrawler:
     - ./buildCrawlerImage
   only:
     - develop
+    - /^test-\w+/
 
 
 buildCrawlerManager:
@@ -82,3 +84,4 @@ kube_deploy:
     - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set replicaCount=5 'crawler' ./charts/chart-crawler
   only:
     - develop
+    - /^test-\w+/
