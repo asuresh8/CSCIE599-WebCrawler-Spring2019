@@ -19,6 +19,8 @@ spec:
       - name: main-application
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["/bin/sh","-c"]
+        args: ["./initialize-django.sh && python project/manage.py runserver 0.0.0.0:8001"]
         env:
         - name: REDIS_HOST
           valueFrom:
