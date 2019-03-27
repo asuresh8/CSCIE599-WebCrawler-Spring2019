@@ -79,6 +79,6 @@ kube_deploy:
     - helm init --service-account tiller
     - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'main-application' ./charts/chart-main
     - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'crawler-manager' ./charts/chart-manager
-    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set replicaCount=5 'crawler' ./charts/chart-crawler
+    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set replicaCount=1 'crawler' ./charts/chart-crawler
   only:
     - develop
