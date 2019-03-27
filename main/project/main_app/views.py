@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 
 from .models import CrawlRequest, Profile
 from .forms import CrawlRequestForm, ProfileForm
@@ -20,6 +22,7 @@ import requests
 from django.http import HttpResponse
 import json
 
+
 @login_required()
 def home(request):
     user = request.user
@@ -28,26 +31,25 @@ def home(request):
     jobs = CrawlRequest.objects.filter(user=user)
     return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
 
-"""
+
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
 def authenticate_user(request):
 
     try:
-        email = request.data['email']
+        username = request.data['username']
         password = request.data['password']
+        hashed_pass = make_password(password)
 
-        user = User.objects.get(email=email, password=password)
+        user = User.objects.get(username=username, password=hashed_pass)
         if user:
             try:
                 payload = jwt_payload_handler(user)
                 token = jwt.encode(payload, settings.SECRET_KEY)
                 user_details = {}
-                user_details['name'] = "%s %s" % (
-                    user.first_name, user.last_name)
+                user_details['name'] = "%s %s" % (user.first_name, user.last_name)
                 user_details['token'] = token
-                user_logged_in.send(sender=user.__class__,
-                                    request=request, user=user)
+                user_logged_in.send(sender=user.__class__, request=request, user=user)
                 return Response(user_details, status=status.HTTP_200_OK)
 
             except Exception as e:
@@ -58,8 +60,8 @@ def authenticate_user(request):
             return Response(res, status=status.HTTP_403_FORBIDDEN)
     except KeyError:
         res = {'error': 'please provide a email and a password'}
-    return Response(res)
-"""
+        return Response(res)
+
 
 @login_required()
 def new_job(request):
@@ -75,6 +77,7 @@ def new_job(request):
         form = CrawlRequestForm()
     return render(request, "main_app/new_job.html", {'form': form})
 
+
 @login_required()
 def api_new_job(request):
     print ("In api new job")
@@ -82,17 +85,19 @@ def api_new_job(request):
     res = requests.request("GET", "http://crawler-manager:8002")
     print(res.content)
 
+
 #@login_required()
 def api_job_status(request):
     print ("In api job status")
     response_data = {"Message" : "Status Received"}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
+
 @login_required()
 def job_details(request, job_id):
     """
         Displays details for a specific job ID
-        """
+    """
     try:
         job = CrawlRequest.objects.get(pk=job_id)
     except CrawlRequest.DoesNotExist:
@@ -104,8 +109,9 @@ def job_details(request, job_id):
 def update_profile(request, user_id):
     return
 
+
 @login_required()
-def settings(request):
+def profile(request):
     if request.method == "POST":
         profile = Profile(user=request.user)
         form = ProfileForm(instance=profile, data=request.POST)
