@@ -77,7 +77,7 @@ kube_deploy:
     - apk add --no-cache curl wget tar bash
     - ./kube_setup
   script:
-    - helm init
+    - helm init --service-account tiller
     - helm upgrade --install --wait --set-string image.tag="$DEPLOY_TAG" 'main-application' ./charts/chart-main
     - helm upgrade --install --wait --set-string image.tag="$DEPLOY_TAG" 'crawler-manager' ./charts/chart-manager
     - helm upgrade --install --wait --set-string image.tag="$DEPLOY_TAG" --set replicaCount=5 'crawler' ./charts/chart-crawler
