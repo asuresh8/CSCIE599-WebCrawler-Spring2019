@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crawler
+  labels:
+    app: crawler
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: crawler
+  template:
+    metadata:
+      labels:
+        app: crawler
+      name: crawler
+    spec:
+      containers:
+      - name: crawler
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: REDIS_HOST
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: DB_NAME
+        - name: MYSQL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: MYSQL_HOST
+        resources:
+          requests:
+            cpu: 200m
+            memory: 640Mi
+          limits:
+            cpu: 200m
+            memory: 1Gi
+      imagePullSecrets:
+      - name: docker-gitlab

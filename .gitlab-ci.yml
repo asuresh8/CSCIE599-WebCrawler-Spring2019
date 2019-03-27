@@ -4,6 +4,7 @@ services:
 stages:
   - test
   - build
+  - deploy
 
 testMain:
   stage: test
@@ -44,6 +45,8 @@ buildMain:
     - ./buildMainImage
   only:
     - develop
+    - /^test-\w+/
+
 
 buildCrawler:
   stage: build
@@ -54,6 +57,7 @@ buildCrawler:
     - ./buildCrawlerImage
   only:
     - develop
+    - /^test-\w+/
 
 
 buildCrawlerManager:
@@ -65,3 +69,19 @@ buildCrawlerManager:
     - ./buildCrawlerManagerImage
   only:
     - develop
+
+
+kube_deploy:
+  stage: deploy
+  image: docker:latest
+  before_script:
+    - apk add --no-cache curl wget tar bash
+    - ./kube_setup
+  script:
+    - helm init --service-account tiller
+    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'main-application' ./charts/chart-main
+    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'crawler-manager' ./charts/chart-manager
+    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set replicaCount=5 'crawler' ./charts/chart-crawler
+  only:
+    - develop
+    - /^test-\w+/
