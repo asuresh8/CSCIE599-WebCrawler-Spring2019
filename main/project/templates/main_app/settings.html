@@ -19,7 +19,7 @@
             <div id="settings" class="tab-pane fade in active">
                 <h3>Settings</h3>
                 <p>This is where you can edit user specific settings.</p>
-                <form id="profile-form" action="" method="post" enctype="multipart/form-data">
+                <form id="profile-form" action="{% url 'mainapp_profile' %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-group">
                         {{ form.as_p }}

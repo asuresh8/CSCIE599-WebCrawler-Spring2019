@@ -108,18 +108,13 @@ def job_details(request, job_id):
 
 
 @login_required()
-def update_profile(request, user_id):
-    return
-
-
-@login_required()
 def profile(request):
+    profile = Profile.objects.get(user=request.user)
     if request.method == "POST":
-        profile = Profile(user=request.user)
         form = ProfileForm(instance=profile, data=request.POST)
         if form.is_valid():
             form.save()
             return redirect('mainapp_home')
     else:
-        form = ProfileForm()
+        form = ProfileForm(instance=profile)
     return render(request, "main_app/settings.html", {'form': form})

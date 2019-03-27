@@ -83,7 +83,6 @@ DATABASES = {
         'USER': os.environ.get('DB_USER', 'root'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'root'),
         'HOST': os.environ.get('MYSQL_HOST', 'crawler-mysql5'),
-        #'HOST': '0.0.0.0',
         'DATABASE': os.environ.get('DB_NAME', 'test'),
         'PORT': 3306
     }

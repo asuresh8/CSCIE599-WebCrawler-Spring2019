@@ -24,7 +24,7 @@ class ProfileForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        """ Instantiates an onject of type ProfileForm """
+        """ Instantiates an onject of type ProfileForm with custom widget attributes """
         super(ProfileForm, self).__init__(*args, **kwargs)
         self.fields['s3_bucket'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter AWS S3 URL'})
         self.fields['api_key'].widget.attrs.update({'class': 'form-control', 'placeholder': 'S3 API Key'})
