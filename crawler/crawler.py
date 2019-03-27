@@ -62,6 +62,9 @@ def add_key_cache(url,s3uri):
         print(e.with_traceback)
     return
 
+if __name__ == '__main__'
+   app.run(debug=True, host = 0.0.0.0, port = 8003)
+
 """ 
 def write_file(url):
     
@@ -72,3 +75,4 @@ def write_file(url):
     return fname  
 """
 
+:
