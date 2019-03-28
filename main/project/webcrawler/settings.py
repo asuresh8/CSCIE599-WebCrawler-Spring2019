@@ -25,7 +25,7 @@ SECRET_KEY = '7&)j(_tmu!m&@zncgk%mi8le5a$88cg84$j-&%n6l-2*z@i%i)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-DJANGO_LOG_LEVEL=DEBUG
+
 
 ALLOWED_HOSTS = ['*']
 
@@ -163,7 +163,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         },
     },
 }
