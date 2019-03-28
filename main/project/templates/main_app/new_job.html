@@ -19,7 +19,7 @@
             <div id="new_job" class="tab-pane fade in active">
                 <h3>New Job</h3>
                 <p>Set up a new crawl request.</p>
-                <form id="new-job-form" action="{% url 'mainapp_new_job' %}" method="post">
+                <form id="new-job-form" action="{% url 'mainapp_new_job' %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="form-group">
                        {{ form.as_p }}
