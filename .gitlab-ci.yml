@@ -74,11 +74,11 @@ kube_deploy:
   image: docker:latest
   before_script:
     - apk add --no-cache curl wget tar bash
-    - ./kube_setup
+    - ./cluster-setup/kube_setup
   script:
     - helm init --service-account tiller
-    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'main-application' ./charts/chart-main
-    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'crawler-manager' ./charts/chart-manager
-    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set replicaCount=1 'crawler' ./charts/chart-crawler
+    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'main-application' ./cluster-templates/chart-main
+    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'crawler-manager' ./cluster-templates/chart-manager
+    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set replicaCount=1 'crawler' ./cluster-templates/chart-crawler
   only:
     - develop

@@ -3,8 +3,8 @@ FROM python:3.7.2-stretch
 ENV IMAGE_TAG ${IMAGE_TAG}
 
 COPY main/ /srv/www/web-crawler
-COPY charts/ /srv/www/web-crawler/charts/
-COPY kube_setup /srv/www/web-crawler
+COPY cluster-templates/ /srv/www/web-crawler/cluster-templates/
+COPY cluster-setup/kube_setup /srv/www/web-crawler
 
 WORKDIR /srv/www/web-crawler
 

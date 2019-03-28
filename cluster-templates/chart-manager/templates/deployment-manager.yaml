@@ -40,7 +40,7 @@ spec:
               name: credentials
               key: MYSQL_HOST
         - name: URL
-          value: {{ .Values.params.url }}
+          value: "{{ .Values.params.url }}"
         resources:
           requests:
             cpu: 200m

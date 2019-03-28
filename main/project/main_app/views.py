@@ -102,7 +102,7 @@ def getHelmCommand():
       helm upgrade --install --wait \\
       --set-string image.tag='{imageTag}' \\
       --set-string params.url='https://www.google.com' \\
-      'crawler-manager' ./charts/chart-manager"""
+      'crawler-manager' ./cluster-templates/chart-manager"""
 
 #@login_required()
 #@api_view(['GET'])
