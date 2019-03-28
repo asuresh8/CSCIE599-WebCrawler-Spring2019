@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: crawler-manager
+  name: "crawler-manager-{{date "20060102150405" .Release.Time }}"
 spec:
   template:
     metadata:
@@ -11,7 +11,6 @@ spec:
       - name: crawler-manager
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        restartPolicy: Never
         command: ["sleep",  "60"]
         env:
         - name: REDIS_HOST
@@ -47,6 +46,7 @@ spec:
             memory: 640Mi
           limits:
             cpu: 500m
-            memory: 1Gi
+            memory: 700Mi
+      restartPolicy: Never
       imagePullSecrets:
       - name: docker-gitlab

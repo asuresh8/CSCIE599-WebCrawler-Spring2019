@@ -1,7 +1,7 @@
 import redis
 import os
-redisConnect = redis.Redis(host=os.environ.get('REDIS_HOST') or 'crawler-redis', port=6379, db=0)
-localRedisConnect = redis.Redis(host='localhost', port=6379, db=0)
+redisConnect = redis.StrictRedis(host=os.environ.get('REDIS_HOST') or 'crawler-redis', port=6379, db=0)
+localRedisConnect = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 POOL = redis.ConnectionPool(host='localhost', port=6379, db=0)
 
@@ -15,10 +15,10 @@ def setVariable(parentURL, parentCrawl):
     my_server = redis.Redis(connection_pool=POOL)
     # my_server.rpush(parentURL, *childurlList)
     my_server.hmset(parentURL, parentCrawl)
-    
+
 def testConnectionRedis():
     try:
-        response = redisConnect.client_list()
+        response = redisConnect.ping()
         if response:
             return 'Connection successful (Redis)'
 
@@ -27,7 +27,7 @@ def testConnectionRedis():
 
 def testLocalRedis():
     try:
-        response = localRedisConnect.client_list()
+        response = localRedisConnect.ping()
         if response:
             return 'Connection successful (Redis Local)'
 

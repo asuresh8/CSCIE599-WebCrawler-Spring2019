@@ -91,7 +91,7 @@ def new_job(request):
 def api_new_job(request):
     logger.error("In API new job")
     if imageTag == '0':
-        # Running in docker compose, 
+        # Running in docker compose,
         print("Looks like this is not running on a Kuberenetes cluster, ")
     else:
         # If there is a imageTag, it means it is running in the Kubernetes Cluster
@@ -100,14 +100,14 @@ def api_new_job(request):
         logger.error("command status", command_status)
         print("queued")
 
-# TODO: this function should take the Job ID as a parameter. 
+# TODO: this function should take the Job ID as a parameter.
 # That will be injected into the new Crawler manger Pod
 def getHelmCommand():
     return f"""helm init --service-account tiller &&
       helm upgrade --install --wait \\
       --set-string image.tag='{imageTag}' \\
       --set-string params.job_id='https://www.google.com' \\
-      'crawler-manager' ./cluster-templates/chart-manager"""
+      \"crawler-manager-$(date +%s)\" ./cluster-templates/chart-manager"""
 
 #@login_required()
 #@api_view(['GET'])
