@@ -97,7 +97,6 @@ def api_new_job(request):
 #@permission_classes((IsAuthenticated, ))
 def api_job_status(request):
     print("In api job status")
-    logger.debug('I am now in the job_status API!')
     response_data = {"Message" : "Status Received"}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
@@ -107,6 +106,7 @@ def job_details(request, job_id):
     """
         Displays details for a specific job ID
     """
+    logger.info('I am now in job DETAILS!')
     try:
         job = CrawlRequest.objects.get(pk=job_id)
     except CrawlRequest.DoesNotExist:
