@@ -28,6 +28,8 @@ import os
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
+# when the container is running in docker compose, set imageTag = 0
+# when running on Kubernetes, it is the Pipeline Id, which is used for naming the Docker images in the registry.
 imageTag = os.environ.get('IMAGE_TAG', '0')
 
 @login_required()
@@ -87,21 +89,24 @@ def new_job(request):
 
 @login_required()
 def api_new_job(request):
-    logger.error(" === In API new job === ")
+    logger.error("In API new job")
     if imageTag == '0':
-        res = requests.request("GET", "http://crawler-manager:8002")
-        print(res.content)
+        # Running in docker compose, 
+        print("Looks like this is not running on a Kuberenetes cluster, ")
     else:
+        # If there is a imageTag, it means it is running in the Kubernetes Cluster
+        # Use the Helm command to troigger a new Crawler Manager Instance
         command_status = os.system(getHelmCommand())
         logger.error("command status", command_status)
         print("queued")
 
-
+# TODO: this function should take the Job ID as a parameter. 
+# That will be injected into the new Crawler manger Pod
 def getHelmCommand():
     return f"""helm init --service-account tiller &&
       helm upgrade --install --wait \\
       --set-string image.tag='{imageTag}' \\
-      --set-string params.url='https://www.google.com' \\
+      --set-string params.job_id='https://www.google.com' \\
       'crawler-manager' ./cluster-templates/chart-manager"""
 
 #@login_required()

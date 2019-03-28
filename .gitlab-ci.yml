@@ -78,7 +78,8 @@ kube_deploy:
   script:
     - helm init --service-account tiller
     - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'main-application' ./cluster-templates/chart-main
-    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'crawler-manager' ./cluster-templates/chart-manager
-    - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set replicaCount=1 'crawler' ./cluster-templates/chart-crawler
+    # The below won't deploy since the Crawler Manager and the Crawlers are "Jobs", only executed on demand.
+    #- helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" 'crawler-manager' ./cluster-templates/chart-manager
+    #- helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set replicaCount=1 'crawler' ./cluster-templates/chart-crawler
   only:
     - develop

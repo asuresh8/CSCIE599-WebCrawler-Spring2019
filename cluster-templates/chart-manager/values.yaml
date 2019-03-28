@@ -11,4 +11,4 @@ application:
   tier: manager
   secretName: credentials
 params:
-  url: ""
+  job_id: ""

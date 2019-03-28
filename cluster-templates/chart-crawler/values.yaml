@@ -10,3 +10,5 @@ application:
   track: stable
   tier: crawler
   secretName: credentials
+params:
+  urls: ""

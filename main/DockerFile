@@ -14,7 +14,6 @@ RUN apt-get update \
 RUN pip install --no-cache-dir -r requirements.txt \
   && ./kube_setup \
   && mv kubeconfig $HOME/.kube/config
-#  && helm init --service-account tiller
 
 EXPOSE 8001
 

@@ -45,6 +45,8 @@ spec:
             secretKeyRef:
               name: credentials
               key: MYSQL_HOST
+        - name: URLS
+          value: "{{ .Values.params.urls }}"
         resources:
           requests:
             cpu: 200m
