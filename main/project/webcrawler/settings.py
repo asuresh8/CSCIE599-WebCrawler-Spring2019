@@ -25,6 +25,7 @@ SECRET_KEY = '7&)j(_tmu!m&@zncgk%mi8le5a$88cg84$j-&%n6l-2*z@i%i)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+DJANGO_LOG_LEVEL=DEBUG
 
 ALLOWED_HOSTS = ['*']
 
@@ -150,3 +151,19 @@ LOGIN_REDIRECT_URL="mainapp_home"
 LOGOUT_REDIRECT_URL="webcrawler_welcome"
 LOGIN_URL="mainapp_login"
 CRISPY_TEMPLATE_PACK='bootstrap3'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+        },
+    },
+}

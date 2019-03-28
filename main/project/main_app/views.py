@@ -4,6 +4,9 @@ from django.http import Http404
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 
+# import the logging library
+import logging
+
 from .models import CrawlRequest, Profile
 from .forms import CrawlRequestForm, ProfileForm
 
@@ -21,6 +24,9 @@ from django.contrib.auth.signals import user_logged_in
 import requests
 from django.http import HttpResponse
 import json
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 
 @login_required()
@@ -90,7 +96,8 @@ def api_new_job(request):
 #@api_view(['GET'])
 #@permission_classes((IsAuthenticated, ))
 def api_job_status(request):
-    print ("In api job status")
+    print("In api job status")
+    logger.debug('I am now in the job_status API!')
     response_data = {"Message" : "Status Received"}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
