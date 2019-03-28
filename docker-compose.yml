@@ -21,8 +21,8 @@ services:
 
   main:
     build:
-      context: main/
-      dockerfile: DockerFile
+      context: .
+      dockerfile: main/DockerFile
     container_name: main-crawler
     environment:
       - PYTHONPATH=.

@@ -10,3 +10,5 @@ application:
   track: stable
   tier: manager
   secretName: credentials
+params:
+  url: ""

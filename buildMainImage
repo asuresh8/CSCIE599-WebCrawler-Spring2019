@@ -4,6 +4,7 @@ REPO=(${REPO_URL//// })
 TAG=${CI_COMMIT_REF_NAME//\//-}
 IMAGE_BUILD_NAME=$IMAGE_NAME/$TAG:$CI_PIPELINE_ID
 IMAGE_BUILD_NAME=${IMAGE_BUILD_NAME,,} #convert to lowercase
+cp $HOME/.kube/config main/kubeconfig
 docker login $REPO -u$DOCKER_REGISTRY_USER -p$DOCKER_REGISTRY_PASS
-docker build -t $IMAGE_BUILD_NAME -f main/DockerFile main/
+docker build -t $IMAGE_BUILD_NAME -f main/DockerFile --build-arg IMAGE_TAG=$CI_PIPELINE_ID .
 docker push $IMAGE_BUILD_NAME

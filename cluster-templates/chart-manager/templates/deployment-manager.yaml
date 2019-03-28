@@ -1,24 +1,18 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: crawler-manager
-  labels:
-    app: crawler-manager
 spec:
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      app: crawler-manager
   template:
     metadata:
-      labels:
-        app: crawler-manager
       name: crawler-manager
     spec:
       containers:
       - name: crawler-manager
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        restartPolicy: Never
+        command: ["sleep",  "60"]
         env:
         - name: REDIS_HOST
           valueFrom:
@@ -45,6 +39,8 @@ spec:
             secretKeyRef:
               name: credentials
               key: MYSQL_HOST
+        - name: URL
+          value: {{ .Values.params.url }}
         resources:
           requests:
             cpu: 200m

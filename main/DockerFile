@@ -1,9 +1,20 @@
 FROM python:3.7.2-stretch
 
-COPY . /srv/www/web-crawler
+ENV IMAGE_TAG ${IMAGE_TAG}
+
+COPY main/ /srv/www/web-crawler
+COPY charts/ /srv/www/web-crawler/charts/
+COPY kube_setup /srv/www/web-crawler
+
 WORKDIR /srv/www/web-crawler
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update \
+  && apt-get install nano -y
+
+RUN pip install --no-cache-dir -r requirements.txt \
+  && ./kube_setup \
+  && mv kubeconfig $HOME/.kube/config
+#  && helm init --service-account tiller
 
 EXPOSE 8001
 

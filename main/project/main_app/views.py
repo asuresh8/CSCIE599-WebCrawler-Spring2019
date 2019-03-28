@@ -24,10 +24,11 @@ from django.contrib.auth.signals import user_logged_in
 import requests
 from django.http import HttpResponse
 import json
+import os
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
-
+imageTag = os.environ.get('IMAGE_TAG', '0')
 
 @login_required()
 def home(request):
@@ -86,11 +87,22 @@ def new_job(request):
 
 @login_required()
 def api_new_job(request):
-    print ("In api new job")
-    #res = requests.request("GET", "http://localhost:8004")
-    res = requests.request("GET", "http://crawler-manager:8002")
-    print(res.content)
+    logger.error(" === In API new job === ")
+    if imageTag == '0':
+        res = requests.request("GET", "http://crawler-manager:8002")
+        print(res.content)
+    else:
+        command_status = os.system(getHelmCommand())
+        logger.error("command status", command_status)
+        print("queued")
 
+
+def getHelmCommand():
+    return f"""helm init --service-account tiller &&
+      helm upgrade --install --wait \\
+      --set-string image.tag='{imageTag}' \\
+      --set-string params.url='https://www.google.com' \\
+      'crawler-manager' ./charts/chart-manager"""
 
 #@login_required()
 #@api_view(['GET'])

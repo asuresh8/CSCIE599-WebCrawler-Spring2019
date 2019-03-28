@@ -13,5 +13,7 @@
 #vscode
 .vscode
 
-#Kuberentes configuration files and credentails
-build/
+# Kuberentes configuration files and credentails
+config
+kubeconfig
+cluster-setup/build/
