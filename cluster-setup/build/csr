@@ -1,0 +1,12 @@
+{
+  "hosts": [
+  ],
+  "CN": "deploy",
+  "names": [{
+        "O": "system:masters"
+    }],
+  "key": {
+    "algo": "ecdsa",
+    "size": 256
+  }
+}
