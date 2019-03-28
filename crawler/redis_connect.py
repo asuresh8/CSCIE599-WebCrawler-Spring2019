@@ -4,6 +4,7 @@ redisConnect = redis.Redis(host=os.environ.get('REDIS_HOST') or 'crawler-redis',
 
 def testConnectionRedis():
     try:
+        print("Connect to Redis: ", os.environ.get('REDIS_HOST'))
         response = redisConnect.client_list()
         if response:
             return 'Connection successful (Redis)'

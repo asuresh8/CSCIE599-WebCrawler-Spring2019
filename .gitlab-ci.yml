@@ -42,6 +42,8 @@ buildMain:
   before_script:
     - apk add git bash nodejs nodejs-npm --no-cache
   script:
+    - mkdir $HOME/.kube/
+    - echo -e "$KUBE_CONFIG" > $HOME/.kube/config
     - ./buildMainImage
   only:
     - develop
