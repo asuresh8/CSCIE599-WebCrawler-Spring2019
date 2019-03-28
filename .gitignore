@@ -12,3 +12,6 @@
 
 #vscode
 .vscode
+
+#Kuberentes configuration files and credentails
+build/
