@@ -40,6 +40,8 @@ spec:
             secretKeyRef:
               name: credentials
               key: MYSQL_HOST
+        - name: ENVIRONMENT
+          value: "prod"
         - name: JOB_ID
           value: "{{ .Values.params.job_id }}"
         resources:

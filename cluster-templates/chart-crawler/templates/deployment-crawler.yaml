@@ -1,18 +1,10 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: crawler
-  labels:
-    app: crawler
+  name: "crawler-{{date "20060102150405" .Release.Time }}"
 spec:
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      app: crawler
   template:
     metadata:
-      labels:
-        app: crawler
       name: crawler
     spec:
       containers:
@@ -54,5 +46,6 @@ spec:
           limits:
             cpu: 200m
             memory: 1Gi
+      restartPolicy: Never
       imagePullSecrets:
       - name: docker-gitlab

@@ -20,6 +20,7 @@ Crawler Manager container also has an internal Redis service.
 
 1. Build and start the containers from the root of the repository:
     ```
+    touch main/kubeconfig; touch crawler-manager/kubeconfig
     docker-compose -f docker-compose.yml up --build --no-start
     docker-compose -f docker-compose.yml start
     ```
@@ -48,28 +49,47 @@ Crawler Manager container also has an internal Redis service.
     ```
     Note: anytime you need to process a different job id, change the value in the `export` command
     
+3. For running the crawler, is like the manager
+   
+    First the image must be built.   
+    ```
+    docker build -t crawler -f crawler/DockerFile crawler/
+    ```
+    
+    Once the image is built, create and start the container
+    ```
+    docker create --name crawler --network webcrawler_default -p 8003:8003 crawler
+    docker start crawler
+    ```
+
+    For processing urls
+    ```
+    docker exec -i crawler /bin/bash -c "export URLS='http://google.com,https://cnn.com' && python app.py" # app.py or the script that should process the job
+    ```
+    Note: anytime you need to process a different job id, change the value in the `export` command
 
 4. In order to reload code changes into the containers, run these comands:
 
     Main:
     ```
-    docker cp  main/. main-crawler:/srv/www/web-crawler/
+    docker cp main/. main-crawler:/srv/www/web-crawler/
     docker-compose -f docker-compose.yml restart main
     ```  
 
     Crawler Manager:
     ```
-    docker cp  crawler-manager/. crawler-manager:/srv/www/web-crawler/    
+    docker cp crawler-manager/. crawler-manager:/srv/www/web-crawler/    
+    docker restart crawler-manager
     ```  
 
     Crawler:
     ```
-    docker cp  crawler/. crawler:/srv/www/web-crawler/
-    docker-compose -f docker-compose.yml restart crawler
+    docker cp crawler/. crawler:/srv/www/web-crawler/
+    docker restart crawler
     ```  
 
 5. After all containers are running, you need to run the `initialize-django.sh` script,
-to initialize the DB and set up a super user, so you can use the admin UI to create more users.
+    to initialize the DB and set up a super user, so you can use the admin UI to create more users.
 
     ```
     docker exec -it <your-MAIN-container-ID> bash -c "./initialize-django.sh"

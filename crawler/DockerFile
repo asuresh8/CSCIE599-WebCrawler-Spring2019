@@ -5,6 +5,7 @@ WORKDIR /srv/www/web-crawler
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 8001
+EXPOSE 8003
 
-CMD python app.py
+CMD tail -f app.py
+#CMD python app.py

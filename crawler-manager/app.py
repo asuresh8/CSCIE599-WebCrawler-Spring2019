@@ -5,19 +5,20 @@ import asyncio
 from parsel import Selector
 import time
 import uuid
-import os, signal
+import os, signal, _thread, sys
 from redis_connect import testConnectionRedis, testLocalRedis, getVariable, setVariable
 from collections import deque
 from flask import request, abort, jsonify
 import settings
 import work_processor
 from helper import validateChildURLs, updateRedis, get_domain_name
-import _thread
-import sys
+
 
 app = flask.Flask(__name__)
 start = time.time()
 jobId = os.environ.get('JOB_ID', '')
+imageTag = os.environ.get('IMAGE_TAG', '0')
+environment = os.environ.get('ENVIRONMENT', 'local')
 
 @app.route('/')
 def main():
@@ -77,6 +78,23 @@ def get_status():
   queuedCount = settings.queuedURLs.qsize()
   return jsonify({'processedCount' : processedCount, 'processingCount': processingCount, 'queuedCount' : queuedCount})
 
+def deployCrawlers():
+  if (environment == 'local'):
+    return
+
+  urls = ["https://google.com,https://cnn.com", "https://wikipedia.org,https://target.com"]
+  for url in urls:
+    os.system(getHelmCommand(url))
+
+  return
+
+def getHelmCommand(url):
+  return f"""helm init --service-account tiller &&
+    helm upgrade --install \\
+    --set-string image.tag='{imageTag}' \\
+    --set-string params.urls='{url}' \\
+    \"crawler-$(date +%s)\" ./cluster-templates/chart-crawler"""
+
 def flaskThread():
   app.run(debug=False, host="0.0.0.0", port=8002, use_reloader=False)
 
@@ -84,5 +102,6 @@ if __name__ == "__main__":
     testConnections()
     _thread.start_new_thread(flaskThread,())
     print('Will kill server after 20s -- jobId', jobId,file=sys.stderr)
+    deployCrawlers()
     time.sleep(20)
     os.kill(os.getpid(), signal.SIGTERM)
