@@ -32,12 +32,12 @@ Crawler Manager container also has an internal Redis service.
 
 3. For running the crawler manager: 
    
-    First the image must be built.   
+    Build the image:   
     ```
     docker build -t crawler-manager -f crawler-manager/DockerFile crawler-manager/
     ```
     
-    Once the image is built, create and start the container
+    Once the image is built, create and start the container:  
     ```
     docker create --name crawler-manager --network webcrawler_default -p 8002:8002 crawler-manager
     docker start crawler-manager
@@ -45,13 +45,13 @@ Crawler Manager container also has an internal Redis service.
 
     For processing a job
     ```
-    docker exec -i crawler-manager /bin/bash -c "export JOB_ID=123 && python app.py" # app.py or the script that should process the job
+    docker exec -i crawler-manager /bin/bash -c "export JOB_ID=123 && python app.py"  
     ```
-    Note: anytime you need to process a different job id, change the value in the `export` command
+    Note: Change the value in the `export` command, for the JOB_ID you want to process
     
 3. For running the crawler, is like the manager
    
-    First the image must be built.   
+    Build the image:   
     ```
     docker build -t crawler -f crawler/DockerFile crawler/
     ```
@@ -64,9 +64,9 @@ Crawler Manager container also has an internal Redis service.
 
     For processing urls
     ```
-    docker exec -i crawler /bin/bash -c "export URLS='http://google.com,https://cnn.com' && python app.py" # app.py or the script that should process the job
+    docker exec -i crawler /bin/bash -c "export URLS='http://google.com,https://cnn.com' && python app.py" 
     ```
-    Note: anytime you need to process a different job id, change the value in the `export` command
+    Note: Change the value in the `export` command, for the URLS you want to process
 
 4. In order to reload code changes into the containers, run these comands:
 
@@ -94,6 +94,8 @@ Crawler Manager container also has an internal Redis service.
     ```
     docker exec -it <your-MAIN-container-ID> bash -c "./initialize-django.sh"
     ```
+
+
 
 ### Connecting to Kubernetes in Python
 
