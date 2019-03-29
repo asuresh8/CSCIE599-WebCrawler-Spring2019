@@ -82,7 +82,7 @@ def deployCrawlers():
   if (environment == 'local'):
     return
 
-  urls = ["https://google.com,https://cnn.com", "https://wikipedia.org,https://target.com"]
+  urls = ["https://cnn.com", "https://target.com"]
   for url in urls:
     os.system(getHelmCommand(url))
 
