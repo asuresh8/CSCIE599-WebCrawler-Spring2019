@@ -13,7 +13,8 @@ spec:
       - name: crawler-manager
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command: ["python", "app.py"]
+        command: ["/bin/sh","-c"]
+        args: ["python app.py"]        
         env:
         - name: REDIS_HOST
           valueFrom:
