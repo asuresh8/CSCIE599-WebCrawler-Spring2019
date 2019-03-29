@@ -4,9 +4,6 @@ from django.http import Http404
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 
-# import the logging library
-import logging
-
 from .models import CrawlRequest, Profile
 from .forms import CrawlRequestForm, ProfileForm
 
@@ -26,11 +23,17 @@ from django.http import HttpResponse
 import json
 import os
 
+# import the logging library
+import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
+# set logging level (10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL)
+#logger.setLevel(20)
+
 # when the container is running in docker compose, set imageTag = 0
 # when running on Kubernetes, it is the Pipeline Id, which is used for naming the Docker images in the registry.
 imageTag = os.environ.get('IMAGE_TAG', '0')
+
 
 @login_required()
 def home(request):
@@ -100,6 +103,7 @@ def api_new_job(request):
         logger.error("command status", command_status)
         print("queued")
 
+
 # TODO: this function should take the Job ID as a parameter.
 # That will be injected into the new Crawler manger Pod
 def getHelmCommand():
@@ -109,11 +113,11 @@ def getHelmCommand():
       --set-string params.job_id='https://www.google.com' \\
       \"crawler-manager-$(date +%s)\" ./cluster-templates/chart-manager"""
 
+
 #@login_required()
 #@api_view(['GET'])
 #@permission_classes((IsAuthenticated, ))
 def api_job_status(request):
-    print("In api job status")
     response_data = {"Message" : "Status Received"}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
@@ -123,7 +127,6 @@ def job_details(request, job_id):
     """
         Displays details for a specific job ID
     """
-    logger.info('I am now in job DETAILS!')
     try:
         job = CrawlRequest.objects.get(pk=job_id)
     except CrawlRequest.DoesNotExist:
