@@ -92,7 +92,7 @@ def new_job(request):
 
 @login_required()
 def api_new_job(request):
-    logger.error("In API new job")
+    #logger.error("In API new job")
     if imageTag == '0':
         # Running in docker compose,
         print("Looks like this is not running on a Kuberenetes cluster, ")
@@ -100,7 +100,7 @@ def api_new_job(request):
         # If there is a imageTag, it means it is running in the Kubernetes Cluster
         # Use the Helm command to troigger a new Crawler Manager Instance
         command_status = os.system(getHelmCommand())
-        logger.error("command status", command_status)
+        #logger.error("command status", command_status)
         print("queued")
 
 
