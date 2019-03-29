@@ -54,19 +54,19 @@ spec:
       restartPolicy: Never
       imagePullSecrets:
       - name: docker-gitlab
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: crawler-manager-service
-  labels:
-    app: crawler-manager
-spec:
-  type: {{ .Values.service.type }}
-  ports:
-  - port: {{ .Values.service.externalPort }}
-    targetPort: {{ .Values.service.internalPort }}
-    protocol: TCP
-    name: {{ .Values.service.name }}
-  selector:
-    app: crawler-manager
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: crawler-manager-service
+#   labels:
+#     app: crawler-manager
+# spec:
+#   type: {{ .Values.service.type }}
+#   ports:
+#   - port: {{ .Values.service.externalPort }}
+#     targetPort: {{ .Values.service.internalPort }}
+#     protocol: TCP
+#     name: {{ .Values.service.name }}
+#   selector:
+#     app: crawler-manager
