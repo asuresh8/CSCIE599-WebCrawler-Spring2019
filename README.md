@@ -19,43 +19,61 @@ Crawler Manager container also has an internal Redis service.
 ### Steps
 
 1. Build and start the containers from the root of the repository:
-```
-docker-compose -f docker-compose.yml up --build --no-start
-docker-compose -f docker-compose.yml start
-```
+    ```
+    docker-compose -f docker-compose.yml up --build --no-start
+    docker-compose -f docker-compose.yml start
+    ```
 
-2. Once all container are runing, container will run on these endpoints:
+2. Only the main container will be available with docker compose, this is the access route:
+    ```
+    Main: `http://localhost:8001/`   
+    ```
 
-Main: `http://localhost:8001/`   
-Crawler Manager: `http://localhost:8002/`   
-Crawler: `http://localhost:8003/`   
+3. For running the crawler manager: 
+   
+    First the image must be built.   
+    ```
+    docker build -t crawler-manager -f crawler-manager/DockerFile crawler-manager/
+    ```
+    
+    Once the image is built, create and start the container
+    ```
+    docker create --name crawler-manager --network webcrawler_default -p 8002:8002 crawler-manager
+    docker start crawler-manager
+    ```
 
-3. In order to reload code changes into the containers, run these comands:
+    For processing a job
+    ```
+    docker exec -i crawler-manager /bin/bash -c "export JOB_ID=123 && python app.py" # app.py or the script that should process the job
+    ```
+    Note: anytime you need to process a different job id, change the value in the `export` command
+    
 
-Main:
-```
-docker cp  main/. main-crawler:/srv/www/web-crawler/
-docker-compose -f docker-compose.yml restart main
-```  
+4. In order to reload code changes into the containers, run these comands:
 
-Crawler Manager:
-```
-docker cp  crawler-manager/. crawler-manager:/srv/www/web-crawler/
-docker-compose -f docker-compose.yml restart crawler-manager
-```  
+    Main:
+    ```
+    docker cp  main/. main-crawler:/srv/www/web-crawler/
+    docker-compose -f docker-compose.yml restart main
+    ```  
 
-Crawler:
-```
-docker cp  crawler/. crawler:/srv/www/web-crawler/
-docker-compose -f docker-compose.yml restart crawler
-```  
+    Crawler Manager:
+    ```
+    docker cp  crawler-manager/. crawler-manager:/srv/www/web-crawler/    
+    ```  
 
-4. After all containers are running, you need to run the `initialize-django.sh` script,
+    Crawler:
+    ```
+    docker cp  crawler/. crawler:/srv/www/web-crawler/
+    docker-compose -f docker-compose.yml restart crawler
+    ```  
+
+5. After all containers are running, you need to run the `initialize-django.sh` script,
 to initialize the DB and set up a super user, so you can use the admin UI to create more users.
 
-```
-docker exec -it <your-MAIN-container-ID> bash -c "./initialize-django.sh"
-```
+    ```
+    docker exec -it <your-MAIN-container-ID> bash -c "./initialize-django.sh"
+    ```
 
 ### Connecting to Kubernetes in Python
 

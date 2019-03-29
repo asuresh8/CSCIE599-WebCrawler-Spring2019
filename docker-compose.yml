@@ -32,29 +32,5 @@ services:
     depends_on:
       - crawler-mysql5
 
-  crawler-manager:
-    build:
-      context: crawler-manager/
-      dockerfile: DockerFile
-    container_name: crawler-manager
-    environment:
-      - PYTHONPATH=.
-      - FLASK_ENV=development
-    ports:
-      - "8002:8002"
-
-  crawler:
-    build:
-      context: crawler/
-      dockerfile: DockerFile
-    container_name: crawler
-    environment:
-      - PYTHONPATH=.
-      - FLASK_ENV=development
-    ports:
-      - "8003:8003"
-    depends_on:
-      - crawler-redis
-
 volumes:
   mysql5db:

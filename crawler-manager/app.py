@@ -5,17 +5,19 @@ import asyncio
 from parsel import Selector
 import time
 import uuid
-import os
+import os, signal
 from redis_connect import testConnectionRedis, testLocalRedis, getVariable, setVariable
 from collections import deque
 from flask import request, abort, jsonify
 import settings
 import work_processor
 from helper import validateChildURLs, updateRedis, get_domain_name
+import _thread
+import sys
 
 app = flask.Flask(__name__)
 start = time.time()
-
+jobId = os.environ.get('JOB_ID', '')
 
 @app.route('/')
 def main():
@@ -47,7 +49,7 @@ settings.init()
 # "main_url":"http://recurship.com/",
 # "S3":"https://bucket.s3-aws-region.amazonaws.com/key",
 # "child_urls":[ "a", "b", "c" ]
-# } 
+# }
 @app.route('/api/v1.0/links', methods=['POST'])
 def updateCrawlerResponse():
     if not request.json or not 'main_url' in request.json:
@@ -57,7 +59,7 @@ def updateCrawlerResponse():
     child_urls = request.POST.getlist('child_urls')
     valid_child_urls = validateChildURLs(DOMAIN_NAME,main_url, child_urls)
     updateRedis(main_url, s3Link, valid_child_urls)
-    
+
     #Adding valid child urls to the queue
     [settings.queuedURLs.put(url) for url in valid_child_urls]
 
@@ -75,7 +77,12 @@ def get_status():
   queuedCount = settings.queuedURLs.qsize()
   return jsonify({'processedCount' : processedCount, 'processingCount': processingCount, 'queuedCount' : queuedCount})
 
+def flaskThread():
+  app.run(debug=False, host="0.0.0.0", port=8002, use_reloader=False)
 
 if __name__ == "__main__":
     testConnections()
-    app.run(debug=True, host="0.0.0.0", port=8002)
+    _thread.start_new_thread(flaskThread,())
+    print('Will kill server after 20s -- jobId', jobId,file=sys.stderr)
+    time.sleep(20)
+    os.kill(os.getpid(), signal.SIGTERM)

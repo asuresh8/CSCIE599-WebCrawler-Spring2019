@@ -2,6 +2,8 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: "crawler-manager-{{date "20060102150405" .Release.Time }}"
+labels:
+  app: crawler-manager
 spec:
   template:
     metadata:
@@ -11,7 +13,7 @@ spec:
       - name: crawler-manager
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command: ["sleep",  "60"]
+        command: ["python", "app.py"]
         env:
         - name: REDIS_HOST
           valueFrom:
@@ -50,3 +52,19 @@ spec:
       restartPolicy: Never
       imagePullSecrets:
       - name: docker-gitlab
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crawler-manager-service
+  labels:
+    app: crawler-manager
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - port: {{ .Values.service.externalPort }}
+    targetPort: {{ .Values.service.internalPort }}
+    protocol: TCP
+    name: {{ .Values.service.name }}
+  selector:
+    app: crawler-manager
