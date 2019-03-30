@@ -7,6 +7,7 @@ from django.contrib.auth.hashers import make_password
 from .models import CrawlRequest, Profile
 from .forms import CrawlRequestForm, ProfileForm
 
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.permissions import BasePermission, IsAuthenticated, AllowAny
 from rest_framework.views import APIView
@@ -19,6 +20,7 @@ from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 
 import requests
+from django.http import HttpRequest
 from django.http import HttpResponse
 import json
 import os
@@ -82,8 +84,13 @@ def new_job(request):
         form = CrawlRequestForm(instance=crawl_request, data=request.POST)
         if form.is_valid():
             form.save()
+            """
             print("In new_job")
-            api_new_job(request)
+            payload = {}
+            payload['jobId'] = crawl_request.id
+            payload['url'] = crawl_request.domain
+            launch_crawler_manager(payload)
+            """
             return redirect('mainapp_home')
     else:
         form = CrawlRequestForm()
@@ -114,10 +121,23 @@ def getHelmCommand():
       \"crawler-manager-$(date +%s)\" ./cluster-templates/chart-manager"""
 
 
+def launch_crawler_manager(payload):
+    print ("In api new job")
+    payload = {"jobId" : payload['jobId']}
+    res = requests.get("http://localhost:8004/crawl", params=payload)
+    print(res.content)
+
 #@login_required()
-#@api_view(['GET'])
+@api_view(['GET'])
 #@permission_classes((IsAuthenticated, ))
 def api_job_status(request):
+    """
+    jobId = request.query_params.get('jobId')
+    job = CrawlRequest.objects.get(pk=jobId)
+    job.status = 3
+    job.docs_collected = request.query_params.get('numUrls')
+    job.save()
+    """
     response_data = {"Message" : "Status Received"}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
