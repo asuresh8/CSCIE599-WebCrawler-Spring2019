@@ -4,7 +4,45 @@ from .models import CrawlRequest, Profile
 class CrawlRequestForm(ModelForm):
     class Meta:
         model = CrawlRequest
-        exclude = ('user', 'created', 'modified', 'docs_collected', 'status')
+        fields = ('name', 'type', 'domain', 'urls', 'description', 'docs_all', 'docs_html', 'docs_docx', 'docs_pdf', 'docs_xml', 'docs_txt', 's3_location')
+        labels = {
+            'name': 'Job Name',
+            'type': 'Crawl Type',
+            'domain': 'Domain',
+            'urls': 'URLs to crawl',
+            'description': 'Description',
+            'docs_all': 'Collect everything',
+            'docs_html': 'Collect HTML files',
+            'docs_docx': 'Collect DOCX files',
+            'docs_pdf': 'Collect PDF files',
+            'docs_xml': 'Collect XML files',
+            'docs_txt': 'Collect TXT files',
+            's3_location': 'AWS S3 Location',
+        }
+        widgets = {
+            'user': HiddenInput(),
+            'created': HiddenInput(),
+            'modified': HiddenInput(),
+            'docs_collected': HiddenInput(),
+            'status': HiddenInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        """ Instantiates an onject of type ProfileForm with custom widget attributes """
+        super(CrawlRequestForm, self).__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Crawl Job Name'})
+        self.fields['type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Crawl Type'})
+        self.fields['domain'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Domain'})
+        self.fields['urls'].widget.attrs.update({'class': 'form-control', 'placeholder': 'URLs to crawl'})
+        self.fields['description'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Crawl Notes'})
+        self.fields['docs_all'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect everything'})
+        self.fields['docs_html'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect HTML files'})
+        self.fields['docs_docx'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect DOCX files'})
+        self.fields['docs_pdf'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect PDF files'})
+        self.fields['docs_xml'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect XML files'})
+        self.fields['docs_txt'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect TXT files'})
+        self.fields['s3_location'].widget.attrs.update({'class': 'form-control', 'placeholder': 'AWS S3 Location'})
+
 
 
 class ProfileForm(ModelForm):

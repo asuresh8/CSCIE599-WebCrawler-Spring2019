@@ -21,88 +21,112 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Domain</th>
-                            <th>Crawl Type</th>
-                            <th>Status</th>
-                            <th>Description</th>
-                            <th>Created on</th>
-                            <th>User</th>
+                            <th>Field</th>
+                            <th>Value</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>
-                                {{ job.id|escape }}
+                                <b>ID</b>
                             </td>
-                            <td>
-                                {{ job.name|escape }}
-                            </td>
-                            <td>
-                                {{ job.domain|escape }}
-                            </td>
-                            <td>
-                                {{ job.get_type_display|escape }}
-                            </td>
-                            <td>
-                                {{ job.get_status_display|escape }}
-                            </td>
-                            <td>
-                                {{ job.description|escape }}
-                            </td>
-                            <td>
-                                {{ job.created|escape }}
-                            </td>
-                            <td>
-                                {{ job.user|escape }}
-                            </td>
+                            <td>{{ job.id|escape }}</td>
                         </tr>
-                    </tbody>
-                </table>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>AWS S3 Location</th>
-                            <th>URLs crawled</th>
-                            <th>Resources collected</th>
-                            <th>Collect Everything</th>
-                            <th>Collect HTML</th>
-                            <th>Collect DOCX</th>
-                            <th>Collect PDF</th>
-                            <th>Collect XML</th>
-                            <th>Collect TXT</th>
+                         <tr>
+                            <td>
+                                <b>Name</b>
+                            </td>
+                            <td>{{ job.name|escape }}</td>
                         </tr>
-                    </thead>
-                    <tbody>
+                         <tr>
+                            <td>
+                                <b>Domain</b>
+                            </td>
+                            <td>{{ job.domain|escape }}</td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <b>Crawl Type</b>
+                            </td>
+                            <td>{{ job.get_type_display|escape }}</td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <b>Status</b>
+                            </td>
+                            <td>{{ job.get_status_display|escape }}</td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <b>Description</b>
+                            </td>
+                            <td>{{ job.description|escape }}</td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <b>Created On</b>
+                            </td>
+                            <td>{{ job.created|escape }}</td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <b>By User</b>
+                            </td>
+                            <td>{{ job.user|escape }}</td>
+                        </tr>
                         <tr>
                             <td>
-                                {{ job.s3_location|escape }}
+                                <b>S3 Location</b>
                             </td>
+                            <td>{{ job.s3_location|escape }}</td>
+                        </tr>
+                        <tr>
                             <td>
-                                {{ job.urls|escape }}
+                                <b>URLs to crawl</b>
                             </td>
+                            <td>{{ job.urls|escape }}</td>
+                        </tr>
+                        <tr>
                             <td>
-                                {{ job.docs_collected|escape }}
+                                <b>Resources collected</b>
                             </td>
+                            <td>{{ job.docs_collected|escape }}</td>
+                        </tr>
+                        <tr>
                             <td>
-                                {{ job.docs_all|escape }}
+                                <b>Collect Everything</b>
                             </td>
+                            <td>{{ job.docs_all|escape }}</td>
+                        </tr>
+                        <tr>
                             <td>
-                                {{ job.docs_html|escape }}
+                                <b>Collect HTML</b>
                             </td>
+                            <td>{{ job.docs_html|escape }}</td>
+                        </tr>
+                        <tr>
                             <td>
-                                {{ job.docs_docx|escape }}
+                                <b>Collect DOCX</b>
                             </td>
+                            <td>{{ job.docs_docx|escape }}</td>
+                        </tr>
+                        <tr>
                             <td>
-                                {{ job.docs_pdf|escape }}
+                                <b>Collect PDF</b>
                             </td>
+                            <td>{{ job.docs_pdf|escape }}</td>
+                        </tr>
+                        <tr>
                             <td>
-                                {{ job.docs_xml|escape }}
+                                <b>Collect XML</b>
                             </td>
+                            <td>{{ job.docs_xml|escape }}</td>
+                        </tr>
+                        <tr>
                             <td>
-                                {{ job.docs_txt|escape }}
+                                <b>Collect TXT</b>
                             </td>
+                            <td>{{ job.docs_txt|escape }}</td>
                         </tr>
                     </tbody>
                 </table>
