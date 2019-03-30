@@ -91,6 +91,7 @@ def new_job(request):
             payload['url'] = crawl_request.domain
             launch_crawler_manager(payload)
             """
+            api_new_job(request)
             return redirect('mainapp_home')
     else:
         form = CrawlRequestForm()
