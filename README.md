@@ -30,6 +30,14 @@ Crawler Manager container also has an internal Redis service.
     Main: `http://localhost:8001/`   
     ```
 
+    If the main application is not loading, then likely the database isn't created properly. Enter the shell
+    for the mysql container and create the test database
+    ```
+    $ mysql -u root -p
+
+    mysql> CREATE DATABASE test;
+    ```
+
 3. For running the crawler manager: 
    
     Build the image:   
