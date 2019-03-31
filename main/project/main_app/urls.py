@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'profile$', views.profile, name="mainapp_profile"),
     url(r'authenticate_user$', views.authenticate_user, name="authenticate_user"),
     path(r'job/<int:job_id>', views.job_details, name="mainapp_jobdetails"),
+    path(r'contents/<int:job_id>', views.crawl_contents, name="mainapp_crawlcontents"),
     url(r'login$', LoginView.as_view(template_name="main_app/login_form.html"), name="mainapp_login"),
     url(r'logout$', LogoutView.as_view(), name="mainapp_logout"),
 ]
