@@ -24,6 +24,9 @@ from django.http import HttpRequest
 from django.http import HttpResponse
 import json
 import os
+from io import BytesIO
+import zipfile
+
 
 # import the logging library
 import logging
@@ -166,3 +169,26 @@ def profile(request):
     else:
         form = ProfileForm(instance=profile)
     return render(request, "main_app/settings.html", {'form': form})
+
+@login_required()
+def crawl_contents(request, job_id):
+    print(job_id)
+    try:
+        job = CrawlRequest.objects.get(pk=job_id)
+    except CrawlRequest.DoesNotExist:
+        raise Http404("Job does not exist.")
+    current_file = "idletest"
+    buffer = BytesIO()
+    z= zipfile.ZipFile( buffer, "w" )
+    open(current_file, 'w').write("Ansuman")
+    z.write( current_file )
+    z.close()
+    os.remove(current_file)
+    """
+    byte = BytesIO()
+    zf = zipfile.ZipFile(byte, "w")
+    zipped_files = []
+    """
+    response = HttpResponse(buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename=myfile.zip'
+    return response
