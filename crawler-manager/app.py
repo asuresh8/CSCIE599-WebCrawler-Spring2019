@@ -10,7 +10,7 @@ from redis_connect import testConnectionRedis, testLocalRedis, getVariable, setV
 from collections import deque
 from flask import request, abort, jsonify
 import settings
-import work_processor
+from work_processor import run_crawl
 from helper import validateChildURLs, updateRedis, get_domain_name
 
 
@@ -22,8 +22,24 @@ environment = os.environ.get('ENVIRONMENT', 'local')
 
 @app.route('/')
 def main():
-    return 'Crawler-manager'
+  return 'Crawler Manager'
 
+@app.route('/crawler_manager')
+def manage():
+  print("Executing Manager...")
+
+  JOB_URL = "https://www.wikipedia.org/"
+  DOMAIN_NAME = get_domain_name(JOB_URL)
+  settings.init()
+  #Initializing Queue
+  settings.queuedURLs.put(JOB_URL)
+  #Adding local crawler address to set
+  LOCAL_DEFAULT_CRAWLER = "http://localhost:8003/crawl/"
+  settings.crawlerSet.add(LOCAL_DEFAULT_CRAWLER)
+
+  #Running worker process
+  main_response = run_crawl()
+  return main_response
 
 #Testing Connections
 def testConnections():
@@ -31,13 +47,6 @@ def testConnections():
     print(testLocalRedis())
 
 
-
-#An POST API call made to main application to register this crawler manager instance
-
-#A get API call made to main application to get the relevant job details
-JOB_URL = "http://recurship.com"
-DOMAIN_NAME = get_domain_name(JOB_URL)
-settings.init()
 
 #Register endpoint
 #An endpoint that the crawler will call to register itself once instantiated, ip/dns added to available crawler list.

@@ -12,6 +12,9 @@ def init():
     global crawlerSet
     crawlerSet = set()
 
+    global busyCrawlerSet
+    busyCrawlerSet = set()
+
     #Set of urls currently being crawled by the crawlers
     global processingURLs
     processingURLs = set()
