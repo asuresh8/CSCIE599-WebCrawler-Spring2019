@@ -102,37 +102,3 @@ Crawler Manager container also has an internal Redis service.
     ```
     docker exec -it <your-MAIN-container-ID> bash -c "./initialize-django.sh"
     ```
-
-
-
-### Connecting to Kubernetes in Python
-
-```python
-from google.cloud import container_v1
-from google.oauth2 import service_account
-import base64
-import kubernetes
-import os
-
-creds = service_account.Credentials.from_service_account_file('/Users/adi/Downloads/WebCrawler-feb11a08e450.json')
-client = container_v1.ClusterManagerClient(credentials=creds)
-cluster = client.get_cluster('webcrawler-233816', 'us-central1-a', 'web-crawler')
-ca_cert = os.path.join(os.environ['HOME'], 'k8s_ca_cert.pem')
-client_cert = os.path.join(os.environ['HOME'], 'k8s_client_cert.pem')
-client_key = os.path.join(os.environ['HOME'], 'k8s_client_key.pem')
-with open(ca_cert, 'wb') as f:
-    f.write(base64.base64decode(cluster.master_auth.cluster_ca_certificate))
-
-with open(client_cert, 'wb') as f:
-    f.write(base64.base64decode(cluster.master_auth.client_certificate))
-
-with open(client_key, 'wb' as f):
-    f.write(base64.base64decode(cluster.master_auth.client_key))
-
-k8s_config = kubernetes.client.Configuration()
-k8s_config.host = cluster.endpoint
-k8s_config.ssl_ca_cert = ca_cert
-k8s_config.cert_file = client_cert
-k8s_config.key_file = client_key
-k8s_client = kubernetes.client.CoreV1Api(k8_config)
-```
