@@ -51,6 +51,10 @@ def testConnections():
 #Register endpoint
 #An endpoint that the crawler will call to register itself once instantiated, ip/dns added to available crawler list.
 @app.route('/api/v1.0/register/crawlerID', methods=['POST'])
+def register():
+   crawlerId = request.json['name']
+   crawlerSet.add(crawlerId)
+   return "crawler added"
 
 #Result endpoint
 #An endpoint that the  crawler calls to respond with the url assigned, it's corresponding S3 Link and the list of child url's

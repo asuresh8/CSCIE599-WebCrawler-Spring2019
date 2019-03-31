@@ -9,13 +9,36 @@ urls = os.environ.get('URLS', '')
 
 @app.route('/')
 def main():
-    return 'Crawler'
+    hname =  request.host_url
+    try:
+       
+       requests.post('http://localhost:8002' + '/api/v1.0/register/CrawlerID', json ={'name': hname})
+       #requests.post(os.environ.get('manager') + '/api/v1.0/register/CrawlerID', json ={'name': hname})
+       return "crawler"
+    except  requests.RequestException as rex:
+       return "request exception"
+    except requests.HTTPException as hex:
+       return "http exception"
+    except Exception as ex:
+       return "general exception"
 
 @app.route('/crawl/')
 def do_crawl():
     curUrl =  request.args.get('crawlurl')
     print("start crawling")
-    return crawlUrl(curUrl)
+    s3uri , links =  crawlUrl(curUrl)
+    json_data = { 'main_url' : curUrl, 's3uri': s3uri ,  'child_urls':  json.du$
+    try :
+       r = requests.post('http://localhost:8002' + '/api/v1.0/links', json=  json_data)
+       #r = requests.post(os.environ.get("manager") + '/api/v1.0/links', json=  json_data)
+       return  "ok"
+    except  requests.RequestException as rex:
+       return "request exception"
+    except requests.HTTPException as hex:
+       return "http exception"
+    except Exception as ex:
+       return "general exception"
+     
 
 def testConnections():
     print(testConnectionRedis())
