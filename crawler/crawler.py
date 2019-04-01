@@ -7,13 +7,14 @@ import config
 from io import BytesIO
 from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup
+import redis_connect
 
 def crawlUrl(url):
     links = []
-    # connect to redis (needs to be removed once the app initalized redis works
-    r = redis.StrictRedis(host=config.REDIS_HOST, port= config.REDIS_PORT)
+    # connect to redis 
+    #r = redis.StrictRedis(host=config.REDIS_HOST, port= config.REDIS_PORT)
     try:
-       if is_crawled(r,url) == True :
+       if is_crawled(url) == True :
           return  (None, None) 
        else:
           #get web page
@@ -24,7 +25,7 @@ def crawlUrl(url):
           get_links(response, links)
           print(links)
           #add key to redis
-          add_key_cache(r, url, s3uri)
+          add_key_cache(url, s3uri)
           return (s3uri, links)
     except HTTPError as e:
        return (None, None)
@@ -55,20 +56,18 @@ def get_links(r, links):
     return 
 
 # add url and s3 location to central redis cache
-def add_key_cache(cachedb, url,s3uri):
-    if cachedb is None:
+def add_key_cache(url,s3uri):
+    if redis_connect.redisConnect is None:
        return
-
     try:
-        #r = redis.StrictRedis(host=config.REDIS_HOST, port= config.REDIS_PORT)
-        cachedb.set(url,s3uri)
+        redis_connect.redisConnect.set(url,s3uri)
     except Exception as e:
         print(e.with_traceback)
     return
 
 # is_crawled - checks redis for existing of key
-def is_crawled(cachedb,url):
-    return cachedb != None and cachedb.exists(url) ? True: False
+def is_crawled(url):
+    return redis_connect.redisConnect != None and redis_connect.redisConnect.exists(url) ? True: False
 
 """ 
 def write_file(url):

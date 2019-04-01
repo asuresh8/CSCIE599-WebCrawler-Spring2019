@@ -12,8 +12,8 @@ def main():
     hname =  request.host_url
     try:
        
-       requests.post('http://localhost:8002' + '/api/v1.0/register/CrawlerID', json ={'name': hname})
-       #requests.post(os.environ.get('manager') + '/api/v1.0/register/CrawlerID', json ={'name': hname})
+       requests.post('http://localhost:8002' + '/api/v1.0/register/crawlerID', json ={'name': hname})
+       #requests.post(os.environ.get('manager') + '/api/v1.0/register/crawlerID', json ={'name': hname})
        return "crawler"
     except  requests.RequestException as rex:
        return "request exception"
