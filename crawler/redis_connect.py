@@ -1,13 +1,28 @@
+import logging
 import redis
 import os
-redisConnect = redis.StrictRedis(host=os.environ.get('REDIS_HOST') or 'crawler-redis', port=6379, db=0)
 
-def testConnectionRedis():
+redis_db = redis.Redis(host=os.environ.get('REDIS_HOST','0.0.0.0'), port=6379, db=0)
+
+
+def get(key):
+    return redis_db.get(key)
+
+
+def put(key, value):
+    return redis_db.set(key, value)
+
+
+def exists(key):
+    return bool(redis_db.exists(key))
+
+
+def test_redis_connection():
     try:
-        print("Connect to Redis: ", os.environ.get('REDIS_HOST'))
-        response = redisConnect.ping()
+        logging.info("Connecting to Redis: %s", os.environ.get('REDIS_HOST','0.0.0.0'))
+        response = redis_db.ping()
         if response:
             return 'Connection successful (Redis)'
 
     except redis.ConnectionError as e:
-        print("Error connecting to redis: {}". format(e))
+        logging.error("Error connecting to redis: %s", str(e))

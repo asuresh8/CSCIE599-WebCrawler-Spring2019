@@ -1,11 +1,15 @@
 FROM python:3.7.2-stretch
 
-COPY . /srv/www/web-crawler
+COPY creds/ /creds
+COPY crawler/ /srv/www/web-crawler
+
 WORKDIR /srv/www/web-crawler
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+ENV GCS_BUCKET="cscie-599-spring-2019-web-crawler"
+ENV GOOGLE_APPLICATION_CREDENTIALS="/creds/WebCrawler-feb11a08e450.json"
+
 EXPOSE 8003
 
-CMD tail -f app.py
-#CMD python app.py
+CMD python app.py

@@ -1,105 +1,39 @@
-import flask
-import requests
-import aiohttp
-import asyncio
-from parsel import Selector
-import time
-from time import sleep
-import uuid
+import json
+import logging
 import os
-from redis_connect import testConnectionRedis, testLocalRedis, getVariable, setVariable
-from collections import deque
-import settings
+import redis_connect
+import requests
+import time
 
 
-def run_crawl():
-  print("Running run_crawl...")
-  #There needs to be atleast one url to start
-  if settings.queuedURLs.empty():
-    raise ValueError('No seed URL')
-  elif len(settings.crawlerSet) == 0:
-    raise ValueError('No crawler has been initialized')
-  else:
-    while not settings.queuedURLs.empty():
-      if len(settings.crawlerSet.difference(settings.busyCrawlerSet)) == 0:
-        print("Sleeping...")
-        sleep(10)
-        print("Done Sleeping..")
-        continue
-      else:
-        crawlerHOST = settings.crawlerSet.difference(settings.busyCrawlerSet)[0]
+class Processor():
+    def __init__(self, context):
+        self.context = context
+    
+    def run(self):
+        self.context.logger.info('Waiting for crawlers')
+        while self.context.crawlers.size() == 0:
+            time.sleep(10)
         
-        settings.busyCrawlerSet.add(crawlerHOST)
-        urlParam = settings.queuedURLs.get()
-        settings.processingURLs.add(urlParam)
-
-        # Calling crawler endpoint
-        response = requests.get(crawlerHOST, params = {'crawlurl' : urlParam})
-
-        #Printing out response
-        print("Received response: {}:{}".format(response,response.content))
-
-        #Not adding any returned child urls to queue for testing the initial url
-  return response.json()
-
-
-    # The environment variable for the JOB_ID is set by Kubernetes, which recieves 
-    # this JOB_ID from the main application
-    # Number of crawlers also set by the queue
-    # jobID = os.environ['JOB_ID']
-    # numberOfCrawlers = os.environ['NUM_of_CRAWLERS']
-
-    #example ID:
-    # jobID = uuid.uuid4()
-
-    # print("Executing Job: %s" % jobID)
-
-    # #Get the metadata regarding this job from mysql
-    # # jobMetaData = getJobMetadata(jobID)
-    # jobMetaData = [('jobID123','http://recurship.com/','img'),('jobID123','https://iamtrask.github.io/','img')]
-    # crawlURLs = []
-    # for (jobid, url, file_type) in jobMetaData:
-    #   print("{} needs to visit url {} and look at {} files".format(
-    #     jobid, url, file_type))
-    # crawlURLs.append(url)
-
-    # urlsQueue = deque(crawlURLs)
-
-    # #Function to create n number of crawlers as defined by numberOfCrawlers
-
-    # counter = 0
-    # visitedUrls = []
-
-    # #Counter less than 3 is there for testing to ensure an infinite loop is not encountered, is there a depth limit?
-    # while urlsQueue.__len__ != 0 and counter < 2:
-    #     crawlurl = urlsQueue.popleft()
-    #     print(crawlurl)
-
-    #     # Call a function that assigns the above url to a crawler and appends the child urls to the queue in response
-    #     response = requests.get(crawlurl)
-    #     selector = Selector(response.text)
-    #     child_urls = selector.xpath('//a/@href').getall()
-
-    #     #append visited url
-    #     visitedUrls.append(crawlurl)
-    #     print("Visited URLs : " + str(visitedUrls))
-
-    #     #Removing urls that have already been visited
-    #     notVisitedChildUrls = list(set(child_urls) - set(visitedUrls))
-    #     urlsQueue.append(notVisitedChildUrls)
-
-    #     #Setting key as url, and value as child urls in redis (checking write)
-    #     setVariable(crawlurl, notVisitedChildUrls)
-
-    #     #Getting url from redis (checking read)
-    #     print(getVariable(crawlurl))
-
-    #     counter = counter + 1
-
-    #     print ("All done !")
-    #     end = time.time()
-    #     print("Time taken in seconds : ", (end-start))
-
-
-if __name__ == '__main__':
-    run_crawl()
+        self.context.logger.info('Entering processor loop')
+        while self.context.queued_urls.size() != 0 and self.context.in_process_urls.size() != 0:
+            rejected_requests = 0
+            crawlers = self.context.crawler_set.get()
+            for crawler in crawlers:
+                crawl_api = os.path.join(crawler, "crawl")
+                url = self.context.queued_urls.poll()
+                try:
+                    response = requests.post(crawl_api, data=json.dumps({'url': url}))
+                except Exception as e:
+                    self.context.logger.error('Unable to send crawl request to crawler %s: %s', crawler, str(e))
+                else:
+                    if json.loads(response.text)['accepted']:
+                        self.context.logger.info('Crawler %s accepted request', crawler)
+                        self.context.in_process_urls.add(url)
+                    else:
+                        self.context.logger.warning('Crawler %s rejected request', crawler)
+                        rejected_requests += 1
+                        self.context.queued_urls.add(url)
+            
+            # TODO: eliminate this. This is completely arbitrary
+            time.sleep(0.1  + 1.0 * rejected_requests)

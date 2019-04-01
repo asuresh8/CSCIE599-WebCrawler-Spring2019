@@ -42,7 +42,7 @@ Crawler Manager container also has an internal Redis service.
    
     Build the image:   
     ```
-    docker build -t crawler-manager -f crawler-manager/DockerFile crawler-manager/
+    docker build -t crawler-manager -f crawler-manager/DockerFile .
     ```
     
     Once the image is built, create and start the container:  
@@ -61,7 +61,7 @@ Crawler Manager container also has an internal Redis service.
    
     Build the image:   
     ```
-    docker build -t crawler -f crawler/DockerFile crawler/
+    docker build -t crawler -f crawler/DockerFile .
     ```
     
     Once the image is built, create and start the container
