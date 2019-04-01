@@ -122,7 +122,7 @@ def getHelmCommand():
       helm upgrade --install --wait \\
       --set-string image.tag='{imageTag}' \\
       --set-string params.job_id='https://www.google.com' \\
-      --set-string params.date='$DATE'
+      --set-string params.date='$DATE' \\
       \"crawler-manager-$DATE\" ./cluster-templates/chart-manager"""
 
 
