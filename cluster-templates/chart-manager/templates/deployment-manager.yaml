@@ -2,13 +2,13 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: "crawler-manager-{{ .Values.params.date }}"
-labels:
-  app: crawler-manager
 spec:
   backoffLimit: 5
   template:
     metadata:
       name: crawler-manager
+      labels:
+        app: "crawler-manager-{{ .Values.params.date }}"
     spec:
       containers:
       - name: crawler-manager

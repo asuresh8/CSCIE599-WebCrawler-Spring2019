@@ -41,6 +41,8 @@ spec:
               key: MYSQL_HOST
         - name: URLS
           value: "{{ .Values.params.urls }}"
+        - name: DATE
+          value: "{{ .Values.params.date }}"
         resources:
           requests:
             cpu: 200m

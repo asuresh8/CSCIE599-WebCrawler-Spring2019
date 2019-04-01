@@ -12,3 +12,4 @@ application:
   secretName: credentials
 params:
   urls: ""
+  date: ""
