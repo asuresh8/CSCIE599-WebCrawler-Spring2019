@@ -5,7 +5,7 @@ import asyncio
 from parsel import Selector
 import time
 import uuid
-import os, signal, _thread, sys
+import os, _thread, sys
 from redis_connect import testConnectionRedis, testLocalRedis, getVariable, setVariable
 from collections import deque
 from flask import request, abort, jsonify
@@ -19,6 +19,7 @@ start = time.time()
 jobId = os.environ.get('JOB_ID', '')
 imageTag = os.environ.get('IMAGE_TAG', '0')
 environment = os.environ.get('ENVIRONMENT', 'local')
+releaseDate = os.environ.get('DATE', '0')
 
 @app.route('/')
 def main():
@@ -106,6 +107,7 @@ def getHelmCommand(url):
     helm upgrade --install \\
     --set-string image.tag='{imageTag}' \\
     --set-string params.urls='{url}' \\
+    --set-string params.date='{releaseDate}' \\
     \"crawler-$(date +%s)\" ./cluster-templates/chart-crawler"""
 
 def flaskThread():
@@ -116,5 +118,5 @@ if __name__ == "__main__":
     _thread.start_new_thread(flaskThread,())
     print('Will kill server after 20s -- jobId', jobId,file=sys.stderr)
     deployCrawlers()
-    time.sleep(20)
-    os.kill(os.getpid(), signal.SIGTERM)
+    time.sleep(60)
+    sys.exit(0)

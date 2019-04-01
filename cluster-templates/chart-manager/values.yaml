@@ -12,9 +12,8 @@ application:
   secretName: credentials
 params:
   job_id: ""
+  date: ""
 service:
   name: crawler-manager
-  type: LoadBalancer
-  # type: NodePort
   externalPort: 80
   internalPort: 8002

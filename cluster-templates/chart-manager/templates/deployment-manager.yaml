@@ -1,10 +1,11 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "crawler-manager-{{date "20060102150405" .Release.Time }}"
+  name: "crawler-manager-{{ .Values.params.date }}"
 labels:
   app: crawler-manager
 spec:
+  backoffLimit: 5
   template:
     metadata:
       name: crawler-manager
@@ -13,8 +14,7 @@ spec:
       - name: crawler-manager
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command: ["/bin/sh","-c"]
-        args: ["python app.py"]        
+        command: ["/bin/sh", "-c", "python", "app.py"]
         env:
         - name: REDIS_HOST
           valueFrom:
@@ -45,6 +45,8 @@ spec:
           value: "prod"
         - name: JOB_ID
           value: "{{ .Values.params.job_id }}"
+        - name: DATE
+          value: "{{ .Values.params.date }}"
         resources:
           requests:
             cpu: 200m
@@ -55,19 +57,19 @@ spec:
       restartPolicy: Never
       imagePullSecrets:
       - name: docker-gitlab
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: crawler-manager-service
-#   labels:
-#     app: crawler-manager
-# spec:
-#   type: {{ .Values.service.type }}
-#   ports:
-#   - port: {{ .Values.service.externalPort }}
-#     targetPort: {{ .Values.service.internalPort }}
-#     protocol: TCP
-#     name: {{ .Values.service.name }}
-#   selector:
-#     app: crawler-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "crawler-manager-service-{{ .Values.params.date }}"
+  labels:
+    app: crawler-manager-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.service.externalPort }}
+    targetPort: {{ .Values.service.internalPort }}
+    protocol: TCP
+    name: {{ .Values.service.name }}
+  selector:
+    app: "crawler-manager-{{ .Values.params.date }}"

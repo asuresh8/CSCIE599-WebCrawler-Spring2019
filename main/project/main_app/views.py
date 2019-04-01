@@ -118,11 +118,12 @@ def api_new_job(request):
 # TODO: this function should take the Job ID as a parameter.
 # That will be injected into the new Crawler manger Pod
 def getHelmCommand():
-    return f"""helm init --service-account tiller &&
+    return f"""DATE=$(date +%s); helm init --service-account tiller &&
       helm upgrade --install --wait \\
       --set-string image.tag='{imageTag}' \\
       --set-string params.job_id='https://www.google.com' \\
-      \"crawler-manager-$(date +%s)\" ./cluster-templates/chart-manager"""
+      --set-string params.date='$DATE'
+      \"crawler-manager-$DATE\" ./cluster-templates/chart-manager"""
 
 
 def launch_crawler_manager(payload):

@@ -2,7 +2,7 @@ from flask import Flask
 from flask import request
 from redis_connect import testConnectionRedis
 from crawler import crawlUrl
-import os, signal, _thread, sys, time
+import os, _thread, sys, time
 
 app = Flask(__name__)
 urls = os.environ.get('URLS', '')
@@ -11,7 +11,6 @@ urls = os.environ.get('URLS', '')
 def main():
     hname =  request.host_url
     try:
-       
        requests.post('http://localhost:8002' + '/api/v1.0/register/crawlerID', json ={'name': hname})
        #requests.post(os.environ.get('manager') + '/api/v1.0/register/crawlerID', json ={'name': hname})
        return "crawler"
@@ -41,7 +40,7 @@ def do_crawl():
        return "http exception"
     except Exception as ex:
        return "general exception"
-     
+
 
 def testConnections():
     print(testConnectionRedis())
@@ -54,4 +53,4 @@ if __name__ == "__main__":
     _thread.start_new_thread(flaskThread,())
     print('Will kill crawler server after 15s -- urls', urls,file=sys.stderr)
     time.sleep(15)
-    os.kill(os.getpid(), signal.SIGTERM)
+    sys.exit(0)
