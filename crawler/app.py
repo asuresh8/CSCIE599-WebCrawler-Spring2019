@@ -27,7 +27,10 @@ def do_crawl():
     curUrl =  request.args.get('crawlurl')
     print("start crawling")
     s3uri , links =  crawlUrl(curUrl)
-    json_data = { 'main_url' : curUrl, 's3uri': s3uri ,  'child_urls':  json.du$
+    if links is None:
+	json_data = { 'main_url' : curUrl, 's3uri': "" ,  'child_urls': []}
+    else:
+        json_data = { 'main_url' : curUrl, 's3uri': s3uri ,  'child_urls':  json.dumps(links)}
     try :
        r = requests.post('http://localhost:8002' + '/api/v1.0/links', json=  json_data)
        #r = requests.post(os.environ.get("manager") + '/api/v1.0/links', json=  json_data)
