@@ -38,6 +38,7 @@ CRAWLER_MANAGER_ENDPOINT = 'http://0.0.0.0:8002'
 MAIN_ENDPOINT = 'http://0.0.0.0:8001'
 if ENVIRONMENT == 'prod':
   CRAWLER_MANAGER_ENDPOINT = f"http://crawler-manager-service-{RELEASE_DATE}.default/"
+  # TODO: create a service for the main application and don't use the Load Balancer hardcoded.
   MAIN_ENDPOINT = 'http://35.192.65.102'
 
 def after_this_request(func):
