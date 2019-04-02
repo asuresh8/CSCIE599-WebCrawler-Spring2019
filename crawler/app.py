@@ -148,7 +148,7 @@ def setup():
 def ping_manager():
     try:
         r = requests.get(CRAWLER_MANAGER_ENDPOINT)
-        return t.text
+        return r.text
     except requests.RequestException as rex:
         return "request exception"
     except requests.HTTPException as htex:

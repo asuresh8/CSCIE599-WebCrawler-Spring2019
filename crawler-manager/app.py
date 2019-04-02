@@ -203,7 +203,7 @@ def setup():
 def ping_main():
     try:
         r = requests.get(MAIN_ENDPOINT)
-        return t.text
+        return r.text
     except requests.RequestException as rex:
         return "request exception"
     except requests.HTTPException as htex:
