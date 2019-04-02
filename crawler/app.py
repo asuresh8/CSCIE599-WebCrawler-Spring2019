@@ -20,8 +20,8 @@ app.logger.setLevel(logging.INFO)
 context = crawler_context.Context(app.logger)
 
 CRAWLER_MANAGER_ENDPOINT = os.environ.get('CRAWLER_MANAGER_ENDPOINT', 'http://0.0.0.0:8002')
+ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 HOSTNAME = os.environ.get('JOB_IP', '0.0.0.0')
-RELEASE_DATE = os.environ.get('DATE', '0')
 MAX_ACTIVE_THREADS = 1  # TODO: increase this to 4?
 PORT = 8003 if HOSTNAME == '0.0.0.0' else 80
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
@@ -52,14 +52,14 @@ def main():
 def kill():
     @after_this_request
     def maybe_kill(response):
-        if HOSTNAME == '0.0.0.0':
+        if ENVIRONMENT == 'local':
             context.logger.info('Not killing crawler because running locally')
         else:
             context.logger.info("Kill confirmed")
             sys.exit()
-        
+
         return response
-    
+
     context.logger.info('Kill called for')
     return ""
 
@@ -75,12 +75,12 @@ def crawl():
     context.logger.info('Crawling %s', url)
     if context.active_thread_count.get() >= MAX_ACTIVE_THREADS:
         return flask.jsonify({'accepted': False})
-    
+
     # context.active_thread_count.increment()
     executor.submit(do_crawl, url)
     return flask.jsonify({'accepted': True})
     # TODO: return success and spin off new thread to crawl
-    
+
 
 def do_crawl(url):
     context.logger.info('Starting crawl thread for %s', url)
@@ -110,7 +110,7 @@ def do_crawl(url):
             except Exception as e:
                 context.logger.error('Unable to store webpage for %s: %s', url, str(e))
                 s3_uri = ''
-            
+
             context.logger.info('Found links in %s: %s', url, str(links))
             links = helpers.get_links(response)
             try:
@@ -124,7 +124,7 @@ def do_crawl(url):
         requests.post(links_api, data=json.dumps({'main_url': url, 's3_uri': s3_uri, 'child_urls': links}))
     except Exception as e:
         context.logger.error("Could not connect to crawler manager: %s", str(e))
-    
+
     # context.active_thread_count.decrement()
 
 
@@ -145,9 +145,8 @@ def setup():
 
 
 def ping_manager():
-    managerUrl = f"http://crawler-manager-service-{RELEATE_DATE}.default/"
     try:
-        requests.get(managerUrl)
+        requests.get(CRAWLER_MANAGER_ENDPOINT)
         return False
     except requests.RequestException as rex:
         return "request exception"

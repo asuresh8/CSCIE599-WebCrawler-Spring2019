@@ -45,8 +45,8 @@ spec:
           value: "prod"
         - name: JOB_ID
           value: "{{ .Values.params.job_id }}"
-        - name: DATE
-          value: "{{ .Values.params.date }}"
+        - name: RELEASE_DATE
+          value: "{{ .Values.params.releaseDate }}"
         resources:
           requests:
             cpu: 200m

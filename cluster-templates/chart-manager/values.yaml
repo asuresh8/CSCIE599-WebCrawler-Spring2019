@@ -12,7 +12,7 @@ application:
   secretName: credentials
 params:
   job_id: ""
-  date: ""
+  releaseDate: ""
 service:
   name: crawler-manager
   externalPort: 80

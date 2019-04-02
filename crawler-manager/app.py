@@ -12,7 +12,7 @@ import time
 
 import crawler_manager_context
 import helpers
-import redis_connect 
+import redis_connect
 import work_processor
 
 app = flask.Flask(__name__)
@@ -23,7 +23,7 @@ INIT_TIME = time.time()
 JOB_ID = os.environ.get('JOB_ID', '')
 IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
-RELEASE_DATE = os.environ.get('DATE', '0')
+RELEASE_DATE = os.environ.get('RELEASE_DATE', '0')
 HOSTNAME = os.environ.get('JOB_IP', '0.0.0.0')
 NUM_CRAWLERS = os.environ.get('NUM_CRAWLERS', 1)
 INITIAL_URLS = os.environ.get('STARTING_URLS', 'http://recurship.com').split(';')
@@ -32,6 +32,9 @@ MAIN_APPLICATION_ENDPOINT = os.environ.get('MAIN_APPLICATION_ENDPOINT', 'http://
 PORT = 8002 if HOSTNAME == '0.0.0.0' else 80
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
 
+CRAWLER_MANAGER_ENDPOINT = 'http://0.0.0.0:8002';
+if ENVIRONMENT == 'prod':
+    CRAWLER_MANAGER_ENDPOINT = f"http://crawler-manager-service-{RELEASE_DATE}.default/"
 
 def after_this_request(func):
     if not hasattr(flask.g, 'call_after_request'):
@@ -62,9 +65,9 @@ def kill():
         else:
             context.logger.info("Kill confirmed")
             sys.exit()
-        
+
         return response
-    
+
     context.logger.info('Kill called for')
     return ""
 
@@ -104,7 +107,7 @@ def links():
            not redis_connect.exists(absolute_url):
             context.logger.info('Adding %s to queue', absolute_url)
             context.queued_urls.add(absolute_url)
-    
+
     redis_connect.put(main_url, s3_uri)
     context.processed_urls.increment()
     context.in_process_urls.remove(main_url)
@@ -129,16 +132,16 @@ def deploy_crawlers():
     for _ in range(NUM_CRAWLERS):
         helm_command = get_helm_command()
         context.logger.info('Running helm command: %s', helm_command)
-        os.system()
+        os.system(helm_command)
 
 
 def get_helm_command():
-    return f"""helm init --service-account tiller &&
+    return f"""helm init --service-account tiller && \\
         helm upgrade --install \\
         --set-string image.tag='{IMAGE_TAG}' \\
         --set-string params.endpoint='{ENDPOINT}' \\
-        --set-string params.date='{RELEASE_DATE}' \\
-        \"crawler-$(date +%s)\" ./cluster-templates/chart-crawler"""
+        --set-string params.crawlerManagerEndpoint='{CRAWLER_MANAGER_ENDPOINT}' \\
+        \"crawler-{RELEASE_DATE}\" ./cluster-templates/chart-crawler"""
 
 
 #Testing Connections
@@ -189,7 +192,7 @@ def setup():
                       data=json.dumps({'job_id': JOB_ID, 'endpoint': ENDPOINT}))
     except Exception as e:
         context.logger.error('Unable to register with main application: %s', str(e))
-    
+
     processor_thread = threading.Thread(target=run_work_processor)
     processor_thread.start()
 

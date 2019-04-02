@@ -41,8 +41,8 @@ spec:
               key: MYSQL_HOST
         - name: URLS
           value: "{{ .Values.params.urls }}"
-        - name: DATE
-          value: "{{ .Values.params.date }}"
+        - name: CRAWLER_MANAGER_ENDPOINT
+          value: "{{ .Values.params.crawlerManagerEndpoint }}"
         resources:
           requests:
             cpu: 200m

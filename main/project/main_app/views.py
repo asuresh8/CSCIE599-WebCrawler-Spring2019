@@ -15,18 +15,14 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_jwt.utils import jwt_payload_handler
-import jwt
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 
-import requests
 from django.http import HttpRequest
 from django.http import HttpResponse
-import json
-import os
 from io import BytesIO
-import zipfile
 
+import requests, jwt, json, os, zipfile, time, sys
 
 # import the logging library
 import logging
@@ -35,10 +31,13 @@ logger = logging.getLogger(__name__)
 # set logging level (10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL)
 #logger.setLevel(20)
 
-# when the container is running in docker compose, set imageTag = 0
+# when the container is running in docker compose, set IMAGE_TAG = 0
 # when running on Kubernetes, it is the Pipeline Id, which is used for naming the Docker images in the registry.
-imageTag = os.environ.get('IMAGE_TAG', '0')
+IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
+ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 
+# store the release timestamps here, like a job id meanwhile
+releases = []
 
 @login_required()
 def home(request):
@@ -121,26 +120,29 @@ def new_job(request):
 @login_required()
 def api_new_job(request):
     #logger.error("In API new job")
-    if imageTag == '0':
+    if ENVIRONMENT == 'local':
         # Running in docker compose,
         print("Looks like this is not running on a Kuberenetes cluster, ")
     else:
-        # If there is a imageTag, it means it is running in the Kubernetes Cluster
-        # Use the Helm command to troigger a new Crawler Manager Instance
+        # If ENVIRONMENT is prod, it means it is running in the Kubernetes Cluster
+        # Use the Helm command to trigger a new Crawler Manager Instance
         command_status = os.system(getHelmCommand(request))
-        #logger.error("command status", command_status)
+
         print("queued")
 
 
 # TODO: this function should take the Job ID as a parameter.
 # That will be injected into the new Crawler manger Pod
 def getHelmCommand(request):
-    return f"""DATE=$(date +%s); helm init --service-account tiller &&
+    releaseDate = int(time.time())
+    releases.append(releaseDate)
+
+    return f"""helm init --service-account tiller && \\
       helm upgrade --install --wait \\
-      --set-string image.tag='{imageTag}' \\
+      --set-string image.tag='{IMAGE_TAG}' \\
       --set-string params.job_id='{request.id}' \\
-      --set-string params.date='$DATE' \\
-      \"crawler-manager-$DATE\" ./cluster-templates/chart-manager"""
+      --set-string params.releaseDate='{releaseDate}' \\
+      \"crawler-manager-{releaseDate}\" ./cluster-templates/chart-manager"""
 
 
 
