@@ -47,6 +47,8 @@ spec:
             secretKeyRef:
               name: credentials
               key: MYSQL_HOST
+        - name: ENVIRONMENT
+          value: "prod"
         resources:
           requests:
             cpu: 200m
