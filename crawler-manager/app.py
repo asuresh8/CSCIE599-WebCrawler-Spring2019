@@ -15,6 +15,8 @@ import helpers
 import redis_connect
 import work_processor
 
+import _thread
+
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
 context = crawler_manager_context.Context(app.logger)
@@ -32,9 +34,9 @@ MAIN_APPLICATION_ENDPOINT = os.environ.get('MAIN_APPLICATION_ENDPOINT', 'http://
 PORT = 8002 if HOSTNAME == '0.0.0.0' else 80
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
 
-CRAWLER_MANAGER_ENDPOINT = 'http://0.0.0.0:8002';
+CRAWLER_MANAGER_ENDPOINT = 'http://0.0.0.0:8002'
 if ENVIRONMENT == 'prod':
-    CRAWLER_MANAGER_ENDPOINT = f"http://crawler-manager-service-{RELEASE_DATE}.default/"
+  CRAWLER_MANAGER_ENDPOINT = f"http://crawler-manager-service-{RELEASE_DATE}.default/"
 
 def after_this_request(func):
     if not hasattr(flask.g, 'call_after_request'):
@@ -196,17 +198,20 @@ def setup():
     processor_thread = threading.Thread(target=run_work_processor)
     processor_thread.start()
 
-
 if __name__ == "__main__":
+    print('will connect to redis -- ', file=sys.stderr)
     test_connections()
     # if running locally, then run normally. If running on Kubernetes cluster, then do weird shit
+    print('ENVIRONMENT -- ', ENVIRONMENT, file=sys.stderr)
     if ENVIRONMENT == 'local':
         setup()
         run_flask()
     else:
-        flask_thread = threading.Thread(target=run_flask)
-        flask_thread.start()
-        print('Will kill server after 20s -- jobId', JOB_ID,file=sys.stderr)
-        deploy_crawlers()
+        #flask_thread = threading.Thread(target=run_flask)
+        #flask_thread.start()
+        _thread.start_new_thread(run_flask,())
+        print('Will kill server after 60s -- jobId', JOB_ID,file=sys.stderr)
+        # deploy_crawlers()
         time.sleep(60)
+        print('should kill it now!',file=sys.stderr)
         sys.exit(0)
