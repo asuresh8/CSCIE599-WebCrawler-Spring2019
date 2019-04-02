@@ -211,7 +211,7 @@ if __name__ == "__main__":
         #flask_thread.start()
         _thread.start_new_thread(run_flask,())
         print('Will kill server after 60s -- jobId', JOB_ID,file=sys.stderr)
-        # deploy_crawlers()
+        deploy_crawlers()
         time.sleep(60)
         print('should kill it now!',file=sys.stderr)
         sys.exit(0)
