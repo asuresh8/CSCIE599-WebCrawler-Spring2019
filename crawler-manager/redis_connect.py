@@ -3,8 +3,7 @@ import redis
 import os
 import tempfile
 
-redis_db = redis.Redis(host='localhost', port=6379, db=0)
-
+redis_db = redis.Redis(host=os.environ.get('REDIS_HOST','0.0.0.0'), port=6379, db=0)
 
 def get(key):
     return redis_db.get(key)
