@@ -14,6 +14,7 @@ import crawler_context
 import helpers
 import redis_connect
 
+import _thread
 
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -161,8 +162,7 @@ if __name__ == "__main__":
         setup()
         run_flask()
     else:
-        flask_thread = threading.Thread(run_flask)
-        flask_thread.start()
+        _thread.start_new_thread(run_flask,())
         print('Will kill crawler server after 15s -- endpoint:', ENDPOINT,file=sys.stderr)
         ping_manager()
         time.sleep(15)
