@@ -1,14 +1,14 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "crawler-manager-{{ .Values.params.date }}"
+  name: "crawler-manager-{{ .Values.params.releaseDate }}"
 spec:
   backoffLimit: 5
   template:
     metadata:
       name: crawler-manager
       labels:
-        app: "crawler-manager-{{ .Values.params.date }}"
+        app: "crawler-manager-{{ .Values.params.releaseDate }}"
     spec:
       containers:
       - name: crawler-manager
@@ -61,7 +61,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: "crawler-manager-service-{{ .Values.params.date }}"
+  name: "crawler-manager-service-{{ .Values.params.releaseDate }}"
   labels:
     app: crawler-manager-service
 spec:
@@ -72,4 +72,4 @@ spec:
     protocol: TCP
     name: {{ .Values.service.name }}
   selector:
-    app: "crawler-manager-{{ .Values.params.date }}"
+    app: "crawler-manager-{{ .Values.params.releaseDate }}"
