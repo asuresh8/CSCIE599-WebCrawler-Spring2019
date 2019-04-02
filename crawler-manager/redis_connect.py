@@ -1,35 +1,40 @@
+import logging
 import redis
 import os
-redisConnect = redis.StrictRedis(host=os.environ.get('REDIS_HOST') or 'crawler-redis', port=6379, db=0)
-localRedisConnect = redis.StrictRedis(host='localhost', port=6379, db=0)
+import tempfile
 
-POOL = redis.ConnectionPool(host='localhost', port=6379, db=0)
+redis_db = redis.Redis(host='localhost', port=6379, db=0)
 
-def getVariable(variable_name):
-    my_server = redis.Redis(connection_pool=POOL)
-    # response = my_server.lrange(variable_name, 0, -1)
-    response = my_server.hgetall(variable_name)
-    return response
 
-def setVariable(parentURL, parentCrawl):
-    my_server = redis.Redis(connection_pool=POOL)
-    # my_server.rpush(parentURL, *childurlList)
-    my_server.hmset(parentURL, parentCrawl)
+def get(key):
+    return redis_db.get(key)
 
-def testConnectionRedis():
+
+def exists(key):
+    return bool(redis_db.exists(key))
+
+
+def put(key, value):
+    return redis_db.set(key, value)
+
+
+def write_data_to_file():
+    fd, path = tempfile.mkstemp()
+    with os.fdopen(fd, 'w') as tmp:
+        keys = redis_db.keys()
+        for key in keys:
+            value = redis_db.get(key)
+            tmp.write('{},{},\n'.format(key, value))
+    
+    return path
+
+
+def test_redis_connection():
     try:
-        response = redisConnect.ping()
-        if response:
-            return 'Connection successful (Redis)'
-
-    except redis.ConnectionError as e:
-        print("Error connecting to redis: {}". format(e))
-
-def testLocalRedis():
-    try:
-        response = localRedisConnect.ping()
+        logging.info('Attempting to connect to Redis: 0.0.0.0:6379')
+        response = redis_db.ping()
         if response:
             return 'Connection successful (Redis Local)'
 
     except redis.ConnectionError as e:
-        print("Error connecting to redis(Local): {}". format(e))
+        logging.warning('Error connecting to redis(Local): %s'. str(e))

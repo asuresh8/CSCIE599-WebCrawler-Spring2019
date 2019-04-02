@@ -48,6 +48,23 @@ def home(request):
     jobs = CrawlRequest.objects.filter(user=user)
     return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
 
+# TODO: After implementing jwt tokens, we need to validate this based on the token the crawler manager is passing back
+@api_view(['POST'])
+@permission_classes([AllowAny, ])
+def register_crawler_manager(request):
+    id = request.data['job_id']
+    crawler_manager_endpoint = request.data['endpoint']
+    CrawlRequest.objects.get(pk=id).update(crawler_manager_endpoint=crawler_manager_endpoint)
+
+@api_view(['POST'])
+@permission_classes([AllowAny, ])
+def complete_crawl(request):
+    id = request.data['job_id']
+    manifest = request.data['manifest']
+    crawl_request = CrawlRequest.objects.get(pk=id)
+    crawl_request.update(manifest=manifest)
+    requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), data={})
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
@@ -94,7 +111,7 @@ def new_job(request):
             payload['url'] = crawl_request.domain
             launch_crawler_manager(payload)
             """
-            api_new_job(request)
+            api_new_job(crawl_request)
             return redirect('mainapp_home')
     else:
         form = CrawlRequestForm()
@@ -110,20 +127,21 @@ def api_new_job(request):
     else:
         # If there is a imageTag, it means it is running in the Kubernetes Cluster
         # Use the Helm command to troigger a new Crawler Manager Instance
-        command_status = os.system(getHelmCommand())
+        command_status = os.system(getHelmCommand(request))
         #logger.error("command status", command_status)
         print("queued")
 
 
 # TODO: this function should take the Job ID as a parameter.
 # That will be injected into the new Crawler manger Pod
-def getHelmCommand():
+def getHelmCommand(request):
     return f"""DATE=$(date +%s); helm init --service-account tiller &&
       helm upgrade --install --wait \\
       --set-string image.tag='{imageTag}' \\
-      --set-string params.job_id='https://www.google.com' \\
+      --set-string params.job_id='{request.id}' \\
       --set-string params.date='$DATE' \\
       \"crawler-manager-$DATE\" ./cluster-templates/chart-manager"""
+
 
 
 def launch_crawler_manager(payload):

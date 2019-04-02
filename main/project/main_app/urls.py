@@ -15,4 +15,6 @@ urlpatterns = [
     path(r'contents/<int:job_id>', views.crawl_contents, name="mainapp_crawlcontents"),
     url(r'login$', LoginView.as_view(template_name="main_app/login_form.html"), name="mainapp_login"),
     url(r'logout$', LogoutView.as_view(), name="mainapp_logout"),
+    url(r'api/register_crawler_manager$', views.register_crawler_manager, name="api_register_crawler_manager"),
+    url(r'api/complete_crawl$', views.complete_crawl, name="api_complete_crawl")
 ]
