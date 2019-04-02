@@ -200,7 +200,7 @@ def setup():
 if __name__ == "__main__":
     test_connections()
     # if running locally, then run normally. If running on Kubernetes cluster, then do weird shit
-    if HOSTNAME == '0.0.0.0':
+    if ENVIRONMENT == 'local':
         setup()
         run_flask()
     else:

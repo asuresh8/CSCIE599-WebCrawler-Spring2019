@@ -157,7 +157,7 @@ def ping_manager():
 
 if __name__ == "__main__":
     test_connections()
-    if HOSTNAME == '0.0.0.0':
+    if ENVIRONMENT == 'local':
         setup()
         run_flask()
     else:
