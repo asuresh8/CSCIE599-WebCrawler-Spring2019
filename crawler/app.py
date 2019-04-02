@@ -147,8 +147,8 @@ def setup():
 
 def ping_manager():
     try:
-        requests.get(CRAWLER_MANAGER_ENDPOINT)
-        return False
+        r = requests.get(CRAWLER_MANAGER_ENDPOINT)
+        return t.text
     except requests.RequestException as rex:
         return "request exception"
     except requests.HTTPException as htex:
@@ -157,6 +157,9 @@ def ping_manager():
         return "general exception"
 
 if __name__ == "__main__":
+    ping = ping_manager()
+    print('ping crawler manager ', ping,file=sys.stderr)
+    print('CRAWLER_MANAGER_ENDPOINT ', CRAWLER_MANAGER_ENDPOINT,file=sys.stderr)
     test_connections()
     if ENVIRONMENT == 'local':
         setup()
@@ -164,7 +167,6 @@ if __name__ == "__main__":
     else:
         _thread.start_new_thread(run_flask,())
         print('Will kill crawler server after 15s -- endpoint:', ENDPOINT,file=sys.stderr)
-        ping_manager()
         time.sleep(15)
         sys.exit(0)
 

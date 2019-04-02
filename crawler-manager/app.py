@@ -35,8 +35,10 @@ PORT = 8002 if HOSTNAME == '0.0.0.0' else 80
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
 
 CRAWLER_MANAGER_ENDPOINT = 'http://0.0.0.0:8002'
+MAIN_ENDPOINT = 'http://0.0.0.0:8001'
 if ENVIRONMENT == 'prod':
   CRAWLER_MANAGER_ENDPOINT = f"http://crawler-manager-service-{RELEASE_DATE}.default/"
+  MAIN_ENDPOINT = 'http://35.192.65.102'
 
 def after_this_request(func):
     if not hasattr(flask.g, 'call_after_request'):
@@ -198,7 +200,22 @@ def setup():
     processor_thread = threading.Thread(target=run_work_processor)
     processor_thread.start()
 
+def ping_main():
+    try:
+        r = requests.get(MAIN_ENDPOINT)
+        return t.text
+    except requests.RequestException as rex:
+        return "request exception"
+    except requests.HTTPException as htex:
+        return "http exception"
+    except Exception as ex:
+        return "general exception"
+
 if __name__ == "__main__":
+    ping = ping_main()
+    print('ping main app ', ping, file=sys.stderr)
+    print('MAIN_ENDPOINT ', MAIN_ENDPOINT,file=sys.stderr)
+
     print('will connect to redis -- ', file=sys.stderr)
     test_connections()
     # if running locally, then run normally. If running on Kubernetes cluster, then do weird shit
