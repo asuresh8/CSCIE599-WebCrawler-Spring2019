@@ -26,16 +26,21 @@ JOB_ID = os.environ.get('JOB_ID', '')
 IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 RELEASE_DATE = os.environ.get('RELEASE_DATE', '0')
-HOSTNAME = os.environ.get('JOB_IP', '0.0.0.0')
+#HOSTNAME = os.environ.get('JOB_IP', '0.0.0.0')
+HOSTNAME = os.environ.get('JOB_IP', 'crawler-manager')
 NUM_CRAWLERS = os.environ.get('NUM_CRAWLERS', 1)
 INITIAL_URLS = os.environ.get('STARTING_URLS', 'http://recurship.com').split(';')
 DOMAIN_RESTRICTIONS = os.environ.get('DOMAIN_RESTRICTIONS', 'http://www.garbage.com').split(';')
-MAIN_APPLICATION_ENDPOINT = os.environ.get('MAIN_APPLICATION_ENDPOINT', 'http://0.0.0.0:8001')
-PORT = 8002 if HOSTNAME == '0.0.0.0' else 80
+#MAIN_APPLICATION_ENDPOINT = os.environ.get('MAIN_APPLICATION_ENDPOINT', 'http://0.0.0.0:8001')
+MAIN_APPLICATION_ENDPOINT = os.environ.get('MAIN_APPLICATION_ENDPOINT', 'http://main:8001')
+#PORT = 8002 if HOSTNAME == '0.0.0.0' else 80
+PORT = 8002 if HOSTNAME == 'crawler-manager' else 80
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
 
-CRAWLER_MANAGER_ENDPOINT = 'http://0.0.0.0:8002'
-MAIN_ENDPOINT = 'http://0.0.0.0:8001'
+#CRAWLER_MANAGER_ENDPOINT = 'http://0.0.0.0:8002'
+#MAIN_ENDPOINT = 'http://0.0.0.0:8001'
+CRAWLER_MANAGER_ENDPOINT = 'http://crawler-manager:8002'
+MAIN_ENDPOINT = 'http://main:8001'
 if ENVIRONMENT == 'prod':
   CRAWLER_MANAGER_ENDPOINT = f"http://crawler-manager-service-{RELEASE_DATE}.default/"
   # TODO: create a service for the main application and don't use the Load Balancer hardcoded.

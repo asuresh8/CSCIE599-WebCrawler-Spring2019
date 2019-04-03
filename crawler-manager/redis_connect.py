@@ -3,7 +3,7 @@ import redis
 import os
 import tempfile
 
-REDIS_HOST = os.environ.get('REDIS_HOST','0.0.0.0')
+REDIS_HOST = os.environ.get('REDIS_HOST','crawler-redis')
 redis_db = redis.Redis(host=REDIS_HOST, port=6379, db=0)
 
 def get(key):
