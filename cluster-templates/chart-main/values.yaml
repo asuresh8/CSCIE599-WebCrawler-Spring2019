@@ -15,7 +15,7 @@ service:
   annotations: {}
   name: main-application
   type: LoadBalancer
-  # type: NodePort
+  # type: ClusterIP
   additionalHosts:
   commonName:
   externalPort: 80

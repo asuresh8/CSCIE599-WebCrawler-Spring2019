@@ -26,25 +26,18 @@ JOB_ID = os.environ.get('JOB_ID', '')
 IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 RELEASE_DATE = os.environ.get('RELEASE_DATE', '0')
-#HOSTNAME = os.environ.get('JOB_IP', '0.0.0.0')
 HOSTNAME = os.environ.get('JOB_IP', 'crawler-manager')
 NUM_CRAWLERS = os.environ.get('NUM_CRAWLERS', 1)
 INITIAL_URLS = os.environ.get('STARTING_URLS', 'http://recurship.com').split(';')
 DOMAIN_RESTRICTIONS = os.environ.get('DOMAIN_RESTRICTIONS', 'http://www.garbage.com').split(';')
-#MAIN_APPLICATION_ENDPOINT = os.environ.get('MAIN_APPLICATION_ENDPOINT', 'http://0.0.0.0:8001')
 MAIN_APPLICATION_ENDPOINT = os.environ.get('MAIN_APPLICATION_ENDPOINT', 'http://main:8001')
-#PORT = 8002 if HOSTNAME == '0.0.0.0' else 80
 PORT = 8002 if HOSTNAME == 'crawler-manager' else 80
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
 
-#CRAWLER_MANAGER_ENDPOINT = 'http://0.0.0.0:8002'
-#MAIN_ENDPOINT = 'http://0.0.0.0:8001'
 CRAWLER_MANAGER_ENDPOINT = 'http://crawler-manager:8002'
-MAIN_ENDPOINT = 'http://main:8001'
-if ENVIRONMENT == 'prod':
+if (ENVIRONMENT == 'prod' and RELEASE_DATE != '0'):
   CRAWLER_MANAGER_ENDPOINT = f"http://crawler-manager-service-{RELEASE_DATE}.default/"
-  # TODO: create a service for the main application and don't use the Load Balancer hardcoded.
-  MAIN_ENDPOINT = 'http://35.192.65.102'
+
 
 def after_this_request(func):
     if not hasattr(flask.g, 'call_after_request'):
@@ -65,6 +58,10 @@ def main():
     context.logger.info('Received request at home')
     return 'Crawler Manager'
 
+@app.route('/ping', methods=['GET'])
+def ping():
+    print('Received request at PING', file=sys.stderr)
+    return 'Crawler Manager PING'
 
 @app.route('/kill', methods=['POST'])
 def kill():
@@ -208,7 +205,9 @@ def setup():
 
 def ping_main():
     try:
-        r = requests.get(MAIN_ENDPOINT)
+        main_url = os.path.join(MAIN_APPLICATION_ENDPOINT, f'main_app/api/ping?releaseDate={RELEASE_DATE}')
+        print('main_url ===  ', main_url,file=sys.stderr)
+        r = requests.get(main_url)
         return r.text
     except requests.RequestException as rex:
         return "request exception"
@@ -220,7 +219,7 @@ def ping_main():
 if __name__ == "__main__":
     ping = ping_main()
     print('ping main app ', ping, file=sys.stderr)
-    print('MAIN_ENDPOINT ', MAIN_ENDPOINT,file=sys.stderr)
+    print('MAIN_APPLICATION_ENDPOINT ', MAIN_APPLICATION_ENDPOINT,file=sys.stderr)
 
     print('will connect to redis -- ', file=sys.stderr)
     test_connections()
@@ -233,6 +232,10 @@ if __name__ == "__main__":
         #flask_thread = threading.Thread(target=run_flask)
         #flask_thread.start()
         _thread.start_new_thread(run_flask,())
+        time.sleep(5)
+        ping = ping_main()
+        print('second ping to main app ', ping, file=sys.stderr)
+        print('SECOND PING TO MAIN_APPLICATION_ENDPOINT ', MAIN_APPLICATION_ENDPOINT,file=sys.stderr)
         print('Will kill server after 60s -- jobId', JOB_ID,file=sys.stderr)
         deploy_crawlers()
         time.sleep(60)

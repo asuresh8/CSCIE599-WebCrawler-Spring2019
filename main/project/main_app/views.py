@@ -18,6 +18,7 @@ from rest_framework_jwt.utils import jwt_payload_handler
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 
+from django.http import JsonResponse
 from django.http import HttpRequest
 from django.http import HttpResponse
 from io import BytesIO
@@ -46,6 +47,34 @@ def home(request):
     form = CrawlRequestForm(instance=crawl_request)
     jobs = CrawlRequest.objects.filter(user=user)
     return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
+
+@api_view(['GET'])
+@permission_classes([AllowAny, ])
+def api_ping(request):
+    release_date_param = request.GET.get('releaseDate', 'None')
+    data = {}
+    data['pong'] = f"pang-{release_date_param}"
+
+    requestUrl = "http://crawler-manager:8002"
+    if ENVIRONMENT != 'local':
+        requestUrl = f"http://crawler-manager-service-{release_date_param}.default/"
+
+    managerPing = crawler_manager_ping(requestUrl)
+    print('managerPing - ', managerPing, file=sys.stderr)
+    return JsonResponse(data)
+
+def crawler_manager_ping(requestUrl):
+    try:
+        manager_url = os.path.join(requestUrl, 'ping')
+        print('manager_url ===  ', manager_url,file=sys.stderr)
+        r = requests.get(manager_url)
+        return r.text
+    except requests.RequestException as rex:
+        return "request exception"
+    except requests.HTTPException as htex:
+        return "http exception"
+    except Exception as ex:
+        return "general exception"
 
 # TODO: After implementing jwt tokens, we need to validate this based on the token the crawler manager is passing back
 @api_view(['POST'])

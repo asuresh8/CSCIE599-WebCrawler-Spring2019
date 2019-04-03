@@ -20,13 +20,10 @@ app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
 context = crawler_context.Context(app.logger)
 
-#CRAWLER_MANAGER_ENDPOINT = os.environ.get('CRAWLER_MANAGER_ENDPOINT', 'http://0.0.0.0:8002')
 CRAWLER_MANAGER_ENDPOINT = os.environ.get('CRAWLER_MANAGER_ENDPOINT', 'http://crawler-manager:8002')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
-#HOSTNAME = os.environ.get('JOB_IP', '0.0.0.0')
 HOSTNAME = os.environ.get('JOB_IP', 'crawler')
 MAX_ACTIVE_THREADS = 1  # TODO: increase this to 4?
-#PORT = 8003 if HOSTNAME == '0.0.0.0' else 80
 PORT = 8003 if HOSTNAME == 'crawler' else 80
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
 
@@ -161,7 +158,7 @@ def ping_manager():
 
 if __name__ == "__main__":
     ping = ping_manager()
-    print('ping crawler manager ', ping,file=sys.stderr)
+    print('ping crawler manager - ', ping,file=sys.stderr)
     print('CRAWLER_MANAGER_ENDPOINT ', CRAWLER_MANAGER_ENDPOINT,file=sys.stderr)
     test_connections()
     if ENVIRONMENT == 'local':
