@@ -66,7 +66,7 @@ Crawler Manager container also has an internal Redis service.
     
     Once the image is built, create and start the container
     ```
-    docker create --name crawler --network we-crawler_backend -p 8003:8003 crawler
+    docker create --name crawler --network web-crawler_backend -p 8003:8003 crawler
     docker start crawler
     ```
 
