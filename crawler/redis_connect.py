@@ -2,6 +2,8 @@ import logging
 import redis
 import os
 
+logging.basicConfig(level=logging.INFO)
+
 redis_db = redis.Redis(host=os.environ.get('REDIS_HOST','crawler-redis'), port=6379, db=0)
 
 

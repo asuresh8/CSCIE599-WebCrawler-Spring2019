@@ -158,15 +158,19 @@ def ping_manager():
 
 if __name__ == "__main__":
     ping = ping_manager()
-    print('ping crawler manager - ', ping,file=sys.stderr)
-    print('CRAWLER_MANAGER_ENDPOINT ', CRAWLER_MANAGER_ENDPOINT,file=sys.stderr)
+
+    context.logger.info('ping crawler manager - %s', ping)
+    context.logger.info('CRAWLER_MANAGER_ENDPOINT - %s', CRAWLER_MANAGER_ENDPOINT)
+
     test_connections()
     if ENVIRONMENT == 'local':
         setup()
         run_flask()
     else:
         _thread.start_new_thread(run_flask,())
-        print('Will kill crawler server after 15s -- endpoint:', ENDPOINT,file=sys.stderr)
+
+        context.logger.info('Will kill crawler server after 15s -- endpoint: - %s', ENDPOINT)
+
         time.sleep(15)
         sys.exit(0)
 

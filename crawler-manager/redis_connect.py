@@ -3,6 +3,8 @@ import redis
 import os
 import tempfile
 
+logging.basicConfig(level=logging.INFO)
+
 REDIS_HOST = os.environ.get('REDIS_HOST','crawler-redis')
 redis_db = redis.Redis(host=REDIS_HOST, port=6379, db=0)
 
@@ -31,8 +33,8 @@ def write_data_to_file():
 
 def test_redis_connection():
     try:
-        logging.error('Attempting to connect to Redis: ')
-        logging.error(REDIS_HOST)
+        logging.info('Attempting to connect to Redis: ')
+        logging.info(REDIS_HOST)
 
         response = redis_db.ping()
         if response:

@@ -60,7 +60,7 @@ def main():
 
 @app.route('/ping', methods=['GET'])
 def ping():
-    print('Received request at PING', file=sys.stderr)
+    context.logger.info('Received request at PING')
     return 'Crawler Manager PING'
 
 @app.route('/kill', methods=['POST'])
@@ -206,7 +206,7 @@ def setup():
 def ping_main():
     try:
         main_url = os.path.join(MAIN_APPLICATION_ENDPOINT, f'main_app/api/ping?releaseDate={RELEASE_DATE}')
-        print('main_url ===  ', main_url,file=sys.stderr)
+        context.logger.info('main_url %s', main_url)
         r = requests.get(main_url)
         return r.text
     except requests.RequestException as rex:
@@ -218,13 +218,13 @@ def ping_main():
 
 if __name__ == "__main__":
     ping = ping_main()
-    print('ping main app ', ping, file=sys.stderr)
-    print('MAIN_APPLICATION_ENDPOINT ', MAIN_APPLICATION_ENDPOINT,file=sys.stderr)
+    context.logger.info('ping main app -- %s', ping)
+    context.logger.info('MAIN_APPLICATION_ENDPOINT -- %s', MAIN_APPLICATION_ENDPOINT)
 
-    print('will connect to redis -- ', file=sys.stderr)
+    context.logger.info('will connect to redis')
     test_connections()
     # if running locally, then run normally. If running on Kubernetes cluster, then do weird shit
-    print('ENVIRONMENT -- ', ENVIRONMENT, file=sys.stderr)
+    context.logger.info('ENVIRONMENT -- %s ', ENVIRONMENT)
     if ENVIRONMENT == 'local':
         setup()
         run_flask()
@@ -234,10 +234,12 @@ if __name__ == "__main__":
         _thread.start_new_thread(run_flask,())
         time.sleep(5)
         ping = ping_main()
-        print('second ping to main app ', ping, file=sys.stderr)
-        print('SECOND PING TO MAIN_APPLICATION_ENDPOINT ', MAIN_APPLICATION_ENDPOINT,file=sys.stderr)
-        print('Will kill server after 60s -- jobId', JOB_ID,file=sys.stderr)
+        context.logger.info('second ping to main app %s ', ping)
+        context.logger.info('SECOND PING TO MAIN_APPLICATION_ENDPOINT %s ', MAIN_APPLICATION_ENDPOINT)
+        context.logger.info('Will kill server after 60s -- jobId %s ', JOB_ID)
+
         deploy_crawlers()
         time.sleep(60)
-        print('should kill it now!',file=sys.stderr)
+
+        context.logger.info('should kill it now')
         sys.exit(0)

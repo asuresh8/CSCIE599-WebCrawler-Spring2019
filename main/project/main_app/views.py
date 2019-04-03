@@ -27,6 +27,7 @@ import requests, jwt, json, os, zipfile, time, sys
 
 # import the logging library
 import logging
+logging.basicConfig(level=logging.INFO)
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 # set logging level (10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL)
@@ -60,13 +61,14 @@ def api_ping(request):
         requestUrl = f"http://crawler-manager-service-{release_date_param}.default/"
 
     managerPing = crawler_manager_ping(requestUrl)
-    print('managerPing - ', managerPing, file=sys.stderr)
+    logger.info('managerPing - %s', managerPing)
+
     return JsonResponse(data)
 
 def crawler_manager_ping(requestUrl):
     try:
         manager_url = os.path.join(requestUrl, 'ping')
-        print('manager_url ===  ', manager_url,file=sys.stderr)
+        logger.info('manager_url === %s', manager_url)
         r = requests.get(manager_url)
         return r.text
     except requests.RequestException as rex:
