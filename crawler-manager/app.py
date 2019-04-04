@@ -83,7 +83,7 @@ def kill():
 #An endpoint that the crawler will call to register itself once instantiated, ip/dns added to available crawler list.
 @app.route('/register_crawler', methods=['POST'])
 def register():
-    crawler_endpoint = flask.request.json('endpoint')
+    crawler_endpoint = flask.request.json['endpoint']
     context.logger.info('registering crawler with endpoint %s', crawler_endpoint)
     context.crawlers.add(crawler_endpoint)
     return ""
@@ -169,7 +169,7 @@ def run_work_processor():
         for crawler in crawlers:
             kill_api = os.path.join(crawler, "kill")
             try:
-                requests.post(kill_api, data=json.dumps({}))
+                requests.post(kill_api, json={})
             except Exception as e:
                 context.logger.error('Unable to kill crawler: %s', str(e))
 
@@ -188,7 +188,7 @@ def run_work_processor():
     os.remove(manifest)
     crawl_complete_api = os.path.join(MAIN_APPLICATION_ENDPOINT, 'api/crawl_complete')
     try:
-        requests.post(crawl_complete_api, data=json.dumps({'manifest': blob.public_url}))
+        requests.post(crawl_complete_api, json={'manifest': blob.public_url})
     except Exception as e:
         context.logger.error('Unable to send crawl_complete to main applications: %s', str(e))
 
@@ -196,7 +196,7 @@ def run_work_processor():
 def setup():
     try:
         requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'api/register_crawler_manager'),
-                      data=json.dumps({'job_id': JOB_ID, 'endpoint': ENDPOINT}))
+                      json={'job_id': JOB_ID, 'endpoint': ENDPOINT})
     except Exception as e:
         context.logger.error('Unable to register with main application: %s', str(e))
 

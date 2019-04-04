@@ -122,7 +122,7 @@ def do_crawl(url):
     context.logger.info('Found links in %s: %s', url, str(links))
     links_api = os.path.join(CRAWLER_MANAGER_ENDPOINT, 'links')
     try:
-        requests.post(links_api, data=json.dumps({'main_url': url, 's3_uri': s3_uri, 'child_urls': links}))
+        requests.post(links_api, json={'main_url': url, 's3_uri': s3_uri, 'child_urls': links})
     except Exception as e:
         context.logger.error("Could not connect to crawler manager: %s", str(e))
 
@@ -140,7 +140,7 @@ def run_flask():
 def setup():
     try:
         requests.post(os.path.join(CRAWLER_MANAGER_ENDPOINT, 'register_crawler'),
-                      data=json.dumps({'endpoint': ENDPOINT}))
+                      json={'endpoint': ENDPOINT})
     except Exception as e:
         context.logger.error('Unable to register with crawler manager: %s', str(e))
 
