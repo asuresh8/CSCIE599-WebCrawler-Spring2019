@@ -1,9 +1,9 @@
 import boto3
-from bs4 import BeautifulSoup
+import bs4
 import config
 import flask
 from google.cloud import storage
-from io import BytesIO
+import io
 import logging
 import re
 import redis
@@ -24,7 +24,7 @@ def store_response_in_s3(res, key):
             aws_access_key_id= config.S3_KEY,
             aws_secret_access_key= config.S3_SECRET_KEY
         )
-        fp = BytesIO(res.content)
+        fp = io.BytesIO(res.content)
         s3_client.upload_fileobj(fp, config.S3_BUCKET, key)
         s3uri = s3_client.generate_presigned_url('get_object', 
                                                  Params={'Bucket' : config.S3_BUCKET, 'Key': key})  
@@ -52,11 +52,11 @@ def store_response_in_gcs(res, key):
 
 # get_links - parses the url 'a' tags using beautiful soup
 def get_links(r):
-    bsObj = BeautifulSoup(r.content, 'html.parser')
+    bs_obj = bs4.BeautifulSoup(r.content, 'html.parser')
     links = []
-    for link in bsObj.find_all('a'):
+    for link in bs_obj.find_all('a'):
         if 'href' in link.attrs:
-           links.append(flask.url_for(link.attrs['href'], _external = True))
+           links.append(link.attrs['href'])
     
     return links
 

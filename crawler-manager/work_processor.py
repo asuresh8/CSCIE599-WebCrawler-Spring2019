@@ -23,7 +23,9 @@ class Processor():
                 crawl_api = os.path.join(crawler, "crawl")
                 url = self.context.queued_urls.poll()
                 try:
-                    response = requests.post(crawl_api, data=json.dumps({'url': url}))
+                    self.context.logger.info("Attempting to send %s to %s", url, crawler)
+                    response = requests.post(crawl_api, json={'url': url})
+                    self.context.logger.info('Received response from %s for %s', crawler, url)
                 except Exception as e:
                     self.context.logger.error('Unable to send crawl request to crawler %s: %s', crawler, str(e))
                 else:

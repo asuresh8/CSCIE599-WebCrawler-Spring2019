@@ -25,6 +25,7 @@ INIT_TIME = time.time()
 JOB_ID = os.environ.get('JOB_ID', '')
 IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
+DEBUG_MODE = ENVIRONMENT == 'local'
 RELEASE_DATE = os.environ.get('RELEASE_DATE', '0')
 HOSTNAME = os.environ.get('JOB_IP', 'crawler-manager')
 NUM_CRAWLERS = os.environ.get('NUM_CRAWLERS', 1)
@@ -157,7 +158,7 @@ def test_connections():
 
 
 def run_flask():
-    app.run(debug=False, host=HOSTNAME, port=PORT, use_reloader=False)
+    app.run(debug=DEBUG_MODE, host=HOSTNAME, port=PORT, use_reloader=False)
 
 
 def run_work_processor():
@@ -195,8 +196,10 @@ def run_work_processor():
 
 def setup():
     try:
+        context.logger.info('Attempting to register with main application')
         requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'api/register_crawler_manager'),
                       json={'job_id': JOB_ID, 'endpoint': ENDPOINT})
+        context.logger.info('Registered with main application!')
     except Exception as e:
         context.logger.error('Unable to register with main application: %s', str(e))
 

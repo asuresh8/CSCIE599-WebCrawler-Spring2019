@@ -1,3 +1,4 @@
+import json
 import logging
 import redis
 import os
@@ -8,11 +9,11 @@ redis_db = redis.Redis(host=os.environ.get('REDIS_HOST','crawler-redis'), port=6
 
 
 def get(key):
-    return redis_db.get(key)
+    return json.loads(redis_db.get(key))
 
 
 def put(key, value):
-    return redis_db.set(key, value)
+    return redis_db.set(key, json.dumps(value))
 
 
 def exists(key):

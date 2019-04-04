@@ -85,6 +85,7 @@ def register_crawler_manager(request):
     id = request.data['job_id']
     crawler_manager_endpoint = request.data['endpoint']
     CrawlRequest.objects.get(pk=id).update(crawler_manager_endpoint=crawler_manager_endpoint)
+    return JsonResponse({})
 
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
@@ -93,7 +94,8 @@ def complete_crawl(request):
     manifest = request.data['manifest']
     crawl_request = CrawlRequest.objects.get(pk=id)
     crawl_request.update(manifest=manifest)
-    requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), data={})
+    requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), json={})
+    return JsonResponse(data)
 
 
 @api_view(['POST'])

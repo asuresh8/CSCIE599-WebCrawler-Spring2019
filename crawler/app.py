@@ -22,6 +22,7 @@ context = crawler_context.Context(app.logger)
 
 CRAWLER_MANAGER_ENDPOINT = os.environ.get('CRAWLER_MANAGER_ENDPOINT', 'http://crawler-manager:8002')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
+DEBUG_MODE = ENVIRONMENT == 'local'
 HOSTNAME = os.environ.get('JOB_IP', 'crawler')
 MAX_ACTIVE_THREADS = 1  # TODO: increase this to 4?
 PORT = 8003 if HOSTNAME == 'crawler' else 80
@@ -85,8 +86,6 @@ def crawl():
 
 def do_crawl(url):
     context.logger.info('Starting crawl thread for %s', url)
-    time.sleep(10)
-    context.logger.info('Finished Sleeping')
     if redis_connect.exists(url):
         context.logger.info('Found %s in cache', url)
         cached_result = redis_connect.get(url)
@@ -98,6 +97,7 @@ def do_crawl(url):
         try:
             context.logger.info('Sending Get Request')
             response = requests.get(url)
+            context.logger.info('Received response for get request')
         except Exception as e:
             context.logger.error('Unable to parse %s. Received %s', url, str(e))
             s3_uri = ''
@@ -107,22 +107,28 @@ def do_crawl(url):
             # s3_uri = helpers.store_response_in_s3(response, key)
             # Store in GCS
             try:
+                context.logger.info('Attempting to store in GCS')
                 s3_uri = helpers.store_response_in_gcs(response, key)
+                context.logger.info('uri successfully generated!')
             except Exception as e:
                 context.logger.error('Unable to store webpage for %s: %s', url, str(e))
                 s3_uri = ''
 
-            context.logger.info('Found links in %s: %s', url, str(links))
+            context.logger.info('Parsing links...')
             links = helpers.get_links(response)
+            context.logger.info('Found links in %s: %s', url, str(links))
             try:
+                context.logger.info('Caching s3_uri and child_urls')
                 redis_connect.put(url, {'s3_uri': s3_uri, 'child_urls': links})
+                context.logger.info('Caching was successful')
             except Exception as e:
                 context.logger.error('Unable to cache data for %s: %s', url, str(e))
 
-    context.logger.info('Found links in %s: %s', url, str(links))
     links_api = os.path.join(CRAWLER_MANAGER_ENDPOINT, 'links')
     try:
+        context.logger.info('Sending response back to crawler manager...')
         requests.post(links_api, json={'main_url': url, 's3_uri': s3_uri, 'child_urls': links})
+        context.logger.info('Response sent successfully!')
     except Exception as e:
         context.logger.error("Could not connect to crawler manager: %s", str(e))
 
@@ -134,7 +140,7 @@ def test_connections():
 
 
 def run_flask():
-    app.run(debug=False, host=HOSTNAME, port=PORT, use_reloader=False)
+    app.run(debug=DEBUG_MODE, host=HOSTNAME, port=PORT, use_reloader=False)
 
 
 def setup():
