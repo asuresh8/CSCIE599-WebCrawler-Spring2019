@@ -24,7 +24,7 @@ CRAWLER_MANAGER_ENDPOINT = os.environ.get('CRAWLER_MANAGER_ENDPOINT', 'http://cr
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 DEBUG_MODE = ENVIRONMENT == 'local'
 HOSTNAME = os.environ.get('JOB_IP', 'crawler')
-MAX_ACTIVE_THREADS = 1  # TODO: increase this to 4?
+MAX_ACTIVE_THREADS = 4
 PORT = 8003 if HOSTNAME == 'crawler' else 80
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
 
@@ -78,7 +78,7 @@ def crawl():
     if context.active_thread_count.get() >= MAX_ACTIVE_THREADS:
         return flask.jsonify({'accepted': False})
 
-    # context.active_thread_count.increment()
+    context.active_thread_count.increment()
     executor.submit(do_crawl, url)
     return flask.jsonify({'accepted': True})
     # TODO: return success and spin off new thread to crawl
@@ -133,7 +133,7 @@ def do_crawl(url):
     except Exception as e:
         context.logger.error("Could not connect to crawler manager: %s", str(e))
 
-    # context.active_thread_count.decrement()
+    context.active_thread_count.decrement()
 
 
 def test_connections():
