@@ -43,7 +43,7 @@ services:
       context: .
       dockerfile: crawler-manager/DockerFile
     container_name: crawler-manager
-    command: python app.py
+    command: tail -f python app.py
     environment:
       - PYTHONPATH=.
       - FLASK_ENV=development

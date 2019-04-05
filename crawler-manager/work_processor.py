@@ -16,12 +16,19 @@ class Processor():
             time.sleep(10)
         
         self.context.logger.info('Entering processor loop')
-        while self.context.queued_urls.size() != 0 and self.context.in_process_urls.size() != 0:
+        while self.context.queued_urls.size() > 0 or self.context.in_process_urls.size() > 0:
+            self.context.logger.info('Entered processor loop')
             rejected_requests = 0
-            crawlers = self.context.crawler_set.get()
+            crawlers = self.context.crawlers.get()
+            self.context.logger.info('Iterating through crawlers: %s', str(crawlers))
             for crawler in crawlers:
-                crawl_api = os.path.join(crawler, "crawl")
                 url = self.context.queued_urls.poll()
+                self.context.logger.info("Pulled %s from queue", url)
+                if url is None:
+                    rejected_requests += 1
+                    continue
+
+                crawl_api = os.path.join(crawler, "crawl")
                 try:
                     self.context.logger.info("Attempting to send %s to %s", url, crawler)
                     response = requests.post(crawl_api, json={'url': url})
@@ -38,4 +45,6 @@ class Processor():
                         self.context.queued_urls.add(url)
             
             # TODO: eliminate this. This is completely arbitrary
-            time.sleep(0.1  + 1.0 * rejected_requests)
+            sleep_time = 0.1  + 1.0 * rejected_requests
+            self.context.logger.info('Work processor sleeping %d seconds', sleep_time)
+            time.sleep(sleep_time)

@@ -87,8 +87,9 @@ def crawl():
 def do_crawl(url):
     context.logger.info('Starting crawl thread for %s', url)
     if redis_connect.exists(url):
-        context.logger.info('Found %s in cache', url)
+        context.logger.info('%s exists in cache', url)
         cached_result = redis_connect.get(url)
+        context.logger.info('Found cached result: %s, %s', url, str(cached_result))
         s3_uri = cached_result['s3_uri']
         links = cached_result['child_urls']
     else:
@@ -148,7 +149,7 @@ def setup():
         requests.post(os.path.join(CRAWLER_MANAGER_ENDPOINT, 'register_crawler'),
                       json={'endpoint': ENDPOINT})
     except Exception as e:
-        context.logger.error('Unable to register with crawler manager: %s', str(e))
+        context.logger.info('Unable to register with crawler manager: %s', str(e))
 
 
 def ping_manager():

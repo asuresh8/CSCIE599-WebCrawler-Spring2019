@@ -109,10 +109,12 @@ def links():
             absolute_url = helpers.expand_url(helpers.get_domain_name(main_url), url)
         else:
             absolute_url = url
+        
 
-        if not context.queued_urls.contains(absolute_url) and \
-           not context.in_process_urls.contains(absolute_url) and \
-           not redis_connect.exists(absolute_url):
+        if any(map(lambda x: url.startswith(x), DOMAIN_RESTRICTIONS)) and \
+          not context.queued_urls.contains(absolute_url) and \
+          not context.in_process_urls.contains(absolute_url) and \
+          not redis_connect.exists(absolute_url):
             context.logger.info('Adding %s to queue', absolute_url)
             context.queued_urls.add(absolute_url)
 
@@ -165,31 +167,37 @@ def run_work_processor():
     processor = work_processor.Processor(context)
     processor.run()
     # tell workers to go kill themselves
-    if ENVIRONMENT != 'local':
-        crawlers = context.crawlers.get()
-        for crawler in crawlers:
-            kill_api = os.path.join(crawler, "kill")
-            try:
-                requests.post(kill_api, json={})
-            except Exception as e:
-                context.logger.error('Unable to kill crawler: %s', str(e))
+    crawlers = context.crawlers.get()
+    for crawler in crawlers:
+        kill_api = os.path.join(crawler, "kill")
+        try:
+            context.logger.info("Sending kill request to crawler: %s", crawler)
+            requests.post(kill_api, json={})
+            context.logger.info("Successfully killed crawler: %s", crawler)
+        except Exception as e:
+            context.logger.error('Unable to kill crawler: %s', str(e))
 
     # load manifest from local redis
+    context.logger.info("creating manifest from redis")
     manifest = redis_connect.write_data_to_file()
-    manifest_filename = 'manifest-{}.csv'.format(manifest)
+    key = 'manifest-{}.csv'.format(JOB_ID)
     # Write to S3
     # s3 = boto3.resource('s3')
     # s3.meta.client.upload_file(manifest, 'mybucket', manifest_filename)
     # Write to GCS
+    context.logger.info("Uploading manifest to GCS")
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(os.environ['GCS_BUCKET'])
-    blob = bucket.blob(manifest_filename)
+    blob = bucket.blob(key)
     blob.upload_from_filename(manifest)
     blob.make_public()
+    context.logger.info("Manifest uploaded! Deleting local file")
     os.remove(manifest)
     crawl_complete_api = os.path.join(MAIN_APPLICATION_ENDPOINT, 'api/crawl_complete')
     try:
+        context.logger.info("Calling crawl_complete api")
         requests.post(crawl_complete_api, json={'manifest': blob.public_url})
+        context.logger.info("crawl_complete call successful")
     except Exception as e:
         context.logger.error('Unable to send crawl_complete to main applications: %s', str(e))
 
@@ -203,6 +211,9 @@ def setup():
     except Exception as e:
         context.logger.error('Unable to register with main application: %s', str(e))
 
+    for url in INITIAL_URLS:
+        context.queued_urls.add(url)
+    
     processor_thread = threading.Thread(target=run_work_processor)
     processor_thread.start()
 

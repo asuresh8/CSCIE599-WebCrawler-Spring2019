@@ -57,6 +57,11 @@ Crawler Manager container also has an internal Redis service.
     docker exec -i crawler /bin/bash -c "export URLS='http://google.com,https://cnn.com'; export ENVIRONMENT=prod && python app.py" 
     ```
 
+    To clear Redis cache
+    ```
+    docker exec -it web-crawler_crawler-redis_1 redis-cli FLUSHALL
+    ```
+
     Crawler runs for 15s  
 
     Note: Change the value in the `export` command, for the URLS you want to process
