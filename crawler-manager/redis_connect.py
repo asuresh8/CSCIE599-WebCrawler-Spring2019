@@ -27,7 +27,9 @@ def write_data_to_file():
         keys = redis_db.keys()
         for key in keys:
             value = redis_db.get(key)
-            tmp.write('{},{},\n'.format(key, value))
+            record = '{},{},\n'.format(key.decode("utf-8"), value.decode("utf-8"))
+            logging.info("Writing %s to file", record)
+            tmp.write(record)
 
     return path
 

@@ -9,6 +9,7 @@ import signal
 import sys
 import threading
 import time
+import uuid
 
 import crawler_manager_context
 import helpers
@@ -180,7 +181,7 @@ def run_work_processor():
     # load manifest from local redis
     context.logger.info("creating manifest from redis")
     manifest = redis_connect.write_data_to_file()
-    key = 'manifest-{}.csv'.format(JOB_ID)
+    key = 'manifest-{}.csv'.format(str(uuid.uuid4()))
     # Write to S3
     # s3 = boto3.resource('s3')
     # s3.meta.client.upload_file(manifest, 'mybucket', manifest_filename)
