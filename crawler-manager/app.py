@@ -23,7 +23,7 @@ app.logger.setLevel(logging.INFO)
 context = crawler_manager_context.Context(app.logger)
 
 INIT_TIME = time.time()
-JOB_ID = os.environ.get('JOB_ID', '')
+JOB_ID = os.environ.get('JOB_ID', '0')
 IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 DEBUG_MODE = ENVIRONMENT == 'local'
@@ -197,7 +197,7 @@ def run_work_processor():
     crawl_complete_api = os.path.join(MAIN_APPLICATION_ENDPOINT, 'api/crawl_complete')
     try:
         context.logger.info("Calling crawl_complete api")
-        requests.post(crawl_complete_api, json={'manifest': blob.public_url})
+        requests.post(crawl_complete_api, json={'job_id': JOB_ID, 'manifest': blob.public_url})
         context.logger.info("crawl_complete call successful")
     except Exception as e:
         context.logger.error('Unable to send crawl_complete to main applications: %s', str(e))
