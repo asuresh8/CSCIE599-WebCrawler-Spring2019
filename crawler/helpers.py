@@ -12,7 +12,7 @@ from requests.exceptions import HTTPError
 import os
 import uuid
 
-from app import context
+import app
 import redis_connect
 
 
@@ -44,7 +44,7 @@ def store_response_in_gcs(res, key):
         blob.upload_from_string(res.text)
         blob.make_public()
     except Exception as e:
-        context.logger.error("Could not store response in GCS: %s", str(e))
+        app.context.logger.error("Could not store response in GCS: %s", str(e))
     else:
         return blob.public_url
     return ""
