@@ -6,7 +6,7 @@ import tempfile
 
 logging.basicConfig(level=logging.INFO)
 
-REDIS_HOST = os.environ.get('REDIS_HOST','crawler-redis')
+REDIS_HOST = os.environ.get('REDIS_HOST', '0.0.0.0')
 redis_db = redis.Redis(host=REDIS_HOST, port=6379, db=0)
 
 def get(key):
