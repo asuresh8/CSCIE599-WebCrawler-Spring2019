@@ -93,7 +93,7 @@ def do_crawl(url):
         s3_uri = cached_result['s3_uri']
         links = cached_result['child_urls']
     else:
-        key = 'crawl_pages/{}/{}'.format(str(uuid.uuid4().hex[:6]), os.path.basename(url))
+        key = 'crawl_pages/{}'.format(str(uuid.uuid4()))
         context.logger.info('Generated key: %s', key)
         try:
             context.logger.info('Sending Get Request')
