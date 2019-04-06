@@ -1,7 +1,8 @@
 import unittest
  
+import crawler_context
  
-class TestCrawler(unittest.TestCase):
+class TestCrawlerContext(unittest.TestCase):
     """
     Test the add function from the mymath library
     """
