@@ -14,8 +14,16 @@ class TestCrawlerAtomic(unittest.TestCase):
         pass
     
     # TODO: delete this noop test and write actual unit tests
-    def test_noop(self):
-        self.assertEqual(0, 0)
+    def test_counter(self):
+        counter = atomic.AtomicCounter()
+        self.assertEqual(counter.get(), 0)
+        counter.increment()
+        self.assertEqual(counter.get(), 1)
+        counter.increment()
+        counter.increment()
+        self.assertEqual(counter.get(), 3)
+        counter.decrement()
+        self.assertEqual(counter.get(), 2)
  
  
 if __name__ == '__main__':
