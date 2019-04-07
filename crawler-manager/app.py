@@ -110,7 +110,7 @@ def links():
             absolute_url = helpers.expand_url(helpers.get_domain_name(main_url), url)
         else:
             absolute_url = url
-        
+
 
         if any(map(lambda x: url.startswith(x), DOMAIN_RESTRICTIONS)) and \
           not context.queued_urls.contains(absolute_url) and \
@@ -194,7 +194,7 @@ def run_work_processor():
     blob.make_public()
     context.logger.info("Manifest uploaded! Deleting local file")
     os.remove(manifest)
-    crawl_complete_api = os.path.join(MAIN_APPLICATION_ENDPOINT, 'api/crawl_complete')
+    crawl_complete_api = os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/crawl_complete')
     try:
         context.logger.info("Calling crawl_complete api")
         requests.post(crawl_complete_api, json={'job_id': JOB_ID, 'manifest': blob.public_url})
@@ -206,7 +206,7 @@ def run_work_processor():
 def setup():
     try:
         context.logger.info('Attempting to register with main application')
-        requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'api/register_crawler_manager'),
+        requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
                       json={'job_id': JOB_ID, 'endpoint': ENDPOINT})
         context.logger.info('Registered with main application!')
     except Exception as e:
@@ -214,7 +214,7 @@ def setup():
 
     for url in INITIAL_URLS:
         context.queued_urls.add(url)
-    
+
     processor_thread = threading.Thread(target=run_work_processor)
     processor_thread.start()
 

@@ -82,18 +82,27 @@ def crawler_manager_ping(requestUrl):
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
 def register_crawler_manager(request):
+    logger.info("In Register-Crawl")
     id = request.data['job_id']
-    crawler_manager_endpoint = request.data['endpoint']
-    CrawlRequest.objects.get(pk=id).update(crawler_manager_endpoint=crawler_manager_endpoint)
-    return JsonResponse({})
+    endpoint = request.data['endpoint']
+    logger.info("In Register-Crawl, jobid: %s, endpoint: %s",id,endpoint)
+    job = CrawlRequest.objects.get(pk=id)
+    job.crawler_manager_endpoint = endpoint
+    job.save()
+    return JsonResponse({'data':"CrawlRegister"})
 
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
 def complete_crawl(request):
     id = request.data['job_id']
     manifest = request.data['manifest']
+    logger.info("In Crawl-Complete")
+    logger.info('Crawl-Complete id - %s, manifest - %s', id, manifest)
     crawl_request = CrawlRequest.objects.get(pk=id)
-    crawl_request.update(manifest=manifest)
+    crawl_request.s3_location = manifest
+    crawl_request.status = 3
+    crawl_request.save()
+    data = {"CrawlComplete" : "done"}
     requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), json={})
     return JsonResponse(data)
 
@@ -143,6 +152,7 @@ def new_job(request):
             payload['url'] = crawl_request.domain
             launch_crawler_manager(payload)
             """
+            logger.info('NewJob created: %s', crawl_request.id)
             api_new_job(crawl_request)
             return redirect('mainapp_home')
     else:
