@@ -210,12 +210,17 @@ def run_work_processor():
 
 def setup():
     global JOB_ID
+    global INITIAL_URLS
     try:
         context.logger.info('Attempting to register with main application')
         response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
                                  json={'job_id': JOB_ID, 'endpoint': ENDPOINT})
         if ENVIRONMENT == 'local':
-            JOB_ID = json.loads(response.text)["JOB_ID"]
+            payload = json.loads(response.text)
+            JOB_ID = payload["JOB_ID"]
+            if payload['URLS'] != "":
+                INITIAL_URLS = payload['URLS'].split(';')
+            context.logger.info('JOBID: %s, URLS: %s', JOB_ID, INITIAL_URLS)
         context.logger.info('Registered with main application!')
     except Exception as e:
         context.logger.error('Unable to register with main application: %s', str(e))

@@ -41,6 +41,7 @@ ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 # store the release timestamps here, like a job id meanwhile
 releases = []
 JOB_ID = "1"
+URLS = "http://google.com"
 @login_required()
 def home(request):
     user = request.user
@@ -92,7 +93,10 @@ def register_crawler_manager(request):
     job = CrawlRequest.objects.get(pk=id)
     job.crawler_manager_endpoint = endpoint
     job.save()
-    return JsonResponse({"JOB_ID":id})
+    payload = {}
+    payload['JOB_ID'] = id
+    payload['URLS'] = URLS
+    return JsonResponse(payload)
 
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
@@ -144,6 +148,7 @@ def authenticate_user(request):
 @login_required()
 def new_job(request):
     global JOB_ID
+    global URLS
     if request.method == "POST":
         crawl_request = CrawlRequest(user=request.user)
         form = CrawlRequestForm(instance=crawl_request, data=request.POST)
@@ -157,7 +162,10 @@ def new_job(request):
             launch_crawler_manager(payload)
             """
             JOB_ID = crawl_request.id
+            if crawl_request.urls != "":
+                URLS = crawl_request.urls
             logger.info('NewJob created: %s', crawl_request.id)
+            logger.info('Received urls: %s', crawl_request.urls)
             api_new_job(crawl_request)
             return redirect('mainapp_home')
     else:
