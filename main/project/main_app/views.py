@@ -22,6 +22,7 @@ from django.http import JsonResponse
 from django.http import HttpRequest
 from django.http import HttpResponse
 from io import BytesIO
+from google.cloud import storage
 
 import requests, jwt, json, os, zipfile, time, sys
 
@@ -248,6 +249,13 @@ def profile(request):
         form = ProfileForm(instance=profile)
     return render(request, "main_app/settings.html", {'form': form})
 
+def get_google_cloud_manifest_contents(manifest):
+    client = storage.Client()
+    bucket = client.get_bucket(os.environ['GCS_BUCKET'])
+    blob = storage.Blob(manifest, bucket)
+    content = blob.download_as_string()
+    return content
+
 @login_required()
 def crawl_contents(request, job_id):
     print(job_id)
@@ -255,18 +263,19 @@ def crawl_contents(request, job_id):
         job = CrawlRequest.objects.get(pk=job_id)
     except CrawlRequest.DoesNotExist:
         raise Http404("Job does not exist.")
-    current_file = "idletest"
+    manifest = job.s3_location.split('/')[-1]
+    logger.info('Manifest: %s', manifest)
+    manifest_file = "manifest.txt"
     buffer = BytesIO()
-    z= zipfile.ZipFile( buffer, "w" )
-    open(current_file, 'w').write("Ansuman")
-    z.write( current_file )
+    z= zipfile.ZipFile(buffer, "w")
+
+    # Read manifest content from cloud
+    content = get_google_cloud_manifest_contents(manifest)
+    open(manifest_file, 'wb').write(content)
+    z.write(manifest_file)
     z.close()
-    os.remove(current_file)
-    """
-    byte = BytesIO()
-    zf = zipfile.ZipFile(byte, "w")
-    zipped_files = []
-    """
+    os.remove(manifest_file)
+
     response = HttpResponse(buffer.getvalue(), content_type='application/zip')
-    response['Content-Disposition'] = 'attachment; filename=myfile.zip'
+    response['Content-Disposition'] = 'attachment; filename=manifest.zip'
     return response
