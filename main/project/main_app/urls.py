@@ -17,5 +17,6 @@ urlpatterns = [
     url(r'logout$', LogoutView.as_view(), name="mainapp_logout"),
     url(r'api/register_crawler_manager$', views.register_crawler_manager, name="api_register_crawler_manager"),
     url(r'api/crawl_complete$', views.complete_crawl, name="api_complete_crawl"),
-    url(r'api/ping$', views.api_ping, name="api_ping")
+    url(r'api/ping$', views.api_ping, name="api_ping"),
+    url(r'api/crawl_contents', views.api_crawl_contents, name="api_crawl_contents"),
 ]

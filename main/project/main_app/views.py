@@ -279,3 +279,38 @@ def crawl_contents(request, job_id):
     response = HttpResponse(buffer.getvalue(), content_type='application/zip')
     response['Content-Disposition'] = 'attachment; filename=manifest.zip'
     return response
+
+def get_google_cloud_crawl_pages(manifest):
+    client = storage.Client()
+    bucket = client.get_bucket(os.environ['GCS_BUCKET'])
+    content = {}
+    links = manifest.decode().split('\n')
+    for link in links:
+        logger.info('link: %s', link)
+        link_arr = link.split(',')
+        if (len(link_arr) <= 1):
+            continue
+        url = link_arr[0]
+        file_location = link_arr[1]
+        logger.info('url: %s, file_location: %s', url, file_location)
+        file_location_arr = file_location.split('/')
+        file_name = file_location_arr[-2] + "/" + file_location_arr[-1][:-1]
+        logger.info('file_name: %s', file_name)
+        blob = storage.Blob(file_name, bucket)
+        content[url] = blob.download_as_string()
+    return content
+
+@api_view(['GET'])
+@permission_classes([AllowAny, ])
+def api_crawl_contents(request):
+    jobId = request.query_params.get('JOB_ID')
+    complete_crawl = request.query_params.get('complete_crawl')
+    job = CrawlRequest.objects.get(pk=jobId)
+    manifest = job.s3_location.split('/')[-1]
+    payload = {}
+    payload['jobId'] = jobId
+    content = get_google_cloud_manifest_contents(manifest)
+    if complete_crawl == "1":
+        content = get_google_cloud_crawl_pages(content)
+    payload['crawl_contents'] = content
+    return Response(payload, status=status.HTTP_200_OK)
