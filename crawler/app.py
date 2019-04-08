@@ -131,6 +131,7 @@ def do_crawl(url):
         context.logger.info('Sending response back to crawler manager...')
         requests.post(links_api, json={'main_url': url, 's3_uri': s3_uri, 'child_urls': links})
         context.logger.info('Response sent successfully!')
+        sys.exit(0)
     except Exception as e:
         context.logger.error("Could not connect to crawler manager: %s", str(e))
 
@@ -177,8 +178,7 @@ if __name__ == "__main__":
     else:
         _thread.start_new_thread(run_flask,())
         executor.submit(do_crawl, URL)
-        context.logger.info('Will kill crawler server after 15s -- endpoint: - %s', ENDPOINT)
-
-        time.sleep(15)
-        sys.exit(0)
+        # context.logger.info('Will kill crawler server after 15s -- endpoint: - %s', ENDPOINT)
+        # time.sleep(15)
+        # sys.exit(0)
 
