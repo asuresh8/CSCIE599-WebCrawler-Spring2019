@@ -39,7 +39,7 @@ Crawler Manager container also has an internal Redis service.
     mysql> CREATE DATABASE test;
     ```
 
-3. For running the crawler-manager: 
+3. For running the crawler-manager (No Longer Required. Crawler manager is also getting started in step 1): 
    
     This does not need to be built, it's done already in the `docker-compose` command, but to simulate a new crawler manager, run the following:      
     ```
@@ -48,7 +48,7 @@ Crawler Manager container also has an internal Redis service.
     
     That will start the webserver for 60s, like is done in kubernetes
     
-3. For running the crawler, is like the manager
+3. For running the crawler, is like the manager (No Longer Required. Crawler is also getting started in step 1)
    
     Sames as above, does not need to be built.
 
