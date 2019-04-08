@@ -220,6 +220,8 @@ def getHelmCommand(request):
       --set-string image.tag='{IMAGE_TAG}' \\
       --set-string params.job_id='{request.id}' \\
       --set-string params.releaseDate='{releaseDate}' \\
+      --set-string params.domain='{request.domain}' \\
+      --set-string params.initialUrls='{request.urls}' \\
       \"crawler-manager-{releaseDate}\" ./cluster-templates/chart-manager"""
 
 

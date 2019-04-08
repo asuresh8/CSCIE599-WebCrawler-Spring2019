@@ -30,8 +30,9 @@ DEBUG_MODE = ENVIRONMENT == 'local'
 RELEASE_DATE = os.environ.get('RELEASE_DATE', '0')
 HOSTNAME = os.environ.get('JOB_IP', 'crawler-manager')
 NUM_CRAWLERS = os.environ.get('NUM_CRAWLERS', 1)
-INITIAL_URLS = os.environ.get('STARTING_URLS', 'http://recurship.com').split(';')
+INITIAL_URLS = os.environ.get('INITIAL_URLS', '/').split(';')
 DOMAIN_RESTRICTIONS = os.environ.get('DOMAIN_RESTRICTIONS', 'http://www.garbage.com').split(';')
+DOMAIN = os.environ.get('DOMAIN', 'http://www.garbage.com')
 MAIN_APPLICATION_ENDPOINT = os.environ.get('MAIN_APPLICATION_ENDPOINT', 'http://main:8001')
 PORT = 8002 if HOSTNAME == 'crawler-manager' else 80
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
@@ -145,17 +146,18 @@ def status():
 
 
 def deploy_crawlers():
-    for _ in range(NUM_CRAWLERS):
-        helm_command = get_helm_command()
+    for url in INITIAL_URLS:
+        context.logger.info('deploying crawlers %s', url)
+        helm_command = get_helm_command(DOMAIN + url)
         context.logger.info('Running helm command: %s', helm_command)
         os.system(helm_command)
 
 
-def get_helm_command():
+def get_helm_command(url):
     return f"""helm init --service-account tiller && \\
         helm upgrade --install \\
         --set-string image.tag='{IMAGE_TAG}' \\
-        --set-string params.endpoint='{ENDPOINT}' \\
+        --set-string params.url='{url}' \\
         --set-string params.crawlerManagerEndpoint='{CRAWLER_MANAGER_ENDPOINT}' \\
         \"crawler-{RELEASE_DATE}\" ./cluster-templates/chart-crawler"""
 
@@ -220,7 +222,7 @@ def setup():
             JOB_ID = payload["JOB_ID"]
             if payload['URLS'] != "":
                 INITIAL_URLS = payload['URLS'].split(';')
-            context.logger.info('JOBID: %s, URLS: %s', JOB_ID, INITIAL_URLS)
+            context.logger.info('[223] JOBID: %s, URLS: %s', JOB_ID, INITIAL_URLS)
         context.logger.info('Registered with main application!')
     except Exception as e:
         context.logger.error('Unable to register with main application: %s', str(e))

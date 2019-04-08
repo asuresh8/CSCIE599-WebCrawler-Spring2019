@@ -41,8 +41,8 @@ spec:
               key: MYSQL_HOST
         - name: ENVIRONMENT
           value: "prod"
-        - name: URLS
-          value: "{{ .Values.params.urls }}"
+        - name: URL
+          value: "{{ .Values.params.url }}"
         - name: CRAWLER_MANAGER_ENDPOINT
           value: "{{ .Values.params.crawlerManagerEndpoint }}"
         resources:

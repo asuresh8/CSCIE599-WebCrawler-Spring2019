@@ -43,7 +43,7 @@ Crawler Manager container also has an internal Redis service.
    
     This does not need to be built, it's done already in the `docker-compose` command, but to simulate a new crawler manager, run the following:      
     ```
-    docker exec -i crawler-manager /bin/bash -c "export JOB_ID=123; service redis-server start && python app.py"  
+    docker exec -i crawler-manager /bin/bash -c "export JOB_ID=123; export ENVIRONMENT=prod && service redis-server start && python app.py"  
     ```
     
     That will start the webserver for 60s, like is done in kubernetes
@@ -54,7 +54,7 @@ Crawler Manager container also has an internal Redis service.
 
     For processing urls
     ```
-    docker exec -i crawler /bin/bash -c "export URLS='http://google.com,https://cnn.com'; export ENVIRONMENT=prod && python app.py" 
+    docker exec -i crawler /bin/bash -c "export URL='http://google.com,https://cnn.com'; export ENVIRONMENT=prod && python app.py" 
     ```
 
     To clear Redis cache

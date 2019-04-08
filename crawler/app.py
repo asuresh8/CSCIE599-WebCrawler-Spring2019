@@ -22,6 +22,7 @@ context = crawler_context.Context(app.logger)
 
 CRAWLER_MANAGER_ENDPOINT = os.environ.get('CRAWLER_MANAGER_ENDPOINT', 'http://crawler-manager:8002')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
+URL = os.environ.get('URL', 'https://google.com')
 DEBUG_MODE = ENVIRONMENT == 'local'
 HOSTNAME = os.environ.get('JOB_IP', 'crawler')
 MAX_ACTIVE_THREADS = 4
@@ -175,7 +176,7 @@ if __name__ == "__main__":
         run_flask()
     else:
         _thread.start_new_thread(run_flask,())
-
+        executor.submit(do_crawl, URL)
         context.logger.info('Will kill crawler server after 15s -- endpoint: - %s', ENDPOINT)
 
         time.sleep(15)

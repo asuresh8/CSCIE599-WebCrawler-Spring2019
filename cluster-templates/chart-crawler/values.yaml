@@ -11,5 +11,5 @@ application:
   tier: crawler
   secretName: credentials
 params:
-  urls: ""
+  url: ""
   crawlerManagerEndpoint: ""

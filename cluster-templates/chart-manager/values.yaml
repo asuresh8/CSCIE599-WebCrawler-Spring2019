@@ -13,6 +13,8 @@ application:
 params:
   job_id: ""
   releaseDate: ""
+  initialUrls: ""
+  domain: ""
 service:
   name: crawler-manager
   externalPort: 80

@@ -45,6 +45,10 @@ spec:
           value: "prod"
         - name: JOB_ID
           value: "{{ .Values.params.job_id }}"
+        - name: INITIAL_URLS
+          value: "{{ .Values.params.initialUrls }}"
+        - name: DOMAIN
+          value: "{{ .Values.params.domain }}"
         - name: RELEASE_DATE
           value: "{{ .Values.params.releaseDate }}"
         - name: MAIN_APPLICATION_ENDPOINT
