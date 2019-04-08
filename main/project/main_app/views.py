@@ -160,22 +160,42 @@ def new_job(request):
             payload = {}
             payload['jobId'] = crawl_request.id
             payload['url'] = crawl_request.domain
-            launch_crawler_manager(payload)
             """
             JOB_ID = crawl_request.id
             if crawl_request.urls != "":
                 URLS = crawl_request.urls
             logger.info('NewJob created: %s', crawl_request.id)
             logger.info('Received urls: %s', crawl_request.urls)
-            api_new_job(crawl_request)
+            launch_crawler_manager(crawl_request)
             return redirect('mainapp_home')
     else:
         form = CrawlRequestForm()
     return render(request, "main_app/new_job.html", {'form': form})
 
+@api_view(['POST'])
+@permission_classes([AllowAny, ])
+def api_create_crawl(request):
+    logger.info('In api new job')
+    global JOB_ID
+    global URLS
+    username = request.data['username']
+    user_obj = User.objects.get(username=username)
+    crawl_request = CrawlRequest(user=user_obj)
+    crawl_request.name = request.data['name']
+    crawl_request.domain = request.data['domain']
+    crawl_request.urls = request.data['urls']
+    crawl_request.save()
+    JOB_ID = crawl_request.id
+    if crawl_request.urls != "":
+        URLS = crawl_request.urls
+    logger.info('NewJob created: %s', crawl_request.id)
+    logger.info('Received urls: %s', crawl_request.urls)
+    launch_crawler_manager(crawl_request)
+    payload = {}
+    payload['jobId'] = crawl_request.id
+    return Response(payload, status=status.HTTP_200_OK)
 
-@login_required()
-def api_new_job(request):
+def launch_crawler_manager(request):
     #logger.error("In API new job")
     if ENVIRONMENT == 'local':
         # Running in docker compose,
@@ -203,14 +223,6 @@ def getHelmCommand(request):
       \"crawler-manager-{releaseDate}\" ./cluster-templates/chart-manager"""
 
 
-
-def launch_crawler_manager(payload):
-    print ("In api new job")
-    payload = {"jobId" : payload['jobId']}
-    res = requests.get("http://localhost:8004/crawl", params=payload)
-    print(res.content)
-
-#@login_required()
 @api_view(['GET'])
 #@permission_classes((IsAuthenticated, ))
 def api_job_status(request):

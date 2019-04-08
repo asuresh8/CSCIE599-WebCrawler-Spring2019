@@ -7,7 +7,7 @@ from . import views
 urlpatterns = [
     url(r'home$', views.home, name="mainapp_home"),
     url(r'new_job$', views.new_job, name="mainapp_new_job"),
-    url(r'api/new_job', views.api_new_job, name="api_new_job"),
+    url(r'api/create_crawl', views.api_create_crawl, name="api_create_crawl"),
     url(r'api/job_status', views.api_job_status, name="api_job_status"),
     url(r'profile$', views.profile, name="mainapp_profile"),
     url(r'authenticate_user$', views.authenticate_user, name="authenticate_user"),
