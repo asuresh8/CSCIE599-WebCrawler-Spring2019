@@ -127,6 +127,7 @@ def do_crawl(url):
                 context.logger.error('Unable to cache data for %s: %s', url, str(e))
 
     links_api = os.path.join(CRAWLER_MANAGER_ENDPOINT, 'links')
+    context.logger.info('Endpoint on Crawler manager: %s', links_api)
     try:
         context.logger.info('Sending response back to crawler manager...')
         requests.post(links_api, json={'main_url': url, 's3_uri': s3_uri, 'child_urls': links})
