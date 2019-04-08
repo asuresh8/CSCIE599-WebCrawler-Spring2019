@@ -60,6 +60,11 @@ def main():
     context.logger.info('Received request at home')
     return 'Crawler Manager'
 
+@app.route('/crawl', methods=['POST'])
+def crawl():
+    setup()
+    return ''
+
 @app.route('/ping', methods=['GET'])
 def ping():
     context.logger.info('Received request at PING')
@@ -204,10 +209,13 @@ def run_work_processor():
 
 
 def setup():
+    global JOB_ID
     try:
         context.logger.info('Attempting to register with main application')
-        requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
-                      json={'job_id': JOB_ID, 'endpoint': ENDPOINT})
+        response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
+                                 json={'job_id': JOB_ID, 'endpoint': ENDPOINT})
+        if ENVIRONMENT == 'local':
+            JOB_ID = json.loads(response.text)["JOB_ID"]
         context.logger.info('Registered with main application!')
     except Exception as e:
         context.logger.error('Unable to register with main application: %s', str(e))
@@ -241,7 +249,7 @@ if __name__ == "__main__":
     # if running locally, then run normally. If running on Kubernetes cluster, then do weird shit
     context.logger.info('ENVIRONMENT -- %s ', ENVIRONMENT)
     if ENVIRONMENT == 'local':
-        setup()
+        #setup()
         run_flask()
     else:
         #flask_thread = threading.Thread(target=run_flask)

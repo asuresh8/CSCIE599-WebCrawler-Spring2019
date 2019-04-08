@@ -40,7 +40,7 @@ ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 
 # store the release timestamps here, like a job id meanwhile
 releases = []
-
+JOB_ID = "1"
 @login_required()
 def home(request):
     user = request.user
@@ -84,12 +84,15 @@ def crawler_manager_ping(requestUrl):
 def register_crawler_manager(request):
     logger.info("In Register-Crawl")
     id = request.data['job_id']
+    if ENVIRONMENT == 'local':
+        id = JOB_ID
+    logger.info('JobID main: %s', id)
     endpoint = request.data['endpoint']
     logger.info("In Register-Crawl, jobid: %s, endpoint: %s",id,endpoint)
     job = CrawlRequest.objects.get(pk=id)
     job.crawler_manager_endpoint = endpoint
     job.save()
-    return JsonResponse({'data':"CrawlRegister"})
+    return JsonResponse({"JOB_ID":id})
 
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
@@ -140,6 +143,7 @@ def authenticate_user(request):
 
 @login_required()
 def new_job(request):
+    global JOB_ID
     if request.method == "POST":
         crawl_request = CrawlRequest(user=request.user)
         form = CrawlRequestForm(instance=crawl_request, data=request.POST)
@@ -152,6 +156,7 @@ def new_job(request):
             payload['url'] = crawl_request.domain
             launch_crawler_manager(payload)
             """
+            JOB_ID = crawl_request.id
             logger.info('NewJob created: %s', crawl_request.id)
             api_new_job(crawl_request)
             return redirect('mainapp_home')
@@ -166,6 +171,7 @@ def api_new_job(request):
     if ENVIRONMENT == 'local':
         # Running in docker compose,
         print("Looks like this is not running on a Kuberenetes cluster, ")
+        requests.post("http://crawler-manager:8002/crawl")
     else:
         # If ENVIRONMENT is prod, it means it is running in the Kubernetes Cluster
         # Use the Helm command to trigger a new Crawler Manager Instance

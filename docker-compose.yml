@@ -43,7 +43,6 @@ services:
       context: .
       dockerfile: crawler-manager/DockerFile
     container_name: crawler-manager
-    command: tail -f python app.py
     environment:
       - PYTHONPATH=.
       - FLASK_ENV=development
@@ -61,7 +60,7 @@ services:
       context: .
       dockerfile: crawler/DockerFile
     container_name: crawler
-    command: tail -f app.py
+    command: python app.py
     environment:
       - PYTHONPATH=.
       - FLASK_ENV=development
@@ -70,6 +69,7 @@ services:
     depends_on:
       - crawler-redis
       - crawler-mysql5
+      - crawler-manager
       - main
     networks:
       - backend
