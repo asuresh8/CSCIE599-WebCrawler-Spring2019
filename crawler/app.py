@@ -26,7 +26,7 @@ URL = os.environ.get('URL', 'https://google.com')
 DEBUG_MODE = ENVIRONMENT == 'local'
 HOSTNAME = os.environ.get('JOB_IP', 'crawler')
 MAX_ACTIVE_THREADS = 4
-PORT = 8003 if HOSTNAME == 'crawler' else 80
+PORT = 8003
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
 
 executor = concurrent.futures.ThreadPoolExecutor(MAX_ACTIVE_THREADS)
@@ -132,11 +132,11 @@ def do_crawl(url):
         context.logger.info('Sending response back to crawler manager...')
         requests.post(links_api, json={'main_url': url, 's3_uri': s3_uri, 'child_urls': links})
         context.logger.info('Response sent successfully!')
-        sys.exit(0)
     except Exception as e:
         context.logger.error("Could not connect to crawler manager: %s", str(e))
 
     context.active_thread_count.decrement()
+    sys.exit(0)
 
 
 def test_connections():
@@ -179,7 +179,3 @@ if __name__ == "__main__":
     else:
         _thread.start_new_thread(run_flask,())
         executor.submit(do_crawl, URL)
-        # context.logger.info('Will kill crawler server after 15s -- endpoint: - %s', ENDPOINT)
-        # time.sleep(15)
-        # sys.exit(0)
-

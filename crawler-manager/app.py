@@ -29,12 +29,12 @@ ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 DEBUG_MODE = ENVIRONMENT == 'local'
 RELEASE_DATE = os.environ.get('RELEASE_DATE', '0')
 HOSTNAME = os.environ.get('JOB_IP', 'crawler-manager')
-NUM_CRAWLERS = os.environ.get('NUM_CRAWLERS', 1)
 INITIAL_URLS = os.environ.get('INITIAL_URLS', '/').split(';')
-DOMAIN_RESTRICTIONS = os.environ.get('DOMAIN_RESTRICTIONS', 'http://www.garbage.com').split(';')
-DOMAIN = os.environ.get('DOMAIN', 'http://www.garbage.com')
+NUM_CRAWLERS_TOTAL = len(INITIAL_URLS)
+NUM_CRAWLERS_FINISHED = 0
+DOMAIN_RESTRICTIONS = os.environ.get('DOMAIN', 'http://www.garbage.com').split(';')
 MAIN_APPLICATION_ENDPOINT = os.environ.get('MAIN_APPLICATION_ENDPOINT', 'http://main:8001')
-PORT = 8002 if HOSTNAME == 'crawler-manager' else 80
+PORT = 8002
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
 
 CRAWLER_MANAGER_ENDPOINT = 'http://crawler-manager:8002'
@@ -79,7 +79,7 @@ def kill():
             context.logger.info("Not killing crawler manager because running locally")
         else:
             context.logger.info("Kill confirmed")
-            sys.exit()
+            sys.exit(0)
 
         return response
 
@@ -107,6 +107,8 @@ def register():
 # }
 @app.route('/links', methods=['POST'])
 def links():
+    global NUM_CRAWLERS_FINISHED, NUM_CRAWLERS_FINISHED
+
     context.logger.info('Received response from crawler: %s', flask.request.data)
     main_url = flask.request.json['main_url']
     s3_uri = flask.request.json['s3_uri']
@@ -125,9 +127,14 @@ def links():
             context.logger.info('Adding %s to queue', absolute_url)
             context.queued_urls.add(absolute_url)
 
+    NUM_CRAWLERS_FINISHED += 1
     redis_connect.put(main_url, s3_uri)
     context.processed_urls.increment()
     context.in_process_urls.remove(main_url)
+
+    if NUM_CRAWLERS_FINISHED == NUM_CRAWLERS_TOTAL and ENVIRONMENT != 'local':
+        sys.exit(0)
+
     return ""
 
 
@@ -148,7 +155,7 @@ def status():
 def deploy_crawlers():
     for url in INITIAL_URLS:
         context.logger.info('deploying crawlers %s', url)
-        helm_command = get_helm_command(DOMAIN + url)
+        helm_command = get_helm_command(url)
         context.logger.info('Running helm command: %s', helm_command)
         os.system(helm_command)
 
@@ -247,9 +254,9 @@ def ping_main():
         return "general exception"
 
 if __name__ == "__main__":
-    ping = ping_main()
-    context.logger.info('ping main app -- %s', ping)
-    context.logger.info('MAIN_APPLICATION_ENDPOINT -- %s', MAIN_APPLICATION_ENDPOINT)
+    # ping = ping_main()
+    # context.logger.info('ping main app -- %s', ping)
+    # context.logger.info('MAIN_APPLICATION_ENDPOINT -- %s', MAIN_APPLICATION_ENDPOINT)
 
     context.logger.info('will connect to redis')
     test_connections()
@@ -259,17 +266,10 @@ if __name__ == "__main__":
         #setup()
         run_flask()
     else:
-        #flask_thread = threading.Thread(target=run_flask)
-        #flask_thread.start()
         _thread.start_new_thread(run_flask,())
-        time.sleep(5)
-        ping = ping_main()
-        context.logger.info('second ping to main app %s ', ping)
-        context.logger.info('SECOND PING TO MAIN_APPLICATION_ENDPOINT %s ', MAIN_APPLICATION_ENDPOINT)
-        context.logger.info('Will kill server after 60s -- jobId %s ', JOB_ID)
-
         deploy_crawlers()
-        time.sleep(60)
+        # ping = ping_main()
+        # context.logger.info('second ping to main app %s ', ping)
+        # context.logger.info('SECOND PING TO MAIN_APPLICATION_ENDPOINT %s ', MAIN_APPLICATION_ENDPOINT)
+        # context.logger.info('Will kill server after 60s -- jobId %s ', JOB_ID)
 
-        context.logger.info('should kill it now')
-        sys.exit(0)
