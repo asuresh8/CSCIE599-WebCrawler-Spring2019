@@ -133,6 +133,7 @@ def links():
     context.in_process_urls.remove(main_url)
 
     if NUM_CRAWLERS_FINISHED == NUM_CRAWLERS_TOTAL and ENVIRONMENT != 'local':
+        context.logger.info('Kill - Crawler done')
         sys.exit(0)
 
     return ""
