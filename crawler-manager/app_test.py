@@ -1,3 +1,5 @@
+import fakeredis
+from unittest import mock
 import unittest
  
 import app
@@ -27,6 +29,29 @@ class TestCrawlerManagerApp(unittest.TestCase):
     def test_kill(self):
         response = self.client.post('/kill')
         self.assertEqual(response.status_code, 200)
+    
+    def test_register_crawler(self):
+        endpoint = 'http://0.0.0.0'
+        response = self.client.post('/register_crawler', json={'endpoint': endpoint})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(app.context.crawlers.contains(endpoint))
+    
+    @mock.patch('redis.Redis')
+    def test_post_links(self, mock_redis_constructor):
+        mock_redis_instance = fakeredis.FakeRedis()
+        mock_redis_constructor.side_effect = mock_redis_instance
+        main_url = 'http://garbage.com'
+        s3_uri = 'https://s3.amazonaws.com/garbage-bucket/garbage-key'
+        child_urls = ['http://garbage.com/1', 'http://garbage.com/2', '/3']
+        response = self.client.post('/links', json={
+            'main_url': main_url, 's3_uri': s3_uri, 'child_urls': child_urls})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(app.context.queued_urls.contains('http://garbage.com/1'))
+        self.assertTrue(app.context.queued_urls.contains('http://garbage.com/2'))
+        self.assertTrue(app.context.queued_urls.contains('http://garbage.com/3'))
+
+
+
 
  
 if __name__ == '__main__':

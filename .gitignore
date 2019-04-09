@@ -17,3 +17,6 @@
 config
 kubeconfig
 cluster-setup/build/
+
+# python coverage report
+.coverage

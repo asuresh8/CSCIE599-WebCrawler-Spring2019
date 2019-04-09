@@ -1,23 +1,31 @@
-import crawler_manager_context as context
-from urllib.parse import urlparse, urljoin, urlunparse
 import posixpath
- 
+import urllib
+
+import crawler_manager_context as context
+
+
 #Expands all relative links to absolute urls
 def expand_url(home, url):
-    join = urljoin(home,url)
-    url2 = urlparse(join)
+    join = urllib.parse.urljoin(home,url)
+    url2 = urllib.parse.urlparse(join)
     path = posixpath.normpath(url2[2])
  
-    return urlunparse(
+    return urllib.parse.urlunparse(
         (url2.scheme, url2.netloc, path, url2.params, url2.query, url2.fragment)
     )
 
+
 def get_domain_name(url):
-    try:
-        results = get_sub_domain_name(url).split('.')
-        return results[-2] + '.' + results[-1]
-    except:
-        return ''
+    parsed_uri = urllib.parse.urlparse('http://garbage.com')
+    return '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+
 
 def is_absolute_url(url):
-    return bool(urlparse(url).netloc)
+    return bool(urllib.parse.urlparse(url).netloc)
+
+
+def strip_protocol_from_url(url):
+    return url.replace('https://', '')\
+        .replace('http://', '')\
+        .replace('ftp://', '')\
+        .replace('www.', '')

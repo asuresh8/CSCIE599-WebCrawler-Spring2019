@@ -24,6 +24,7 @@ def exists(key):
     return bool(redis_db.exists(key))
 
 def put(key, value):
+    logging.info('Putting %s: %s', key, value)
     return redis_db.set(key, json.dumps(value))
 
 # TODO: these file writing functions should not be here

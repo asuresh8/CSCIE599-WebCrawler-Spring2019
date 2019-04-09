@@ -123,12 +123,13 @@ def links():
     child_urls = flask.request.json['child_urls']
     for url in child_urls:
         if helpers.is_absolute_url(url):
-            absolute_url = helpers.expand_url(helpers.get_domain_name(main_url), url)
-        else:
             absolute_url = url
+        else:
+            absolute_url = helpers.expand_url(helpers.get_domain_name(main_url), url)
 
-
-        if any(map(lambda x: url.startswith(x), DOMAIN_RESTRICTIONS)) and \
+        if any(map(lambda x: helpers.strip_protocol_from_url(absolute_url)\
+                             .startswith(helpers.strip_protocol_from_url(x)),
+                   DOMAIN_RESTRICTIONS)) and \
           not context.queued_urls.contains(absolute_url) and \
           not context.in_process_urls.contains(absolute_url) and \
           not redis_connect.exists(absolute_url):
