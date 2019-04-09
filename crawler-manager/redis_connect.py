@@ -7,7 +7,7 @@ import tempfile
 logging.basicConfig(level=logging.INFO)
 
 REDIS_HOST = os.environ.get('REDIS_HOST', '0.0.0.0')
-redis_db = redis.Redis(host=REDIS_HOST, port=6379, db=0)
+redis_db = redis.StrictRedis(host=REDIS_HOST, port=6379, db=0)
 
 def get(key):
     return json.loads(redis_db.get(key))
@@ -41,6 +41,9 @@ def test_redis_connection():
 
         response = redis_db.ping()
         if response:
+            for key in redis_db.scan_iter("*"):
+                logging.info('redis value %s --- %s', key, redis_db.get(key))
+
             return 'Connection successful (Redis Local)'
 
     except redis.ConnectionError as e:

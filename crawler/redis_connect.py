@@ -5,7 +5,7 @@ import os
 
 logging.basicConfig(level=logging.INFO)
 
-redis_db = redis.Redis(host=os.environ.get('REDIS_HOST','crawler-redis'), port=6379, db=0)
+redis_db = redis.StrictRedis(host=os.environ.get('REDIS_HOST','crawler-redis'), port=6379, db=0)
 
 
 def get(key):
@@ -25,6 +25,9 @@ def test_redis_connection():
         logging.info("Connecting to Redis: %s", os.environ.get('REDIS_HOST','0.0.0.0'))
         response = redis_db.ping()
         if response:
+            for key in redis_db.scan_iter("*"):
+                logging.info('redis value %s --- %s', key, redis_db.get(key))
+
             return 'Connection successful (Redis)'
 
     except redis.ConnectionError as e:
