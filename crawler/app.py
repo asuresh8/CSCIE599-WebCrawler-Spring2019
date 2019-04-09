@@ -87,22 +87,17 @@ def crawl():
 
 def do_crawl(url):
     context.logger.info('Starting crawl thread for %s', url)
+
     if redis_connect.exists(url):
         cached_result = redis_connect.get(url)
-        try:
+
+        if cached_result != None:
             s3_uri = cached_result['s3_uri']
-        except Exception as e:
-            context.logger.error('Unable to parse s3_uri. Received %s - %s', s3_uri, str(e))
-            s3_uri = ''
+            child_urls = cached_result['child_urls']
         else:
-            context.logger.info('s3_uri extracted %s', s3_uri)
-            try:
-                child_urls = cached_result['child_urls']
-            except Exception as e:
-                context.logger.error('Unable to parse child_urls. Received %s - %s', child_urls, str(e))
-                child_urls = ''
-            else:
-                context.logger.info('child_urls extracted %s', child_urls)
+            s3_uri = ''
+            child_urls = ''
+            context.logger.info('Redis cache was not a valid json')
 
     if redis_connect.exists(url) and s3_uri != '' and child_urls != '':
         context.logger.info('%s exists in cache', url)
