@@ -21,6 +21,7 @@ import _thread
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
 context = crawler_manager_context.Context(app.logger)
+current_thread = None
 
 INIT_TIME = time.time()
 JOB_ID = os.environ.get('JOB_ID', '0')
@@ -107,7 +108,7 @@ def register():
 # }
 @app.route('/links', methods=['POST'])
 def links():
-    global NUM_CRAWLERS_FINISHED, NUM_CRAWLERS_FINISHED
+    global NUM_CRAWLERS_FINISHED, NUM_CRAWLERS_FINISHED, current_thread
 
     context.logger.info('Received response from crawler: %s', flask.request.data)
     main_url = flask.request.json['main_url']
@@ -135,6 +136,8 @@ def links():
     if NUM_CRAWLERS_FINISHED == NUM_CRAWLERS_TOTAL and ENVIRONMENT != 'local':
         context.logger.info('Kill - Crawlers done')
         mark_job_completed()
+        current_thread.exit(0)
+        sys.exit(0)
 
     return ""
 
@@ -257,7 +260,6 @@ if __name__ == "__main__":
     # ping = ping_main()
     # context.logger.info('ping main app -- %s', ping)
     # context.logger.info('MAIN_APPLICATION_ENDPOINT -- %s', MAIN_APPLICATION_ENDPOINT)
-
     context.logger.info('will connect to redis')
     test_connections()
     # if running locally, then run normally. If running on Kubernetes cluster, then do weird shit
@@ -266,9 +268,9 @@ if __name__ == "__main__":
         #setup()
         run_flask()
     else:
-        _thread.start_new_thread(run_flask,())
+        current_thread = _thread.start_new_thread(run_flask,())
         deploy_crawlers()
-        time.sleep(400)
+        # time.sleep(400)
         # ping = ping_main()
         # context.logger.info('second ping to main app %s ', ping)
         # context.logger.info('SECOND PING TO MAIN_APPLICATION_ENDPOINT %s ', MAIN_APPLICATION_ENDPOINT)
