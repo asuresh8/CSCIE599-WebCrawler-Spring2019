@@ -54,7 +54,7 @@ spec:
         - name: RELEASE_DATE
           value: "{{ .Values.params.releaseDate }}"
         - name: MAIN_APPLICATION_ENDPOINT
-          valie: http://main-application-internal-service.default/
+          value: http://main-application-internal-service.default/
         resources:
           requests:
             cpu: 200m
