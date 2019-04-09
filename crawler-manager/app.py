@@ -134,7 +134,7 @@ def links():
 
     if NUM_CRAWLERS_FINISHED == NUM_CRAWLERS_TOTAL and ENVIRONMENT != 'local':
         context.logger.info('Kill - Crawlers done')
-        sys.exit(0)
+        mark_job_completed()
 
     return ""
 
@@ -193,13 +193,13 @@ def run_work_processor():
         except Exception as e:
             context.logger.error('Unable to kill crawler: %s', str(e))
 
-    # load manifest from local redis
+    mark_job_completed()
+
+def mark_job_completed():
     context.logger.info("creating manifest from redis")
     manifest = redis_connect.write_data_to_file()
     key = 'manifest-{}.csv'.format(str(uuid.uuid4()))
-    # Write to S3
-    # s3 = boto3.resource('s3')
-    # s3.meta.client.upload_file(manifest, 'mybucket', manifest_filename)
+
     # Write to GCS
     context.logger.info("Uploading manifest to GCS")
     storage_client = storage.Client()
@@ -216,7 +216,6 @@ def run_work_processor():
         context.logger.info("crawl_complete call successful")
     except Exception as e:
         context.logger.error('Unable to send crawl_complete to main applications: %s', str(e))
-
 
 def setup():
     global JOB_ID

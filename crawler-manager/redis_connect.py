@@ -44,4 +44,4 @@ def test_redis_connection():
             return 'Connection successful (Redis Local)'
 
     except redis.ConnectionError as e:
-        logging.warning('Error connecting to redis(Local): %s'. str(e))
+        logging.warning('Error connecting to redis(Local): %s', str(e))
