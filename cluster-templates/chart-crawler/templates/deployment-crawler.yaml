@@ -41,6 +41,8 @@ spec:
               key: MYSQL_HOST
         - name: ENVIRONMENT
           value: "prod"
+        - name: JOB_IP
+          value: "0.0.0.0"
         - name: URL
           value: "{{ .Values.params.url }}"
         - name: CRAWLER_MANAGER_ENDPOINT

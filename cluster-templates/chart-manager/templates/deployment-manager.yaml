@@ -45,6 +45,8 @@ spec:
           value: "prod"
         - name: JOB_ID
           value: "{{ .Values.params.job_id }}"
+        - name: JOB_IP
+          value: "0.0.0.0"
         - name: INITIAL_URLS
           value: "{{ .Values.params.initialUrls }}"
         - name: DOMAIN
