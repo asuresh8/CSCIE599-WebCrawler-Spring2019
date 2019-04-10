@@ -104,11 +104,16 @@ def register_crawler_manager(request):
 def complete_crawl(request):
     id = request.data['job_id']
     manifest = request.data['manifest']
+    csv = request.data['csv']
+    resources_count = request.data['resources_count']
+
     logger.info("In Crawl-Complete")
     logger.info('Crawl-Complete id - %s, manifest - %s', id, manifest)
     crawl_request = CrawlRequest.objects.get(pk=id)
-    crawl_request.s3_location = manifest
+    crawl_request.s3_location = csv
+    crawl_request.manifest = manifest
     crawl_request.status = 3
+    crawl_request.docs_collected = resources_count
     crawl_request.save()
     data = {"CrawlComplete" : "done"}
     requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), json={})
@@ -277,9 +282,9 @@ def crawl_contents(request, job_id):
         job = CrawlRequest.objects.get(pk=job_id)
     except CrawlRequest.DoesNotExist:
         raise Http404("Job does not exist.")
-    manifest = job.s3_location.split('/')[-1]
+    manifest = job.manifest.split('/')[-1]
     logger.info('Manifest: %s', manifest)
-    manifest_file = "manifest.txt"
+    manifest_file = "manifest.json"
     buffer = BytesIO()
     z= zipfile.ZipFile(buffer, "w")
 

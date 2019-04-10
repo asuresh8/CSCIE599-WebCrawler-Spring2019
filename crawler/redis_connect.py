@@ -11,7 +11,7 @@ redis_db = redis.StrictRedis(host=os.environ.get('REDIS_HOST','crawler-redis'), 
 def get(key):
     json_data = None
     return json_data
-    
+
     try:
         json_data = json.loads(redis_db.get(key))
     except Exception as e:
