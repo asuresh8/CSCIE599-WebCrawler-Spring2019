@@ -275,8 +275,4 @@ if __name__ == "__main__":
         _thread.start_new_thread(run_flask,())
         deploy_crawlers()
         time.sleep(400)
-        # ping = ping_main()
-        # context.logger.info('second ping to main app %s ', ping)
-        # context.logger.info('SECOND PING TO MAIN_APPLICATION_ENDPOINT %s ', MAIN_APPLICATION_ENDPOINT)
-        # context.logger.info('Will kill server after 60s -- jobId %s ', JOB_ID)
-
+        
