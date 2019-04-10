@@ -21,7 +21,6 @@ import _thread
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
 context = crawler_manager_context.Context(app.logger)
-current_thread = None
 
 INIT_TIME = time.time()
 JOB_ID = os.environ.get('JOB_ID', '0')
@@ -108,7 +107,7 @@ def register():
 # }
 @app.route('/links', methods=['POST'])
 def links():
-    global NUM_CRAWLERS_FINISHED, NUM_CRAWLERS_FINISHED, current_thread
+    global NUM_CRAWLERS_FINISHED, NUM_CRAWLERS_FINISHED
 
     context.logger.info('Received response from crawler: %s', flask.request.data)
     main_url = flask.request.json['main_url']
@@ -136,10 +135,15 @@ def links():
     if NUM_CRAWLERS_FINISHED == NUM_CRAWLERS_TOTAL and ENVIRONMENT != 'local':
         context.logger.info('Kill - Crawlers done')
         mark_job_completed()
-        current_thread.exit(0)
-        sys.exit(0)
+        _thread.start_new_thread(kill_after,(3,))
 
     return ""
+
+
+def kill_after(secs):
+  context.logger.info('system will be killed in %s seconds', secs)
+  time.sleep(secs)
+  os._exit(0)
 
 
 #Returns statistics on the current crawl
@@ -268,7 +272,7 @@ if __name__ == "__main__":
         #setup()
         run_flask()
     else:
-        current_thread = _thread.start_new_thread(run_flask,())
+        _thread.start_new_thread(run_flask,())
         deploy_crawlers()
         # time.sleep(400)
         # ping = ping_main()
