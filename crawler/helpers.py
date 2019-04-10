@@ -17,7 +17,7 @@ import redis_connect
 
 
 # store page  to  s3
-def store_response_in_s3(res, key):  
+def store_response_in_s3(res, key):
     try:
         s3_client = boto3.client(
             's3',
@@ -26,13 +26,13 @@ def store_response_in_s3(res, key):
         )
         fp = io.BytesIO(res.content)
         s3_client.upload_fileobj(fp, config.S3_BUCKET, key)
-        s3uri = s3_client.generate_presigned_url('get_object', 
-                                                 Params={'Bucket' : config.S3_BUCKET, 'Key': key})  
-        print('s3uri' + s3uri)    
+        s3uri = s3_client.generate_presigned_url('get_object',
+                                                 Params={'Bucket' : config.S3_BUCKET, 'Key': key})
+        print('s3uri' + s3uri)
     except Exception as e:
         print(e.__traceback__)
         return None
-    
+
     return s3uri
 
 
@@ -53,12 +53,16 @@ def store_response_in_gcs(res, key):
 # get_links - parses the url 'a' tags using beautiful soup
 def get_links(r):
     bs_obj = bs4.BeautifulSoup(r.content, 'html.parser')
-    links = []
+    links_obj = {}
     for link in bs_obj.find_all('a'):
         if 'href' in link.attrs:
-           links.append(link.attrs['href'])
-    
-    return links
+            links_obj[link.attrs['href']] = 1
+
+    try:
+        return list(links_obj.keys())
+    except Exception as e:
+        app.context.logger.error("Could not list links in url: %s", str(e))
+        return []
 
 # add url and s3 location to central redis cache
 def add_key_cache(url,s3uri):
