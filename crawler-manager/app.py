@@ -262,14 +262,11 @@ def ping_main():
 
 if __name__ == "__main__":
     # ping = ping_main()
-    # context.logger.info('ping main app -- %s', ping)
-    # context.logger.info('MAIN_APPLICATION_ENDPOINT -- %s', MAIN_APPLICATION_ENDPOINT)
     context.logger.info('will connect to redis')
     test_connections()
-    # if running locally, then run normally. If running on Kubernetes cluster, then do weird shit
     context.logger.info('ENVIRONMENT -- %s ', ENVIRONMENT)
+    
     if ENVIRONMENT == 'local':
-        #setup()
         run_flask()
     else:
         _thread.start_new_thread(run_flask,())
