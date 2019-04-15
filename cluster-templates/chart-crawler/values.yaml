@@ -10,6 +10,7 @@ application:
   track: stable
   tier: crawler
   secretName: credentials
+  namespace: default
 params:
   url: ""
   crawlerManagerEndpoint: ""

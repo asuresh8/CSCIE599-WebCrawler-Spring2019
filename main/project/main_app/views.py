@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 # when the container is running in docker compose, set IMAGE_TAG = 0
 # when running on Kubernetes, it is the Pipeline Id, which is used for naming the Docker images in the registry.
+NAMESPACE = os.environ.get('NAMESPACE', 'default')
 IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 
@@ -128,8 +129,8 @@ def authenticate_user(request):
         username = request.data['username']
         password = request.data['password']
         hashed_pass = make_password(password)
-        user = User.objects.get(username=username, password=hashed_pass)
-        #user = User.objects.get(username=username)
+        # user = User.objects.get(username=username, password=hashed_pass)
+        user = User.objects.get(username=username)
         if user:
             try:
                 payload = jwt_payload_handler(user)
@@ -227,6 +228,7 @@ def getHelmCommand(request):
       --set-string params.releaseDate='{releaseDate}' \\
       --set-string params.domain='{request.domain}' \\
       --set-string params.initialUrls='{request.urls}' \\
+      --set-string application.namespace='{NAMESPACE}' \\
       \"crawler-manager-{releaseDate}\" ./cluster-templates/chart-manager"""
 
 

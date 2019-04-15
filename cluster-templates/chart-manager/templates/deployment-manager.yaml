@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: "crawler-manager-{{ .Values.params.releaseDate }}"
+  namespace: "{{ .Values.application.namespace }}"
 spec:
   backoffLimit: 5
   template:
@@ -54,7 +55,7 @@ spec:
         - name: RELEASE_DATE
           value: "{{ .Values.params.releaseDate }}"
         - name: MAIN_APPLICATION_ENDPOINT
-          value: http://main-application-internal-service.default/
+          value: "http://main-application-internal-service.{{ .Values.application.namespace }}/"
         resources:
           requests:
             cpu: 200m
@@ -70,6 +71,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: "crawler-manager-service-{{ .Values.params.releaseDate }}"
+  namespace: "{{ .Values.application.namespace }}"
   labels:
     app: crawler-manager-service
 spec:

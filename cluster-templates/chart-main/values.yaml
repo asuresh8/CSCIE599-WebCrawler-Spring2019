@@ -10,6 +10,7 @@ application:
   track: stable
   tier: web
   secretName: credentials
+  namespace: default
 service:
   enabled: true
   annotations: {}

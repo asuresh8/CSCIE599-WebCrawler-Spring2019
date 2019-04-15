@@ -23,6 +23,7 @@ app.logger.setLevel(logging.INFO)
 context = crawler_manager_context.Context(app.logger)
 
 INIT_TIME = time.time()
+NAMESPACE = os.environ.get('NAMESPACE', 'default')
 JOB_ID = os.environ.get('JOB_ID', '0')
 IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
@@ -39,7 +40,7 @@ ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
 
 CRAWLER_MANAGER_ENDPOINT = 'http://crawler-manager:8002'
 if (ENVIRONMENT == 'prod' and RELEASE_DATE != '0'):
-  CRAWLER_MANAGER_ENDPOINT = f"http://crawler-manager-service-{RELEASE_DATE}.default/"
+  CRAWLER_MANAGER_ENDPOINT = f"http://crawler-manager-service-{RELEASE_DATE}.{NAMESPACE}/"
 
 
 def after_this_request(func):
@@ -173,6 +174,7 @@ def get_helm_command(url):
         --set-string image.tag='{IMAGE_TAG}' \\
         --set-string params.url='{url}' \\
         --set-string params.crawlerManagerEndpoint='{CRAWLER_MANAGER_ENDPOINT}' \\
+        --set-string application.namespace='{NAMESPACE}'
         \"crawler-{RELEASE_DATE}\" ./cluster-templates/chart-crawler"""
 
 
@@ -292,11 +294,10 @@ if __name__ == "__main__":
     context.logger.info('will connect to redis')
     test_connections()
     context.logger.info('ENVIRONMENT -- %s ', ENVIRONMENT)
-    
+
     if ENVIRONMENT == 'local':
         run_flask()
     else:
         _thread.start_new_thread(run_flask,())
         deploy_crawlers()
         time.sleep(400)
-        

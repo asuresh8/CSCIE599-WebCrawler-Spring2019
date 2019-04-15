@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: main-application
+  namespace: "{{ .Values.application.namespace }}"
   labels:
     app: main-application
 spec:
@@ -49,6 +50,8 @@ spec:
               key: MYSQL_HOST
         - name: ENVIRONMENT
           value: "prod"
+        - name: NAMESPACE
+          value: "{{ .Values.application.namespace }}"
         resources:
           requests:
             cpu: 200m
@@ -63,6 +66,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: main-application-internal-service
+  namespace: "{{ .Values.application.namespace }}"
   labels:
     app: main-application-internal-service
 spec:

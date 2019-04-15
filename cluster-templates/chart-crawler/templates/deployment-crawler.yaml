@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: "crawler-{{date "20060102150405" .Release.Time }}"
+  namespace: "{{ .Values.application.namespace }}"
 spec:
   backoffLimit: 5
   template:
@@ -47,6 +48,8 @@ spec:
           value: "{{ .Values.params.url }}"
         - name: CRAWLER_MANAGER_ENDPOINT
           value: "{{ .Values.params.crawlerManagerEndpoint }}"
+        - name: NAMESPACE
+          value: "{{ .Values.application.namespace }}"
         resources:
           requests:
             cpu: 200m
