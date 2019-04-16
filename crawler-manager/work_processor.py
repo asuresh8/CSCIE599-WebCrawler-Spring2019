@@ -4,12 +4,15 @@ import os
 import redis_connect
 import requests
 import time
+from urllib import parse
+from urllib import robotparser
 
 
 class Processor():
-    def __init__(self, context):
+    def __init__(self, context, robotparsers):
         self.context = context
-    
+        self.robotparsers = robotparsers
+
     def run(self):
         self.context.logger.info('Waiting for crawlers')
         while self.context.crawlers.size() == 0:
@@ -19,15 +22,28 @@ class Processor():
         while self.context.queued_urls.size() > 0 or self.context.in_process_urls.size() > 0:
             self.context.logger.info('Entered processor loop')
             rejected_requests = 0
+            urls_denied = 0
             crawlers = self.context.crawlers.get()
             self.context.logger.info('Iterating through crawlers: %s', str(crawlers))
             for crawler in crawlers:
                 url = self.context.queued_urls.poll()
+                url_allowed = True
                 self.context.logger.info("Pulled %s from queue", url)
                 if url is None:
                     rejected_requests += 1
                     continue
+                
+                #Check if any of the parsed robots.txt file includes this URL
+                for key, value in self.robotparsers:
+                    if not value.can_fetch("*", url):
+                        url_allowed = False
+                        break
 
+                #Do not assign to crawler if url included in robots.txt
+                if not url_allowed:
+                    urls_denied += 1
+                    continue
+                
                 crawl_api = os.path.join(crawler, "crawl")
                 try:
                     self.context.logger.info("Attempting to send %s to %s", url, crawler)
