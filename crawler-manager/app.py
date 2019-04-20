@@ -39,6 +39,8 @@ DOMAIN_RESTRICTIONS = os.environ.get('DOMAIN', 'http://www.garbage.com').split('
 MAIN_APPLICATION_ENDPOINT = os.environ.get('MAIN_APPLICATION_ENDPOINT', 'http://main:8001')
 PORT = 8002
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
+TOKEN = os.environ.get('TOKEN', '')
+TOKEN_PREFIX = 'Bearer '
 
 CRAWLER_MANAGER_ENDPOINT = 'http://crawler-manager:8002'
 if (ENVIRONMENT == 'prod' and RELEASE_DATE != '0'):
@@ -66,6 +68,8 @@ def main():
 
 @app.route('/crawl', methods=['POST'])
 def crawl():
+    global TOKEN
+    TOKEN = flask.request.json['token']
     setup()
     return ''
 
@@ -269,8 +273,10 @@ def setup():
     global INITIAL_URLS
     try:
         context.logger.info('Attempting to register with main application')
+        header = {'Authorization': TOKEN_PREFIX + TOKEN}
         response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
-                                 json={'job_id': JOB_ID, 'endpoint': ENDPOINT})
+                                 json={'job_id': JOB_ID, 'endpoint': ENDPOINT},
+                                 headers=header)
         if ENVIRONMENT == 'local':
             payload = json.loads(response.text)
             JOB_ID = payload["JOB_ID"]

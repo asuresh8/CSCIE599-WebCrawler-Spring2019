@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 NAMESPACE = os.environ.get('NAMESPACE', 'default')
 IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
+CRAWLER_MANAGER_USER_PREFIX = 'admin'
 
 # store the release timestamps here, like a job id meanwhile
 releases = []
@@ -83,6 +84,7 @@ def crawler_manager_ping(requestUrl):
 
 # TODO: After implementing jwt tokens, we need to validate this based on the token the crawler manager is passing back
 @api_view(['POST'])
+#@permission_classes((IsAuthenticated, ))
 @permission_classes([AllowAny, ])
 def register_crawler_manager(request):
     logger.info("In Register-Crawl")
@@ -97,7 +99,12 @@ def register_crawler_manager(request):
     job.save()
     payload = {}
     payload['JOB_ID'] = id
+    payload['DOMAIN'] = job.domain
     payload['URLS'] = URLS
+    payload['DOCS_ALL'] = job.docs_all
+    payload['HTML'] = job.docs_html
+    payload['DOCX'] = job.docs_docx
+    payload['PDF'] = job.docs_pdf
     return JsonResponse(payload)
 
 @api_view(['POST'])
@@ -118,8 +125,22 @@ def complete_crawl(request):
     crawl_request.save()
     data = {"CrawlComplete" : "done"}
     requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), json={})
+    user = User.objects.get(username=(CRAWLER_MANAGER_USER_PREFIX + str(id)))
+    user.delete()
     return JsonResponse(data)
 
+
+def get_manager_token(jobId):
+    username = CRAWLER_MANAGER_USER_PREFIX + str(jobId)
+    email = CRAWLER_MANAGER_USER_PREFIX + str(jobId) + '@' + CRAWLER_MANAGER_USER_PREFIX + '.com'
+    password = username
+    user = User.objects.create_user(username=username,
+                                    email=email,
+                                    password=password)
+    #user = User.objects.get(username=username)
+    payload = jwt_payload_handler(user)
+    token = jwt.encode(payload, settings.SECRET_KEY)
+    return token
 
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
@@ -172,7 +193,7 @@ def new_job(request):
                 URLS = crawl_request.urls
             logger.info('NewJob created: %s', crawl_request.id)
             logger.info('Received urls: %s', crawl_request.urls)
-            launch_crawler_manager(crawl_request)
+            launch_crawler_manager(crawl_request, JOB_ID)
             return redirect('mainapp_home')
     else:
         form = CrawlRequestForm()
@@ -196,17 +217,18 @@ def api_create_crawl(request):
         URLS = crawl_request.urls
     logger.info('NewJob created: %s', crawl_request.id)
     logger.info('Received urls: %s', crawl_request.urls)
-    launch_crawler_manager(crawl_request)
+    launch_crawler_manager(crawl_request, JOB_ID)
     payload = {}
     payload['jobId'] = crawl_request.id
     return Response(payload, status=status.HTTP_200_OK)
 
-def launch_crawler_manager(request):
+def launch_crawler_manager(request, jobId):
     #logger.error("In API new job")
     if ENVIRONMENT == 'local':
         # Running in docker compose,
         print("Looks like this is not running on a Kuberenetes cluster, ")
-        requests.post("http://crawler-manager:8002/crawl")
+        token = get_manager_token(jobId).decode("utf-8")
+        requests.post("http://crawler-manager:8002/crawl", json={"token" : token})
     else:
         # If ENVIRONMENT is prod, it means it is running in the Kubernetes Cluster
         # Use the Helm command to trigger a new Crawler Manager Instance
