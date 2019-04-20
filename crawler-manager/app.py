@@ -17,6 +17,7 @@ import redis_connect
 import work_processor
 from urllib import parse
 from urllib import robotparser
+from reppy.robots import Robots
 
 import _thread
 
@@ -196,12 +197,11 @@ def run_flask():
 def run_work_processor():
     global INITIAL_URLS
     robotparsers = {}
+
+    # Save all parsing rules for the * user-agent in dictionary for all seed urls
     for url in INITIAL_URLS:
-        robotparsers["{0}_RobotParser".format(url)] = robotparser.RobotFileParser()
-        robotparsers["{0}_RobotParser".format(url)].set_url(url + "/robots.txt")
-        robotparsers["{0}_RobotParser".format(url)].read()
-        # Test for google robots.txt
-        # context.logger.info(robotparsers["{0}_RobotParser".format(url)].can_fetch("*", "https://www.google.com/imgres"))
+        robots = Robots.fetch(url + "/robots.txt")
+        robotparsers["{0}_RobotAgent".format(url)] = robots.agent('*')
 
     processor = work_processor.Processor(context, robotparsers)
     processor.run()

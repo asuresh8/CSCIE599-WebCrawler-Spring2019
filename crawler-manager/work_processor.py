@@ -4,8 +4,7 @@ import os
 import redis_connect
 import requests
 import time
-from urllib import parse
-from urllib import robotparser
+from reppy.robots import Robots
 
 
 class Processor():
@@ -32,15 +31,20 @@ class Processor():
                 if url is None:
                     rejected_requests += 1
                     continue
+                self.context.logger.info(self.robotparsers)
                 
-                #Check if any of the parsed robots.txt file includes this URL
-                for key, value in self.robotparsers:
-                    if not value.can_fetch("*", url):
+                #Check if any of the parsed robots.txt file disallows this url
+                for key, value in self.robotparsers.items():
+                    self.context.logger.info(key)
+                    self.context.logger.info(value)
+                    self.context.logger.info(value.allowed(url))
+                    if not value.allowed(url):
                         url_allowed = False
                         break
 
-                #Do not assign to crawler if url included in robots.txt
+                #Do not assign to crawler if url is disallowed
                 if not url_allowed:
+                    self.context.logger.info("%s cannot be crawled as it\'s disallowed by the site robots.txt", url)
                     urls_denied += 1
                     continue
                 
