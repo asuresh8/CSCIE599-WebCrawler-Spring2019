@@ -43,7 +43,7 @@ CRAWLER_MANAGER_USER_PREFIX = 'admin'
 
 # store the release timestamps here, like a job id meanwhile
 releases = []
-JOB_ID = "1"
+JOB_ID = 1
 URLS = "http://google.com"
 @login_required()
 def home(request):
@@ -200,7 +200,8 @@ def new_job(request):
     return render(request, "main_app/new_job.html", {'form': form})
 
 @api_view(['POST'])
-@permission_classes([AllowAny, ])
+@permission_classes((IsAuthenticated, ))
+#@permission_classes([AllowAny, ])
 def api_create_crawl(request):
     logger.info('In api new job')
     global JOB_ID
@@ -352,7 +353,11 @@ def api_crawl_contents(request):
     manifest = job.s3_location.split('/')[-1]
     payload = {}
     payload['jobId'] = jobId
-    content = get_google_cloud_manifest_contents(manifest)
+    try:
+        content = get_google_cloud_manifest_contents(manifest)
+    except Exception as e:
+        logger.info('Unable to read manifest contents: %s', str(e))
+        content = 'Unable to read manifest contents'
     if complete_crawl == "1":
         content = get_google_cloud_crawl_pages(content)
     payload['crawl_contents'] = content
