@@ -84,8 +84,8 @@ def crawler_manager_ping(requestUrl):
 
 # TODO: After implementing jwt tokens, we need to validate this based on the token the crawler manager is passing back
 @api_view(['POST'])
-#@permission_classes((IsAuthenticated, ))
-@permission_classes([AllowAny, ])
+@permission_classes((IsAuthenticated, ))
+#@permission_classes([AllowAny, ])
 def register_crawler_manager(request):
     logger.info("In Register-Crawl")
     id = request.data['job_id']
@@ -243,12 +243,14 @@ def launch_crawler_manager(request, jobId):
 def getHelmCommand(request):
     releaseDate = int(time.time())
     releases.append(releaseDate)
+    token = get_manager_token(request.id)
 
     return f"""helm init --service-account tiller && \\
       helm upgrade --install --wait \\
       --set-string image.tag='{IMAGE_TAG}' \\
       --set-string params.job_id='{request.id}' \\
       --set-string params.releaseDate='{releaseDate}' \\
+      --set-string params.authToken='{token}' \\
       --set-string params.domain='{request.domain}' \\
       --set-string params.initialUrls='{request.urls}' \\
       --set-string application.namespace='{NAMESPACE}' \\

@@ -37,7 +37,7 @@ class MainAppViewsTestCase(TestCase):
             format="json")
         self.assertNotEqual(0, response.data["jobId"])
         
-        time.sleep(5)
+        time.sleep(30)
         
         # Get request to get the crawl contents.
         params = {'JOB_ID' : response.data["jobId"], 'complete_crawl' : 0}

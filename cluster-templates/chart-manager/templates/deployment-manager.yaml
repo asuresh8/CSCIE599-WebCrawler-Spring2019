@@ -54,6 +54,8 @@ spec:
           value: "{{ .Values.params.domain }}"
         - name: RELEASE_DATE
           value: "{{ .Values.params.releaseDate }}"
+        - name: TOKEN
+          value: "{{ .Values.params.authToken }}"
         - name: MAIN_APPLICATION_ENDPOINT
           value: "http://main-application-internal-service.{{ .Values.application.namespace }}/"
         resources:

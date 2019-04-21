@@ -16,6 +16,7 @@ params:
   releaseDate: ""
   initialUrls: ""
   domain: ""
+  authToken: ""
 service:
   name: crawler-manager
   externalPort: 80
