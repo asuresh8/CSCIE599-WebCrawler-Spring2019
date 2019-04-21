@@ -105,10 +105,12 @@ def register_crawler_manager(request):
     payload['HTML'] = job.docs_html
     payload['DOCX'] = job.docs_docx
     payload['PDF'] = job.docs_pdf
+    payload['NUM_CRAWLERS'] = job.num_crawlers
     return JsonResponse(payload)
 
 @api_view(['POST'])
-@permission_classes([AllowAny, ])
+@permission_classes((IsAuthenticated, ))
+#@permission_classes([AllowAny, ])
 def complete_crawl(request):
     id = request.data['job_id']
     manifest = request.data['manifest']

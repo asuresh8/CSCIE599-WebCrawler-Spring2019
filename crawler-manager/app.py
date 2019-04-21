@@ -262,8 +262,10 @@ def mark_job_completed(redis_key=None):
             'csv': public_csv,
             'resources_count': url_count
         }
+        
+        header = {'Authorization': TOKEN_PREFIX + TOKEN}
 
-        requests.post(crawl_complete_api, json=json_data)
+        requests.post(crawl_complete_api, json=json_data, headers=header)
         context.logger.info("crawl_complete call successful")
     except Exception as e:
         context.logger.error('Unable to send crawl_complete to main applications: %s', str(e))
