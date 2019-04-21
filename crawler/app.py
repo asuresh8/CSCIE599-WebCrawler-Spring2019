@@ -165,6 +165,7 @@ def ping_crawler_manager():
     except Exception as e:
         context.logger.error("Could not connect to crawler manager: %s", str(e))
 
+
 if __name__ == "__main__":
     ping_crawler_manager()
     test_connections()
