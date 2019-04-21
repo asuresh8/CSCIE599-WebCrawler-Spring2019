@@ -28,7 +28,7 @@ def dump():
 def test_redis_connection():
     try:
         logging.info("Connecting to Redis: %s", os.environ.get('REDIS_HOST','crawler-redis'))
-        response = redis_db.ping()
+        redis_db.ping()
         return 'Connection successful (Redis)'
     except redis.ConnectionError as e:
         logging.error("Error connecting to redis: %s", str(e))

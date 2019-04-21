@@ -54,7 +54,7 @@ def get_links(response):
                 continue
             
             if url in urls:
-                urls[url] = urls[url] + 1
+                urls[url] += 1
             else:
                 urls[url] = 1
 

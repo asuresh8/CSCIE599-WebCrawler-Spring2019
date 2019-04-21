@@ -115,7 +115,7 @@ def register():
 # }
 @app.route('/links', methods=['POST'])
 def links():
-    global NUM_CRAWLERS_FINISHED, NUM_CRAWLERS_FINISHED
+    global NUM_CRAWLERS_FINISHED
 
     context.logger.info('Received response from crawler: %s', flask.request.data)
     main_url = flask.request.json['main_url']
@@ -139,10 +139,11 @@ def links():
     NUM_CRAWLERS_FINISHED += 1
     context.processed_urls.increment()
     context.in_process_urls.remove(main_url)
+    redis_connect.put(url, s3_uri)
 
     if NUM_CRAWLERS_FINISHED == NUM_CRAWLERS_TOTAL and ENVIRONMENT != 'local':
         context.logger.info('Kill - Crawlers done')
-        mark_job_completed(main_url)
+        mark_job_completed()
         _thread.start_new_thread(kill_after,(3,))
 
     return ""
@@ -212,12 +213,14 @@ def run_work_processor():
         kill_api = os.path.join(crawler, "kill")
         try:
             context.logger.info("Sending kill request to crawler: %s", crawler)
-            requests.post(kill_api, json={})
+            response = requests.post(kill_api, json={})
+            response.raise_for_status()
             context.logger.info("Successfully killed crawler: %s", crawler)
         except Exception as e:
             context.logger.error('Unable to kill crawler: %s', str(e))
 
-    mark_job_completed(INITIAL_URLS[0])
+    mark_job_completed()
+
 
 def upload_file(file_path, key):
     storage_client = storage.Client()
@@ -225,51 +228,34 @@ def upload_file(file_path, key):
     blob = bucket.blob(key)
     blob.upload_from_filename(file_path)
     blob.make_public()
-
     return blob.public_url
 
-def mark_job_completed(redis_key=None):
-    context.logger.info("1. creating manifest from redis %s", redis_key)
-
-    url_data = redis_connect.get_json(redis_key)
-    url_count = 0
-    if url_data != None:
-        url_count = len(url_data['child_urls'])
-
-    manifest = redis_connect.write_crawler_manifest(redis_key)
+def mark_job_completed():
+    context.logger.info("creating manifest from redis %s", redis_key)
+    manifest = redis_connect.write_manifest()
     manifest_key = 'manifest-{}.csv'.format(str(uuid.uuid4()))
-
-    csv = redis_connect.write_crawler_csv(redis_key)
-    csv_key = 'data-{}.csv'.format(str(uuid.uuid4()))
-
     # Write to GCS
     context.logger.info("Uploading manifest to GCS")
     public_manifest = upload_file(manifest, manifest_key)
-
-    context.logger.info("Uploading csv to GCS")
-    public_csv = upload_file(csv, csv_key)
-
     context.logger.info("Manifest and CSV uploaded! Deleting local files")
     os.remove(manifest)
-    os.remove(csv)
 
     crawl_complete_api = os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/crawl_complete')
+    url_count = context.processed_urls.get()
     try:
         context.logger.info("Calling crawl_complete api %s", url_count)
-
         json_data = {
             'job_id': JOB_ID,
             'manifest': public_manifest,
-            'csv': public_csv,
             'resources_count': url_count
         }
-        
         header = {'Authorization': TOKEN_PREFIX + TOKEN}
-
-        requests.post(crawl_complete_api, json=json_data, headers=header)
+        response = requests.post(crawl_complete_api, json=json_data, headers=header)
+        response.raise_for_status()
         context.logger.info("crawl_complete call successful")
     except Exception as e:
         context.logger.error('Unable to send crawl_complete to main applications: %s', str(e))
+
 
 def setup():
     global JOB_ID
@@ -300,17 +286,13 @@ def ping_main():
     try:
         main_url = os.path.join(MAIN_APPLICATION_ENDPOINT, f'main_app/api/ping?releaseDate={RELEASE_DATE}')
         context.logger.info('main_url %s', main_url)
-        r = requests.get(main_url)
-        return r.text
-    except requests.RequestException as rex:
-        return "request exception"
-    except requests.HTTPException as htex:
-        return "http exception"
-    except Exception as ex:
-        return "general exception"
+        response = requests.get(main_url)
+        response.raise_for_status()    
+    except Exception as e:
+        context.logger.error("Could not connect to main application: %s", str(e))
+
 
 if __name__ == "__main__":
-    # ping = ping_main()
     context.logger.info('will connect to redis')
     test_connections()
     context.logger.info('ENVIRONMENT -- %s ', ENVIRONMENT)
