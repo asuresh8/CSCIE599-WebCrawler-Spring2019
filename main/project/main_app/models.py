@@ -49,6 +49,7 @@ class CrawlRequest(models.Model):
     s3_location = models.URLField(default='', max_length=1000, blank=True)
     crawler_manager_endpoint = models.URLField(default='', max_length=500, blank=True)
     manifest = models.URLField(default='', max_length=1000, blank=True)
+    num_crawlers = models.PositiveIntegerField("Number crawler instances", default=1)
     # maybe we want to use keywords after we receive the crawl results for better search and sorting?
     #keywords = models.ManyToManyField(Keyword, help_text="Select a keyword for this resource", blank=True)
     user = models.ForeignKey(User, related_name="crawl_requests_user", on_delete=models.CASCADE)
