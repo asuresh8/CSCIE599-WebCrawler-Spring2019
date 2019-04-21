@@ -50,6 +50,9 @@ def get_links(response):
     for link in bs_obj.find_all('a'):
         if 'href' in link.attrs:
             url = link.attrs['href']
+            if url.startswith('mailto'):
+                continue
+            
             if url in urls:
                 urls[url] = urls[url] + 1
             else:
