@@ -156,23 +156,17 @@ def setup():
         context.logger.info('Unable to register with crawler manager: %s', str(e))
 
 
-def ping_manager():
+def ping_crawler_manager():
     try:
-        r = requests.get(CRAWLER_MANAGER_ENDPOINT)
-        return r.text
-    except requests.RequestException as rex:
-        return "request exception"
-    except requests.HTTPException as htex:
-        return "http exception"
-    except Exception as ex:
-        return "general exception"
+        context.logger.info('pinging CRAWLER_MANAGER_ENDPOINT - %s', CRAWLER_MANAGER_ENDPOINT)
+        response = requests.get(CRAWLER_MANAGER_ENDPOINT)
+        response.raise_for_status()
+        context.logger.info('ping successful!')
+    except Exception as e:
+        context.logger.error("Could not connect to crawler manager: %s", str(e))
 
 if __name__ == "__main__":
-    ping = ping_manager()
-
-    context.logger.info('ping crawler manager - %s', ping)
-    context.logger.info('CRAWLER_MANAGER_ENDPOINT - %s', CRAWLER_MANAGER_ENDPOINT)
-
+    ping_crawler_manager()
     test_connections()
     if ENVIRONMENT == 'local':
         setup()
