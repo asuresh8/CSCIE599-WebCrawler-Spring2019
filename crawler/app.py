@@ -82,45 +82,33 @@ def crawl():
     context.active_thread_count.increment()
     executor.submit(do_crawl, url)
     return flask.jsonify({'accepted': True})
-    # TODO: return success and spin off new thread to crawl
 
 
 def do_crawl(url):
     context.logger.info('Starting crawl thread for %s', url)
-
-    if redis_connect.exists(url):
+    cached = redis_connect.exists(url)
+    if cached:
         cached_result = redis_connect.get(url)
-
-        if cached_result != None:
+        if cached_result != None and 's3_uri' in cached_result and 'child_urls' in cached_result:
+            context.logger.info('Found cached result: %s, %s', url, str(cached_result))
             s3_uri = cached_result['s3_uri']
-            child_urls = cached_result['child_urls']
+            links = cached_result['child_urls']
         else:
-            s3_uri = ''
-            child_urls = ''
-            context.logger.info('Redis cache was not a valid json')
-
-    if redis_connect.exists(url) and s3_uri != '' and child_urls != '':
-        context.logger.info('%s exists in cache', url)
-        cached_result = redis_connect.get(url)
-        context.logger.info('Found cached result: %s, %s', url, str(cached_result))
-        context.logger.info(cached_result)
-        #s3_uri = cached_result['s3_uri']
-        #links = cached_result['child_urls']
-    else:
+            cached = False
+    
+    if not cached:
         key = 'crawl_pages/{}'.format(str(uuid.uuid4()))
         context.logger.info('Generated key: %s', key)
         try:
             context.logger.info('Sending Get Request')
             response = requests.get(url)
+            response.raise_for_status()
             context.logger.info('Received response for get request')
         except Exception as e:
             context.logger.error('Unable to parse %s. Received %s', url, str(e))
             s3_uri = ''
             links = []
         else:
-            # store in s3
-            # s3_uri = helpers.store_response_in_s3(response, key)
-            # Store in GCS
             try:
                 context.logger.info('Attempting to store in GCS')
                 s3_uri = helpers.store_response_in_gcs(response, key)
@@ -143,7 +131,8 @@ def do_crawl(url):
     context.logger.info('Endpoint on Crawler manager: %s', links_api)
     try:
         context.logger.info('Sending response back to crawler manager...')
-        requests.post(links_api, json={'main_url': url, 's3_uri': s3_uri, 'child_urls': links})
+        response = requests.post(links_api, json={'main_url': url, 's3_uri': s3_uri, 'child_urls': links})
+        response.raise_for_status()
         context.logger.info('Response sent successfully!')
     except Exception as e:
         context.logger.error("Could not connect to crawler manager: %s", str(e))
