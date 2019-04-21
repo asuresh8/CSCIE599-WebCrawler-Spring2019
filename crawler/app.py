@@ -149,7 +149,6 @@ def do_crawl(url):
         context.logger.error("Could not connect to crawler manager: %s", str(e))
 
     context.active_thread_count.decrement()
-    sys.exit(0)
 
 
 def test_connections():
@@ -192,3 +191,4 @@ if __name__ == "__main__":
     else:
         _thread.start_new_thread(run_flask,())
         executor.submit(do_crawl, URL)
+        sys.exit(0)
