@@ -1,6 +1,6 @@
 import unittest, requests, json, os
 
-MAIN_APP = 'http://localhost:8001/main_app'
+MAIN_APP = '{}/main_app'.format(os.environ.get('DEV_API_ENDPOINT', 'http://localhost:8001'))
 JWT = None
 JOB_ID = None
 
@@ -57,7 +57,6 @@ class TestCreateJob(unittest.TestCase):
     except Exception as e:
       print('Exception -- ', e)
 
-    print(data)
     self.assertIsNot(data['status'], None)
     self.assertIs(data['status'], 1)
 

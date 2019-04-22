@@ -75,13 +75,14 @@ buildCrawlerManager:
 
 integration-tests:
   stage: integration
-  image: docker:latest
+  image: python:3.7.3-alpine
   before_script:
     - apk add --no-cache curl wget tar bash
     - ./cluster-setup/kube_setup
   script:
     - helm init --service-account tiller
     - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set-string application.namespace="development" 'main-application' ./cluster-templates/chart-main
+    - python test.py
   only:
     - develop
 

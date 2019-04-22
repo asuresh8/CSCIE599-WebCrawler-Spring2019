@@ -1,10 +1,8 @@
 import posixpath
 import urllib
-import logging
 
 import crawler_manager_context as context
 
-logging.basicConfig(level=logging.INFO)
 #Expands all relative links to absolute urls
 def expand_url(home, url):
     join = urllib.parse.urljoin(home,url)
@@ -17,9 +15,7 @@ def expand_url(home, url):
 
 
 def get_domain_name(url):
-    logging.info('uri to parse %s', url)
     parsed_uri = urllib.parse.urlparse(url)
-    logging.info('uri === %s', parsed_uri)
     return '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
 
 
