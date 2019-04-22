@@ -97,12 +97,14 @@ def do_crawl(url):
             cached = False
     
     if not cached:
+        scraper = SeleniumTask(url)
         key = 'crawl_pages/{}'.format(str(uuid.uuid4()))
         context.logger.info('Generated key: %s', key)
         try:
             context.logger.info('Sending Get Request')
-            response = requests.get(url)
-            response.raise_for_status()
+            #response = requests.get(url)
+            #response.raise_for_status()
+            res_html = scraper.do_scrape()
             context.logger.info('Received response for get request')
         except Exception as e:
             context.logger.error('Unable to parse %s. Received %s', url, str(e))
@@ -111,14 +113,16 @@ def do_crawl(url):
         else:
             try:
                 context.logger.info('Attempting to store in GCS')
-                s3_uri = helpers.store_response_in_gcs(response, key)
+                #s3_uri = helpers.store_response_in_gcs(response, key)
+                s3_uri = scraper.store_in_gcs(res_html, key)
                 context.logger.info('uri successfully generated!')
             except Exception as e:
                 context.logger.error('Unable to store webpage for %s: %s', url, str(e))
                 s3_uri = ''
 
             context.logger.info('Parsing links...')
-            links = helpers.get_links(response)
+            #links = helpers.get_links(response)
+            links = scraper.get_links(res_html)
             context.logger.info('Found links in %s: %s', url, str(links))
             try:
                 context.logger.info('Caching s3_uri and child_urls')
