@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'new_job$', views.new_job, name="mainapp_new_job"),
     url(r'api/create_crawl', views.api_create_crawl, name="api_create_crawl"),
     url(r'api/job_status', views.api_job_status, name="api_job_status"),
+    url(r'api/get_job_status', views.get_api_job_status, name="api_job_status"),
     url(r'profile$', views.profile, name="mainapp_profile"),
     url(r'authenticate_user$', views.authenticate_user, name="authenticate_user"),
     path(r'job/<int:job_id>', views.job_details, name="mainapp_jobdetails"),

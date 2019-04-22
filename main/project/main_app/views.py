@@ -132,6 +132,11 @@ def complete_crawl(request):
     return JsonResponse(data)
 
 
+def check_user_password(current_password, incoming_password):
+    salt = current_password.split('$')[2]
+    hashed_password = make_password(incoming_password, salt)
+
+    return current_password == hashed_password
 def get_manager_token(jobId):
     username = CRAWLER_MANAGER_USER_PREFIX + str(jobId)
     email = CRAWLER_MANAGER_USER_PREFIX + str(jobId) + '@' + CRAWLER_MANAGER_USER_PREFIX + '.com'
@@ -147,14 +152,12 @@ def get_manager_token(jobId):
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
 def authenticate_user(request):
-
     try:
         username = request.data['username']
         password = request.data['password']
-        hashed_pass = make_password(password)
-        # user = User.objects.get(username=username, password=hashed_pass)
         user = User.objects.get(username=username)
-        if user:
+
+        if user and check_user_password(user.password, password):
             try:
                 payload = jwt_payload_handler(user)
                 token = jwt.encode(payload, settings.SECRET_KEY)
@@ -283,6 +286,23 @@ def job_details(request, job_id):
     except CrawlRequest.DoesNotExist:
         raise Http404("Job does not exist.")
     return render(request, "main_app/job_details.html", {"job": job})
+
+@api_view(['POST'])
+@permission_classes([AllowAny, ])
+def get_api_job_status(request):
+    try:
+        job = CrawlRequest.objects.get(pk=request.data['job_id'])
+        job_info = {
+            "name": job.name,
+            "type": job.type,
+            "domain": job.domain,
+            "urls": job.urls,
+            "status": job.status
+        }
+    except CrawlRequest.DoesNotExist:
+        raise Http404("Job does not exist.")
+
+    return JsonResponse(job_info)
 
 
 @login_required()

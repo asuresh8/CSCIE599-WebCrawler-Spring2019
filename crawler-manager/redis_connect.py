@@ -44,7 +44,7 @@ def decode_value(val, charset):
 def dump():
     for key in redis_db.scan_iter("*"):
         logging.info('redis value %s --- %s', key, redis_db.get(key))
-    
+
 
 def test_redis_connection():
     try:

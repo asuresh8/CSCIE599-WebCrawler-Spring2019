@@ -214,7 +214,7 @@ def run_work_processor():
         try:
             context.logger.info("Sending kill request to crawler: %s", crawler)
             response = requests.post(kill_api, json={})
-            response.raise_for_status()
+            #response.raise_for_status()
             context.logger.info("Successfully killed crawler: %s", crawler)
         except Exception as e:
             context.logger.error('Unable to kill crawler: %s', str(e))
@@ -287,7 +287,7 @@ def ping_main():
         main_url = os.path.join(MAIN_APPLICATION_ENDPOINT, f'main_app/api/ping?releaseDate={RELEASE_DATE}')
         context.logger.info('main_url %s', main_url)
         response = requests.get(main_url)
-        response.raise_for_status()    
+        response.raise_for_status()
     except Exception as e:
         context.logger.error("Could not connect to main application: %s", str(e))
 
