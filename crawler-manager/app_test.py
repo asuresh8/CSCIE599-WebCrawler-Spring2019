@@ -51,9 +51,6 @@ class TestCrawlerManagerApp(unittest.TestCase):
     #     self.assertTrue(app.context.queued_urls.contains('http://garbage.com/2'))
     #     self.assertTrue(app.context.queued_urls.contains('http://garbage.com/3'))
 
-
-
-
  
 if __name__ == '__main__':
     unittest.main()
