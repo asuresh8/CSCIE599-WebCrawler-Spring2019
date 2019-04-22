@@ -1,14 +1,17 @@
+import os
+import app
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from urllib.parse import urldefrag, urljoin
 from bs4 import BeautifulSoup
-import os
+
 
 class SeleniumTask(object):
 
     def __init__(self, base_url):
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        dir_path = dir_path + "/chromedriver"
+        #dir_path = os.path.dirname(os.path.realpath(__file__))
+        dir_path = "/usr/local/bin/chromedriver"
+        app.context.logger.info("Chrome driver path: {}".format(dir_path))
         options = Options()
         options.headless = True
         self.browser = webdriver.Chrome(dir_path, options= options ) 
@@ -31,7 +34,7 @@ class SeleniumTask(object):
     def do_scrape(self, url):
         try:
             self.browser.get(url)
-            context.logger.info("Scraping URL: {}".format(self.base_url))
+            app.context.logger.info("Scraping URL: {}".format(self.base_url))
             return self.browser.page_source
         except Exception as e:
             print("error")

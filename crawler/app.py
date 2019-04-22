@@ -13,7 +13,7 @@ import uuid
 import crawler_context
 import helpers
 import redis_connect
-
+import crawl_selenium
 import _thread
 
 app = flask.Flask(__name__)
@@ -97,7 +97,7 @@ def do_crawl(url):
             cached = False
     
     if not cached:
-        scraper = SeleniumTask(url)
+        scraper = crawl_selenium.SeleniumTask(url)
         key = 'crawl_pages/{}'.format(str(uuid.uuid4()))
         context.logger.info('Generated key: %s', key)
         try:
