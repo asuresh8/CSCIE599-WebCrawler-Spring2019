@@ -78,6 +78,7 @@ integration-tests:
   image: python:3.7.3-alpine
   before_script:
     - apk add --no-cache curl wget tar bash
+    - pip install requests==2.21.0
     - ./cluster-setup/kube_setup
   script:
     - helm init --service-account tiller
