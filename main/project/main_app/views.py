@@ -97,17 +97,6 @@ def register_crawler_manager(request):
     job = CrawlRequest.objects.get(pk=id)
     job.crawler_manager_endpoint = endpoint
     job.save()
-<<<<<<< HEAD
-    payload = {}
-    payload['JOB_ID'] = id
-    payload['DOMAIN'] = job.domain
-    payload['URLS'] = job.urls
-    payload['DOCS_ALL'] = job.docs_all
-    payload['HTML'] = job.docs_html
-    payload['DOCX'] = job.docs_docx
-    payload['PDF'] = job.docs_pdf
-    payload['NUM_CRAWLERS'] = job.num_crawlers
-=======
     payload = {
         'job_id': id,
         'domain': job.domain.split(';'),
@@ -118,7 +107,6 @@ def register_crawler_manager(request):
         'docs_docx': job.docs_docx,
         'num_crawlers': job.num_crawlers
     }
->>>>>>> fix lots of crawler manager issues
     return JsonResponse(payload)
 
 @api_view(['POST'])
