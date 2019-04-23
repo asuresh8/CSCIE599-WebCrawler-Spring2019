@@ -100,7 +100,7 @@ def register_crawler_manager(request):
     payload = {}
     payload['JOB_ID'] = id
     payload['DOMAIN'] = job.domain
-    payload['URLS'] = URLS
+    payload['URLS'] = job.urls
     payload['DOCS_ALL'] = job.docs_all
     payload['HTML'] = job.docs_html
     payload['DOCX'] = job.docs_docx
@@ -372,17 +372,19 @@ def get_google_cloud_crawl_pages(manifest):
 @permission_classes([AllowAny, ])
 def api_crawl_contents(request):
     jobId = request.query_params.get('JOB_ID')
+    content = ""
+    payload = {}
     complete_crawl = request.query_params.get('complete_crawl')
     job = CrawlRequest.objects.get(pk=jobId)
     manifest = job.s3_location.split('/')[-1]
-    payload = {}
     payload['jobId'] = jobId
-    try:
-        content = get_google_cloud_manifest_contents(manifest)
-    except Exception as e:
-        logger.info('Unable to read manifest contents: %s', str(e))
-        content = 'Unable to read manifest contents'
     if complete_crawl == "1":
         content = get_google_cloud_crawl_pages(content)
+    else:
+        try:
+            content = get_google_cloud_manifest_contents(manifest)
+        except Exception as e:
+            logger.info('Unable to read manifest contents: %s', str(e))
+            content = 'Unable to read manifest contents'
     payload['crawl_contents'] = content
     return Response(payload, status=status.HTTP_200_OK)

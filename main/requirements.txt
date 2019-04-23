@@ -8,4 +8,5 @@ PyMySQL==0.9.3
 djangorestframework==3.9.2
 djangorestframework-jwt==1.11.0
 requests==2.21.0
+urllib3==1.24.1
 google-cloud-storage==1.14.0
