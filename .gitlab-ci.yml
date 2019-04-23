@@ -15,7 +15,7 @@ testMain:
     - pip install -r requirements.txt
     - pip install -r test_requirements.txt
   script:
-    - python -m unittest discover -s tests -p "*_test.py"
+    - python project/manage.py test project --settings=webcrawler.test_settings
 
 testCrawlerManager:
   stage: test
