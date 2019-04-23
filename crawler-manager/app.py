@@ -222,44 +222,6 @@ def teardown():
         context.logger.error('Unable to send crawl_complete to main applications: %s', str(e))
 
 
-<<<<<<< HEAD
-def setup():
-    global JOB_ID
-    global INITIAL_URLS
-    try:
-        context.logger.info('Attempting to register with main application')
-        header = {'Authorization': TOKEN_PREFIX + TOKEN}
-        response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
-                                 json={'job_id': JOB_ID, 'endpoint': ENDPOINT},
-                                 headers=header)
-        if ENVIRONMENT == 'local':
-            payload = json.loads(response.text)
-            JOB_ID = payload["JOB_ID"]
-            if payload['URLS'] != "":
-                INITIAL_URLS = payload['URLS'].split(';')
-            context.logger.info('[223] JOBID: %s, URLS: %s', JOB_ID, INITIAL_URLS)
-        context.logger.info('Registered with main application!')
-    except Exception as e:
-        context.logger.error('Unable to register with main application: %s', str(e))
-
-    for url in INITIAL_URLS:
-        context.queued_urls.add(url)
-
-    processor_thread = threading.Thread(target=run_work_processor)
-    processor_thread.start()
-
-def ping_main():
-    try:
-        main_url = os.path.join(MAIN_APPLICATION_ENDPOINT, f'main_app/api/ping?releaseDate={RELEASE_DATE}')
-        context.logger.info('main_url %s', main_url)
-        response = requests.get(main_url)
-        response.raise_for_status()
-    except Exception as e:
-        context.logger.error("Could not connect to main application: %s", str(e))
-
-
-=======
->>>>>>> fix lots of crawler manager issues
 if __name__ == "__main__":
     context.logger.info('ENVIRONMENT -- %s ', ENVIRONMENT)
     context.logger.info('starting flask app in separate thread')
