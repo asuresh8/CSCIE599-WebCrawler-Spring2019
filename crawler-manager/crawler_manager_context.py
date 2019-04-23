@@ -10,5 +10,9 @@ class Context:
         self.crawlers = atomic.AtomicSet()
         self.in_process_urls = atomic.AtomicSet()
         self.processed_urls = atomic.AtomicCounter()
+        self.disallowed_urls = atomic.AtomicCounter()
+        self.cache = None
+        self.parameters = {}
+
 
     

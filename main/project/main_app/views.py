@@ -97,6 +97,7 @@ def register_crawler_manager(request):
     job = CrawlRequest.objects.get(pk=id)
     job.crawler_manager_endpoint = endpoint
     job.save()
+<<<<<<< HEAD
     payload = {}
     payload['JOB_ID'] = id
     payload['DOMAIN'] = job.domain
@@ -106,6 +107,18 @@ def register_crawler_manager(request):
     payload['DOCX'] = job.docs_docx
     payload['PDF'] = job.docs_pdf
     payload['NUM_CRAWLERS'] = job.num_crawlers
+=======
+    payload = {
+        'job_id': id,
+        'domain': job.domain.split(';'),
+        'urls': job.urls.split(';'),
+        'docs_all': job.docs_all,
+        'docs_html': job.docs_html,
+        'docs_pdf': job.docs_pdf,
+        'docs_docx': job.docs_docx,
+        'num_crawlers': job.num_crawlers
+    }
+>>>>>>> fix lots of crawler manager issues
     return JsonResponse(payload)
 
 @api_view(['POST'])
@@ -114,13 +127,11 @@ def register_crawler_manager(request):
 def complete_crawl(request):
     id = request.data['job_id']
     manifest = request.data['manifest']
-    csv = request.data['csv']
     resources_count = request.data['resources_count']
 
     logger.info("In Crawl-Complete")
     logger.info('Crawl-Complete id - %s, manifest - %s', id, manifest)
     crawl_request = CrawlRequest.objects.get(pk=id)
-    crawl_request.s3_location = csv
     crawl_request.manifest = manifest
     crawl_request.status = 3
     crawl_request.docs_collected = resources_count
