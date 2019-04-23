@@ -66,10 +66,9 @@ class Processor():
                         self.context.in_process_urls.add(url)
                     else:
                         self.context.logger.warning('Crawler %s rejected request', crawler)
-                        rejected_requests += 1
                         self.context.queued_urls.add(url)
             
             # TODO: eliminate this. This is completely arbitrary
-            sleep_time = 0.1  + 1.0 * rejected_requests
+            sleep_time = 0.1
             self.context.logger.info('Work processor sleeping %d seconds', sleep_time)
             time.sleep(sleep_time)
