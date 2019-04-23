@@ -1,22 +1,40 @@
 import os
 import app
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
-from urllib.parse import urldefrag, urljoin
 from bs4 import BeautifulSoup
 
 
-class SeleniumTask(object):
+class ScraperObject(object):
 
     def __init__(self, base_url):
-        #dir_path = os.path.dirname(os.path.realpath(__file__))
-        dir_path = "/usr/local/bin/chromedriver"
+    
+        dir_path = os.path.dirname(os.path.realpath(__file__)) + "/chromedriver"
         app.context.logger.info("Chrome driver path: {}".format(dir_path))
-        options = Options()
-        options.headless = True
-        self.browser = webdriver.Chrome(dir_path, options= options ) 
+        exists = os.path.isfile(dir_path)
+        self.is_initialized = False
         self.base_url = base_url
+        if exists :
+            chrome_options = Options()
+            chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--no-sandbox")
+            chrome_options.add_argument("--disable-setuid-sandbox")
+            chrome_options.add_argument("--disable-dev-shm-usage")
+            chrome_options.add_argument("--remote-debugging-port=9222")
+            try:
+                self.driver = webdriver.Chrome(executable_path= dir_path, options= chrome_options ) 
+                app.context.logger.info('browser initialized')
+                
+            except WebDriverException as e:
+                app.context.logger.info("could not instantiate browser: {}".format(str(e)))
+        else :
+            self.is_initialized = True
  
+    # check if browser is intialized properly
+    def is_valid(self):
+        return self.is_initialized
+
     # get_links - parses the url 'a' tags using beautiful soup
     def get_links(html):
         bs_obj = bs4.BeautifulSoup(html, 'html.parser')
@@ -33,14 +51,14 @@ class SeleniumTask(object):
             
     def do_scrape(self, url):
         try:
-            self.browser.get(url)
+            self.driver.get(url)
             app.context.logger.info("Scraping URL: {}".format(self.base_url))
-            return self.browser.page_source
+            return self.driver.page_source
         except Exception as e:
             print("error")
             return
 
-    def store_response_in_gcs(html, key):
+    def store_in_gcs(html, key):
         storage_client = storage.Client()
         bucket = storage_client.get_bucket(os.environ['GCS_BUCKET'])
         blob = bucket.blob(key)

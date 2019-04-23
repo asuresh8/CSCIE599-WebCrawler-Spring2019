@@ -71,7 +71,6 @@ def kill():
 def status():
     return flask.jsonify({'active_threads': context.active_thread_count.get()})
 
-
 @app.route('/crawl', methods=['POST'])
 def crawl():
     url =  flask.request.json['url']
@@ -97,14 +96,20 @@ def do_crawl(url):
             cached = False
     
     if not cached:
-        scraper = crawl_selenium.SeleniumTask(url)
+        scraper = crawl_selenium.ScraperObject(url)
+
         key = 'crawl_pages/{}'.format(str(uuid.uuid4()))
         context.logger.info('Generated key: %s', key)
         try:
             context.logger.info('Sending Get Request')
-            #response = requests.get(url)
-            #response.raise_for_status()
-            res_html = scraper.do_scrape()
+            if scraper.is_valid():
+                res_html = scraper.do_scrape()
+            else :
+                response = requests.get(url)
+                response.raise_for_status()
+                res_html = response.content
+   
+            context.logger.info(res_html)
             context.logger.info('Received response for get request')
         except Exception as e:
             context.logger.error('Unable to parse %s. Received %s', url, str(e))
@@ -121,7 +126,6 @@ def do_crawl(url):
                 s3_uri = ''
 
             context.logger.info('Parsing links...')
-            #links = helpers.get_links(response)
             links = scraper.get_links(res_html)
             context.logger.info('Found links in %s: %s', url, str(links))
             try:
