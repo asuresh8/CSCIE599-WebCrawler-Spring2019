@@ -83,6 +83,7 @@ integration-tests:
   script:
     - helm init --service-account tiller
     - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set-string application.namespace="development" 'main-application' ./cluster-templates/chart-main
+    - sleep 60
     - python test.py
   only:
     - develop
