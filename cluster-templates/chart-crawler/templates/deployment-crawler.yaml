@@ -3,6 +3,8 @@ kind: Job
 metadata:
   name: "crawler-{{date "20060102150405" .Release.Time }}"
   namespace: "{{ .Values.application.namespace }}"
+  labels:
+    jobId: "{{ .Values.params.jobId }}"
 spec:
   backoffLimit: 5
   template:

@@ -230,6 +230,7 @@ def job_details(request, job_id):
         raise Http404("Job does not exist.")
     return render(request, "main_app/job_details.html", {"job": job})
 
+#copied to api_app, check if need to be removed from here
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
 def get_api_job_status(request):

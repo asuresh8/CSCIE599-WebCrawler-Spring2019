@@ -170,7 +170,7 @@ def setup():
 
     for url in context.parameters['urls']:
         context.queued_urls.add(url)
-    
+
     if ENVIRONMENT != 'local':
         context.logger.info('deploying crawlers')
         for _ in range(context.parameters['num_crawlers']):
@@ -178,7 +178,8 @@ def setup():
                 helm init --service-account tiller && helm upgrade --install \\
                 --set-string image.tag='{IMAGE_TAG}' \\
                 --set-string params.crawlerManagerEndpoint='{CRAWLER_MANAGER_ENDPOINT}' \\
-                --set-string application.namespace='{NAMESPACE}'
+                --set-string application.namespace='{NAMESPACE}' \\
+                --set-string params.jobId='{JOB_ID}' \\
                 \"crawler-{RELEASE_DATE}\" ./cluster-templates/chart-crawler
             """
             context.logger.info('Running helm command: %s', helm_command)
@@ -197,7 +198,7 @@ def teardown():
             context.logger.info("Successfully killed crawler: %s", crawler)
         except Exception as e:
             context.logger.error('Unable to kill crawler: %s', str(e))
-    
+
     context.logger.info("creating manifest")
     manifest = context.cache.write_manifest()
     manifest_key = 'manifest-{}.csv'.format(str(uuid.uuid4()))

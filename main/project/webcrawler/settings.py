@@ -81,11 +81,10 @@ WSGI_APPLICATION = 'webcrawler.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'test',
+        'NAME': os.environ.get('DB_NAME', 'test'),
         'USER': os.environ.get('DB_USER', 'root'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'root'),
         'HOST': os.environ.get('MYSQL_HOST', 'crawler-mysql5'),
-        'DATABASE': os.environ.get('DB_NAME', 'test'),
         'PORT': 3306
     }
 }

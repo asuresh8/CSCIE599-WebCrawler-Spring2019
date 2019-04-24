@@ -79,6 +79,7 @@ integration-tests:
   before_script:
     - apk add --no-cache curl wget tar bash
     - pip install requests==2.21.0
+    - pip install kubernetes==9.0.0
     - ./cluster-setup/kube_setup
   script:
     - helm init --service-account tiller

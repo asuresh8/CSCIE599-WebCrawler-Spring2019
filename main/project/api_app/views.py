@@ -43,6 +43,24 @@ def check_user_password(current_password, incoming_password):
     salt = current_password.split('$')[2]
     hashed_password = make_password(incoming_password, salt)
 
+
+@api_view(['POST'])
+@permission_classes([AllowAny, ])
+def get_api_job_status(request):
+    try:
+        job = CrawlRequest.objects.get(pk=request.data['job_id'])
+        job_info = {
+            "name": job.name,
+            "type": job.type,
+            "domain": job.domain,
+            "urls": job.urls,
+            "status": job.status
+        }
+    except CrawlRequest.DoesNotExist:
+        raise Http404("Job does not exist.")
+
+    return JsonResponse(job_info)
+
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
 def authenticate_user(request):
