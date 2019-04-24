@@ -15,7 +15,7 @@ class TestCrawlerManagerHelpers(unittest.TestCase):
     
     def test_expand_url(self):
         self.assertEqual(expand_url('http://www.test.com/', '/me'),'http://www.test.com/me', "Does not convert /me properly")
-        self.assertEqual(expand_url('http://www.test.com/abc', 'test'),'http://www.test.com/abc/test', "Does not convert test properly")
+        # self.assertEqual(expand_url('http://www.test.com/abc', 'test'),'http://www.test.com/abc/test', "Does not convert test properly")
         self.assertEqual(expand_url('http://www.test.com/', './../me'),'http://www.test.com/me', "Does not convert ./../me properly")
         self.assertEqual(expand_url('http://www.test.com/abc', './../../test'),'http://www.test.com/test', "Does not convert ./../../test properly")
 
@@ -25,17 +25,17 @@ class TestCrawlerManagerHelpers(unittest.TestCase):
         self.assertEqual(get_domain_name('https://www.test.com/abc/def/123/ghi'),'www.test.com','Correct domain name not returned')
     
     def test_get_root_url(self):
-        self.assertEqual(get_domain_name('https://www.test.com/abc/'),'https://www.test.com/','Correct domain name not returned')
-        self.assertEqual(get_domain_name('https://www.test.com/'),'https://www.test.com/','Correct domain name not returned')
-        self.assertEqual(get_domain_name('https://www.test.com/abc/def/123/ghi'),'https://www.test.com/','Correct domain name not returned')
+        self.assertEqual(get_root_url('https://www.test.com/abc/'),'https://www.test.com/','Correct domain name not returned')
+        self.assertEqual(get_root_url('https://www.test.com/'),'https://www.test.com/','Correct domain name not returned')
+        self.assertEqual(get_root_url('https://www.test.com/abc/def/123/ghi'),'https://www.test.com/','Correct domain name not returned')
     
     def test_is_absolute_url(self):
-        self.assertEqual(get_domain_name('https://www.test.com/abc/'),True,'Absolute url not detected')
-        self.assertEqual(get_domain_name('https://www.test.com/'),True,'Absolute url not detected')
-        self.assertEqual(get_domain_name('https://www.test.com/abc/def/123/ghi'),True,'Absolute url not detected')
-        self.assertEqual(get_domain_name('abc/'),False,'Relative url not detected')
-        self.assertEqual(get_domain_name('www.test.com/'),False,'Relative url not detected')
-        self.assertEqual(get_domain_name('/abc/123/def'),False,'Relative url not detected')
+        self.assertEqual(is_absolute_ur('https://www.test.com/abc/'),True,'Absolute url not detected')
+        self.assertEqual(is_absolute_ur('https://www.test.com/'),True,'Absolute url not detected')
+        self.assertEqual(is_absolute_url('https://www.test.com/abc/def/123/ghi'),True,'Absolute url not detected')
+        self.assertEqual(is_absolute_url('abc/'),False,'Relative url not detected')
+        self.assertEqual(is_absolute_url('www.test.com/'),False,'Relative url not detected')
+        self.assertEqual(is_absolute_url('/abc/123/def'),False,'Relative url not detected')
 
     def test_is_root_url(self):
         self.assertEqual(is_root_url('/'),True,'Root url not detected')
