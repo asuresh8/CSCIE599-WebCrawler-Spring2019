@@ -17,13 +17,3 @@ This file contains all the required packages. Install using:
 ```sh
 $ pip install -r requirements.txt
 ```
-
-##### HTML Template Files:
-ToDo. Documentation of the HTML files.
-
-##### Python Files:
-ToDo. Documentation of the Python files.
-
-##### Run application:
-$ cd project
-$ python manage.py runserver
