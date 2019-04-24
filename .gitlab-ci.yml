@@ -87,7 +87,7 @@ integration-tests:
     - sleep 60
     - python test.py
   only:
-    - develop
+    - master
 
 kube_deploy:
   stage: deploy
