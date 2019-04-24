@@ -18,38 +18,10 @@ class MainAppViewsTestCase(unittest.TestCase):
     
     def test_generate_token(self):
         # To check if a token is getting generated properly or not.
-        token = views.get_manager_token(2)
+        token = views.get_manager_token(100)
         self.assertNotEqual('', token)
-    
-    def test_api_create_crawl(self):
-        with patch('main_app.views.launch_crawler_manager') as mock_launch:
-            user = User.objects.create_user('testUser', 'test@user.com', 'testpassword')
-            client = APIClient()
-            response_auth = client.post(reverse('authenticate_user'), {'username' : 'testUser', 'password' : 'testpassword'}, format="json")
-            access_token = response_auth.data['token'].decode('utf-8')
-            self.assertNotEqual('', access_token)
-            client.credentials(HTTP_AUTHORIZATION='Bearer ' + access_token)
-
-            # Post request to start a crawl.
-            self.payload = {'username': 'testUser', 'name' : 'testJob', 'domain' : 'http://google.com', 'urls' : 'http://bing.com'}
-            response = client.post(
-                reverse('api_create_crawl'),
-                self.payload,
-                format="json")
-            self.assertNotEqual(0, response.data["jobId"])
-
-    def test_api_crawl_contents(self):
-        with patch('main_app.views.get_google_cloud_manifest_contents') as mock_cloud:
-            mock_cloud.return_value = "Test"
-            user = User.objects.create_user('testUser2', 'test2@user.com', 'testpassword')
-            crawl_request = CrawlRequest(user=user)
-            crawl_request.s3_location = "abc/def"
-            crawl_request.save()
-            id = crawl_request.id
-            params = {'JOB_ID' : id, 'complete_crawl' : 0}
-            client = APIClient()
-            response_get = client.get(reverse('api_crawl_contents'), params)
-            self.assertNotEqual('', response_get.data["crawl_contents"])
+     
+ 
     """ 
     def test_register_crawler_manager(self):
         user = User.objects.create_user('testUser3', 'test3@user.com', 'testpassword')

@@ -82,10 +82,8 @@ def crawler_manager_ping(requestUrl):
     except Exception as ex:
         return "general exception"
 
-# TODO: After implementing jwt tokens, we need to validate this based on the token the crawler manager is passing back
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
-#@permission_classes([AllowAny, ])
 def register_crawler_manager(request):
     logger.info("In Register-Crawl")
     id = request.data['job_id']
@@ -111,7 +109,6 @@ def register_crawler_manager(request):
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
-#@permission_classes([AllowAny, ])
 def complete_crawl(request):
     id = request.data['job_id']
     manifest = request.data['manifest']
@@ -148,34 +145,6 @@ def get_manager_token(jobId):
     token = jwt.encode(payload, settings.SECRET_KEY)
     return token
 
-@api_view(['POST'])
-@permission_classes([AllowAny, ])
-def authenticate_user(request):
-    try:
-        username = request.data['username']
-        password = request.data['password']
-        user = User.objects.get(username=username)
-
-        if user and check_user_password(user.password, password):
-            try:
-                payload = jwt_payload_handler(user)
-                token = jwt.encode(payload, settings.SECRET_KEY)
-                user_details = {}
-                user_details['name'] = "%s %s" % (user.first_name, user.last_name)
-                user_details['token'] = token
-                user_logged_in.send(sender=user.__class__, request=request, user=user)
-                return Response(user_details, status=status.HTTP_200_OK)
-
-            except Exception as e:
-                raise e
-        else:
-            res = {
-                'error': 'can not authenticate with the given credentials or the account has been deactivated'}
-            return Response(res, status=status.HTTP_403_FORBIDDEN)
-    except KeyError:
-        res = {'error': 'please provide a email and a password'}
-        return Response(res)
-
 
 @login_required()
 def new_job(request):
@@ -203,32 +172,7 @@ def new_job(request):
         form = CrawlRequestForm()
     return render(request, "main_app/new_job.html", {'form': form})
 
-@api_view(['POST'])
-@permission_classes((IsAuthenticated, ))
-#@permission_classes([AllowAny, ])
-def api_create_crawl(request):
-    logger.info('In api new job')
-    global JOB_ID
-    global URLS
-    username = request.data['username']
-    user_obj = User.objects.get(username=username)
-    crawl_request = CrawlRequest(user=user_obj)
-    crawl_request.name = request.data['name']
-    crawl_request.domain = request.data['domain']
-    crawl_request.urls = request.data['urls']
-    crawl_request.save()
-    JOB_ID = crawl_request.id
-    if crawl_request.urls != "":
-        URLS = crawl_request.urls
-    logger.info('NewJob created: %s', crawl_request.id)
-    logger.info('Received urls: %s', crawl_request.urls)
-    launch_crawler_manager(crawl_request, JOB_ID)
-    payload = {}
-    payload['jobId'] = crawl_request.id
-    return Response(payload, status=status.HTTP_200_OK)
-
 def launch_crawler_manager(request, jobId):
-    #logger.error("In API new job")
     if ENVIRONMENT == 'local':
         # Running in docker compose,
         print("Looks like this is not running on a Kuberenetes cluster, ")
@@ -346,44 +290,3 @@ def crawl_contents(request, job_id):
     response = HttpResponse(buffer.getvalue(), content_type='application/zip')
     response['Content-Disposition'] = 'attachment; filename=manifest.zip'
     return response
-
-def get_google_cloud_crawl_pages(manifest):
-    client = storage.Client()
-    bucket = client.get_bucket(os.environ['GCS_BUCKET'])
-    content = {}
-    links = manifest.decode().split('\n')
-    for link in links:
-        logger.info('link: %s', link)
-        link_arr = link.split(',')
-        if (len(link_arr) <= 1):
-            continue
-        url = link_arr[0]
-        file_location = link_arr[1]
-        logger.info('url: %s, file_location: %s', url, file_location)
-        file_location_arr = file_location.split('/')
-        file_name = file_location_arr[-2] + "/" + file_location_arr[-1][:-1]
-        logger.info('file_name: %s', file_name)
-        blob = storage.Blob(file_name, bucket)
-        content[url] = blob.download_as_string()
-    return content
-
-@api_view(['GET'])
-@permission_classes([AllowAny, ])
-def api_crawl_contents(request):
-    jobId = request.query_params.get('JOB_ID')
-    content = ""
-    payload = {}
-    complete_crawl = request.query_params.get('complete_crawl')
-    job = CrawlRequest.objects.get(pk=jobId)
-    manifest = job.s3_location.split('/')[-1]
-    payload['jobId'] = jobId
-    if complete_crawl == "1":
-        content = get_google_cloud_crawl_pages(content)
-    else:
-        try:
-            content = get_google_cloud_manifest_contents(manifest)
-        except Exception as e:
-            logger.info('Unable to read manifest contents: %s', str(e))
-            content = 'Unable to read manifest contents'
-    payload['crawl_contents'] = content
-    return Response(payload, status=status.HTTP_200_OK)

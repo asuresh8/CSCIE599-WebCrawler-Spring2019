@@ -22,5 +22,6 @@ from .views import welcome
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^main_app/', include('main_app.urls')),
+    url(r'^api_app/', include('api_app.urls')),
     url(r'^.*$', welcome, name="webcrawler_welcome"),
 ]
