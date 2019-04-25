@@ -1,1 +1,2 @@
 # add test requirements here
+selenium==3.141.0
