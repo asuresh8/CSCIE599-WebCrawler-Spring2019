@@ -78,15 +78,22 @@ integration-tests:
   stage: integration
   image: python:3.7.3-alpine
   before_script:
-    - apk add --no-cache curl wget tar bash
+    - echo -e "$GCLOUD_CREDENTIALS" > service-account.json
+    - apk add --no-cache curl wget tar bash openssl
     - pip install requests==2.21.0
     - pip install kubernetes==9.0.0
     - ./cluster-setup/kube_setup
+    - wget "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-243.0.0-linux-x86_64.tar.gz" -O gcloud.tar.gz
+    - tar xvzf gcloud.tar.gz google-cloud-sdk
+    - ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=service-account.json
   script:
+    - gcloud container clusters resize $GCLOUD_GKE_CLUSTER --project=$GCLOUD_PROJECT_ID --region=$GCLOUD_REGION --size=3 --quiet
+    - sleep 300
     - helm init --service-account tiller
     - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set-string application.namespace="development" 'main-application' ./cluster-templates/chart-main
     - sleep 60
     - python test.py
+    - gcloud container clusters resize $GCLOUD_GKE_CLUSTER --project=$GCLOUD_PROJECT_ID --region=$GCLOUD_REGION --size=0 --quiet
   only:
     - master
 
