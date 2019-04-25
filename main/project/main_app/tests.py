@@ -23,7 +23,7 @@ class MainAppViewsTestCase(TestCase):
         # To check if a token is getting generated properly or not.
         token = views.get_manager_token(100)
         self.assertNotEqual('', token)
-    """ 
+     
     def test_register_crawler_manager(self):
         user = User.objects.create_user('testUser3', 'test3@user.com', 'testpassword')
         client = APIClient()
@@ -39,7 +39,7 @@ class MainAppViewsTestCase(TestCase):
         response = client.post(reverse('api_register_crawler_manager'), data, format="json")
         payload = json.loads(response.content)
         self.assertEqual("http://abc.com", payload["urls"][0])
-    """
+
     def test_crawl_complete(self):
         with patch('main_app.views.requests.post') as mock_post:
             user = User.objects.create_user('testUser4', 'test4@user.com', 'testpassword')
