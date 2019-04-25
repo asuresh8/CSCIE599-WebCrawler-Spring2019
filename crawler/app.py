@@ -13,8 +13,9 @@ import uuid
 import crawler_context
 import helpers
 import redis_connect
-import crawl_selenium
+from crawl_job import CrawlerJob
 import _thread
+
 
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
@@ -71,6 +72,7 @@ def kill():
 def status():
     return flask.jsonify({'active_threads': context.active_thread_count.get()})
 
+
 @app.route('/crawl', methods=['POST'])
 def crawl():
     url =  flask.request.json['url']
@@ -78,74 +80,11 @@ def crawl():
     if context.active_thread_count.get() >= MAX_ACTIVE_THREADS:
         return flask.jsonify({'accepted': False})
 
-    context.active_thread_count.increment()
-    executor.submit(do_crawl, url)
+    context.active_thread_count.increment() 
+    crawljob = CrawlerJob(url)
+    executor.submit(crawljob.execute)
     return flask.jsonify({'accepted': True})
 
-
-def do_crawl(url):
-    context.logger.info('Starting crawl thread for %s', url)
-    cached = redis_connect.exists(url)
-    if cached:
-        cached_result = redis_connect.get(url)
-        if cached_result != None and 's3_uri' in cached_result and 'child_urls' in cached_result:
-            context.logger.info('Found cached result: %s, %s', url, str(cached_result))
-            s3_uri = cached_result['s3_uri']
-            links = cached_result['child_urls']
-        else:
-            cached = False
-    
-    if not cached:
-        scraper = crawl_selenium.ScraperObject(url)
-
-        key = 'crawl_pages/{}'.format(str(uuid.uuid4()))
-        context.logger.info('Generated key: %s', key)
-        try:
-            context.logger.info('Sending Get Request')
-            if scraper.is_valid():
-                res_html = scraper.do_scrape()
-            else :
-                response = requests.get(url)
-                response.raise_for_status()
-                res_html = response.content
-   
-            context.logger.info(res_html)
-            context.logger.info('Received response for get request')
-        except Exception as e:
-            context.logger.error('Unable to parse %s. Received %s', url, str(e))
-            s3_uri = ''
-            links = []
-        else:
-            try:
-                context.logger.info('Attempting to store in GCS')
-                #s3_uri = helpers.store_response_in_gcs(response, key)
-                s3_uri = scraper.store_in_gcs(res_html, key)
-                context.logger.info('uri successfully generated!')
-            except Exception as e:
-                context.logger.error('Unable to store webpage for %s: %s', url, str(e))
-                s3_uri = ''
-
-            context.logger.info('Parsing links...')
-            links = scraper.get_links(res_html)
-            context.logger.info('Found links in %s: %s', url, str(links))
-            try:
-                context.logger.info('Caching s3_uri and child_urls')
-                redis_connect.put(url, {'s3_uri': s3_uri, 'child_urls': links})
-                context.logger.info('Caching was successful')
-            except Exception as e:
-                context.logger.error('Unable to cache data for %s: %s', url, str(e))
-
-    links_api = os.path.join(CRAWLER_MANAGER_ENDPOINT, 'links')
-    context.logger.info('Endpoint on Crawler manager: %s', links_api)
-    try:
-        context.logger.info('Sending response back to crawler manager...')
-        response = requests.post(links_api, json={'main_url': url, 's3_uri': s3_uri, 'child_urls': links})
-        response.raise_for_status()
-        context.logger.info('Response sent successfully!')
-    except Exception as e:
-        context.logger.error("Could not connect to crawler manager: %s", str(e))
-
-    context.active_thread_count.decrement()
 
 
 def test_connections():
@@ -182,5 +121,6 @@ if __name__ == "__main__":
         run_flask()
     else:
         _thread.start_new_thread(run_flask,())
-        executor.submit(do_crawl, URL)
+        crawljob = CrawlerJob(URL)
+        executor.submit(crawljob.execute, URL)
         sys.exit(0)
