@@ -140,7 +140,6 @@ def get_manager_token(jobId):
     user = User.objects.create_user(username=username,
                                     email=email,
                                     password=password)
-    #user = User.objects.get(username=username)
     payload = jwt_payload_handler(user)
     token = jwt.encode(payload, settings.SECRET_KEY)
     return token
@@ -173,7 +172,7 @@ def new_job(request):
     return render(request, "main_app/new_job.html", {'form': form})
 
 def launch_crawler_manager(request, jobId):
-    if ENVIRONMENT == 'local':
+    if ENVIRONMENT == 'local' or ENVIRONMENT == 'test':
         # Running in docker compose,
         print("Looks like this is not running on a Kuberenetes cluster, ")
         token = get_manager_token(jobId).decode("utf-8")
