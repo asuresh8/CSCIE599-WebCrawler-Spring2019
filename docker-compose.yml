@@ -1,0 +1,82 @@
+version: "3.2"
+services:
+
+  crawler-mysql5:
+    hostname: mysql
+    image: mysql:5.6.21
+    ports:
+      -  "3306:3306"
+    volumes:
+      - "mysql5db:/var/lib/mysql"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+    networks:
+      - backend
+
+  crawler-redis:
+    hostname: redis
+    image: redis:5.0.3
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+
+  main:
+    build:
+      context: .
+      dockerfile: main/DockerFile
+    container_name: main-app
+    environment:
+      - PYTHONPATH=.
+      - FLASK_ENV=development
+    ports:
+      - "8001:8001"
+    depends_on:
+      - crawler-mysql5
+    networks:
+      - backend
+
+  crawler-manager:
+    build:
+      context: .
+      dockerfile: crawler-manager/DockerFile
+    container_name: crawler-manager
+    environment:
+      - PYTHONPATH=.
+      - FLASK_ENV=development
+    ports:
+      - "8002:8002"
+    depends_on:
+      - crawler-redis
+      - crawler-mysql5
+      - main
+    networks:
+      - backend
+
+  crawler:
+    build:
+      context: .
+      dockerfile: crawler/DockerFile
+    container_name: crawler
+    command: python app.py
+    environment:
+      - PYTHONPATH=.
+      - FLASK_ENV=development
+    ports:
+      - "8003:8003"
+    depends_on:
+      - crawler-redis
+      - crawler-mysql5
+      - crawler-manager
+      - main
+    networks:
+      - backend
+
+volumes:
+  mysql5db:
+
+networks:
+  backend:
+    driver: "bridge"

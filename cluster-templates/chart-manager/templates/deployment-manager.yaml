@@ -1,0 +1,87 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "crawler-manager-{{ .Values.params.releaseDate }}"
+  namespace: "{{ .Values.application.namespace }}"
+spec:
+  backoffLimit: 5
+  template:
+    metadata:
+      name: crawler-manager
+      labels:
+        app: "crawler-manager-{{ .Values.params.releaseDate }}"
+    spec:
+      containers:
+      - name: crawler-manager
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        #command: ["/bin/sh", "-c", "python", "app.py"]
+        env:
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: REDIS_HOST
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: DB_NAME
+        - name: MYSQL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: MYSQL_HOST
+        - name: ENVIRONMENT
+          value: "prod"
+        - name: JOB_ID
+          value: "{{ .Values.params.job_id }}"
+        - name: JOB_IP
+          value: "0.0.0.0"
+        - name: INITIAL_URLS
+          value: "{{ .Values.params.initialUrls }}"
+        - name: DOMAIN
+          value: "{{ .Values.params.domain }}"
+        - name: RELEASE_DATE
+          value: "{{ .Values.params.releaseDate }}"
+        - name: TOKEN
+          value: "{{ .Values.params.authToken }}"
+        - name: MAIN_APPLICATION_ENDPOINT
+          value: "http://main-application-internal-service.{{ .Values.application.namespace }}/"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 640Mi
+          limits:
+            cpu: 500m
+            memory: 700Mi
+      restartPolicy: Never
+      imagePullSecrets:
+      - name: docker-gitlab
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "crawler-manager-service-{{ .Values.params.releaseDate }}"
+  namespace: "{{ .Values.application.namespace }}"
+  labels:
+    app: crawler-manager-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.service.externalPort }}
+    targetPort: {{ .Values.service.internalPort }}
+    protocol: TCP
+    name: {{ .Values.service.name }}
+  selector:
+    app: "crawler-manager-{{ .Values.params.releaseDate }}"

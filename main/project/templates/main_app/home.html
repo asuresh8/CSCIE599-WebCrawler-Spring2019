@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    User: {{ user.username }}
+{% endblock %}
+
+{% block content %}
+    <h2 class="text-primary">Hello {{ user.username }}</h2>
+
+    <div class="row">
+         <ul class="nav nav-tabs">
+             <li class="active"><a href="{% url 'mainapp_home' %}">Current Jobs</a></li>
+             <li><a href="{% url 'mainapp_new_job' %}">New Job</a></li>
+             <li><a href="{% url 'mainapp_profile' %}">Settings</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div id="jobs" class="tab-pane fade in active">
+                <h3>Jobs</h3>
+                <p>These are all the current jobs for user {{ user.username }}. Click on a crawl job for details.</p>
+                <p>There will be a <b>button</b> to refresh this list from the MySQL DB, so we don't have to poll crawler_managers.</p>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Crawl Type</th>
+                            <th>Status</th>
+                            <th>Job date</th>
+                            <th>Docs collected</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for job in jobs %}
+                        <tr class="table-row" data-href="{% url 'mainapp_jobdetails' job_id=job.id %}">
+                            <td>
+                                {{ job.name|escape }}
+                            </td>
+                            <td>
+                                {{ job.get_type_display|escape }}
+                            </td>
+                            <td>
+                                {{ job.get_status_display|escape }}
+                            </td>
+                            <td>
+                                {{ job.created|escape }}
+                            </td>
+                            <td>
+                                {{ job.docs_collected|escape }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+replicaCount: 5
+image:
+  repository: registry.gitlab.com/cscs-599/web-crawler/develop-crawler
+  tag: "123"
+  pullPolicy: Always
+  secrets:
+    - name: docker-gitlab
+podAnnotations: {}
+application:
+  track: stable
+  tier: crawler
+  secretName: credentials
+  namespace: default
+params:
+  url: ""
+  crawlerManagerEndpoint: ""
+  jobId: 0

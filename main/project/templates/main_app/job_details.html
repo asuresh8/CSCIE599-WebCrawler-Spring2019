@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    User: {{ user.username }}
+{% endblock %}
+
+{% block content %}
+    <h2 class="text-primary">Hello {{ user.username }}</h2>
+
+    <div class="row">
+         <ul class="nav nav-tabs">
+             <li class="active"><a href="{% url 'mainapp_home' %}">Current Jobs</a></li>
+             <li><a href="{% url 'mainapp_new_job' %}">New Job</a></li>
+             <li><a href="{% url 'mainapp_profile' %}">Settings</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div id="jobs" class="tab-pane fade in active">
+                <h3>Job Details for crawl job <b>{{ job.id }} {{ job.name }}</b></h3>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <b>ID</b>
+                            </td>
+                            <td>{{ job.id|escape }}</td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <b>Name</b>
+                            </td>
+                            <td>{{ job.name|escape }}</td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <b>Domain</b>
+                            </td>
+                            <td>{{ job.domain|escape }}</td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <b>Crawl Type</b>
+                            </td>
+                            <td>{{ job.get_type_display|escape }}</td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <b>Status</b>
+                            </td>
+                            <td>{{ job.get_status_display|escape }}</td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <b>Description</b>
+                            </td>
+                            <td>{{ job.description|escape }}</td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <b>Created On</b>
+                            </td>
+                            <td>{{ job.created|escape }}</td>
+                        </tr>
+                         <tr>
+                            <td>
+                                <b>By User</b>
+                            </td>
+                            <td>{{ job.user|escape }}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>S3 Location</b>
+                            </td>
+                            <td><a href="{{ job.s3_location|escape }}" target=_blank>{{ job.s3_location|escape }}</a></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>URLs to crawl</b>
+                            </td>
+                            <td>{{ job.urls|escape }}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>Resources collected</b>
+                            </td>
+                            <td>{{ job.docs_collected|escape }}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>Collect Everything</b>
+                            </td>
+                            <td>{{ job.docs_all|escape }}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>Collect HTML</b>
+                            </td>
+                            <td>{{ job.docs_html|escape }}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>Collect DOCX</b>
+                            </td>
+                            <td>{{ job.docs_docx|escape }}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>Collect PDF</b>
+                            </td>
+                            <td>{{ job.docs_pdf|escape }}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>Collect XML</b>
+                            </td>
+                            <td>{{ job.docs_xml|escape }}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>Collect TXT</b>
+                            </td>
+                            <td>{{ job.docs_txt|escape }}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a href="{% url 'mainapp_crawlcontents' job_id=job.id %}"><b>Download Crawl Contents</b>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

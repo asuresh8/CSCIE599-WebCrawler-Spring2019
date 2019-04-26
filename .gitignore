@@ -1,0 +1,22 @@
+# python obj files
+*.pyc
+
+# log files
+*.log
+
+# OSX system files
+.DS_Store
+
+# Pycharm folder
+.idea
+
+#vscode
+.vscode
+
+# Kuberentes configuration files and credentails
+config
+kubeconfig
+cluster-setup/build/
+
+# python coverage report
+.coverage
