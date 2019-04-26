@@ -41,6 +41,7 @@ IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 CRAWLER_MANAGER_USER_PREFIX = 'admin'
 
+
 # store the release timestamps here, like a job id meanwhile
 releases = []
 JOB_ID = 1
@@ -52,6 +53,7 @@ def home(request):
     form = CrawlRequestForm(instance=crawl_request)
     jobs = CrawlRequest.objects.filter(user=user)
     return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny, ])
@@ -69,6 +71,7 @@ def api_ping(request):
 
     return JsonResponse(data)
 
+
 def crawler_manager_ping(requestUrl):
     try:
         manager_url = os.path.join(requestUrl, 'ping')
@@ -81,6 +84,7 @@ def crawler_manager_ping(requestUrl):
         return "http exception"
     except Exception as ex:
         return "general exception"
+
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
@@ -107,6 +111,7 @@ def register_crawler_manager(request):
     }
     return JsonResponse(payload)
 
+
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def complete_crawl(request):
@@ -131,8 +136,9 @@ def complete_crawl(request):
 def check_user_password(current_password, incoming_password):
     salt = current_password.split('$')[2]
     hashed_password = make_password(incoming_password, salt)
-
     return current_password == hashed_password
+
+
 def get_manager_token(jobId):
     username = CRAWLER_MANAGER_USER_PREFIX + str(jobId)
     email = CRAWLER_MANAGER_USER_PREFIX + str(jobId) + '@' + CRAWLER_MANAGER_USER_PREFIX + '.com'
@@ -170,6 +176,7 @@ def new_job(request):
     else:
         form = CrawlRequestForm()
     return render(request, "main_app/new_job.html", {'form': form})
+
 
 def launch_crawler_manager(request, jobId):
     if ENVIRONMENT == 'local' or ENVIRONMENT == 'test':
@@ -229,6 +236,7 @@ def job_details(request, job_id):
         raise Http404("Job does not exist.")
     return render(request, "main_app/job_details.html", {"job": job})
 
+
 #copied to api_app, check if need to be removed from here
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
@@ -260,12 +268,14 @@ def profile(request):
         form = ProfileForm(instance=profile)
     return render(request, "main_app/settings.html", {'form': form})
 
+
 def get_google_cloud_manifest_contents(manifest):
     client = storage.Client()
     bucket = client.get_bucket(os.environ['GCS_BUCKET'])
     blob = storage.Blob(manifest, bucket)
     content = blob.download_as_string()
     return content
+
 
 @login_required()
 def crawl_contents(request, job_id):
