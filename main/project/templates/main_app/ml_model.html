@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    User: {{ user.username }}
+{% endblock %}
+
+{% block content %}
+    <h2 class="text-primary">Hello {{ user.username }}</h2>
+
+    <div class="row">
+		<ul class="nav nav-tabs">
+             <li><a href="{% url 'mainapp_home' %}">Current Jobs</a></li>
+             <li><a href="{% url 'mainapp_new_job' %}">New Job</a></li>
+             <li><a href="{% url 'mainapp_profile' %}">Settings</a></li>
+			 <li class="active"><a href="{% url 'mainapp_mlmodel' %}">Models</a></li>
+        </ul>
+        <div class="tab-content">
+            <div id="models" class="tab-pane fade in active">
+                <h3>Current Models</h3>
+                <p>These are all the current models for user {{ user.username }}.</p>
+                <p>There will be a <b>button</b> to refresh this list from the MySQL DB, so we don't have to poll crawler_managers.</p>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Model Name</th>
+                            <th>Labels</th>
+                            <th>Model Creation date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for model in models %}
+                        <tr>
+                            <td>
+                                {{ model.name|escape }}
+                            </td>
+                            <td>
+                                {{ model.labels|escape }}
+                            </td>
+							<td>
+                                {{ model.created|escape }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+				<h3>Add New Model.</h3>
+				<p>This is where you can add new model.</p>
+                <form id="profile-form" action="{% url 'mainapp_mlmodel' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+						{{ form.as_p }}
+						<label> Upload Model </label>
+						<input type="file" name="myfile">
+                    </div>
+
+                    <div class="form-group">
+                        <input type="submit" name="mlmodel-submit" id="mlmodel-submit" tabindex="2"
+                        class="form-control btn btn-login btn-primary" value="Add Model">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

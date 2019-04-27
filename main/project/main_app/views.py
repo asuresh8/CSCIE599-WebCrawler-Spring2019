@@ -4,8 +4,8 @@ from django.http import Http404
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 
-from .models import CrawlRequest, Profile
-from .forms import CrawlRequestForm, ProfileForm
+from .models import CrawlRequest, Profile, MlModel
+from .forms import CrawlRequestForm, ProfileForm, MlModelForm
 
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -53,6 +53,22 @@ def home(request):
     form = CrawlRequestForm(instance=crawl_request)
     jobs = CrawlRequest.objects.filter(user=user)
     return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
+
+@login_required()
+def ml_model(request):
+    user = request.user
+    ml_model_instance = MlModel(user=user)
+    if request.method == "POST":
+        form = MlModelForm(instance=ml_model_instance, data=request.POST)
+        if form.is_valid():
+            form_model = form.save(commit=False)
+            form_model.user = request.user
+            form_model.save()
+            myfile = request.FILES['myfile']
+            data = myfile.read()
+    form = MlModelForm(instance=ml_model_instance)
+    models = MlModel.objects.filter(user=user)
+    return render(request, "main_app/ml_model.html", {'form': form, 'models': models})
 
 
 @api_view(['GET'])
@@ -107,7 +123,9 @@ def register_crawler_manager(request):
         'docs_html': job.docs_html,
         'docs_pdf': job.docs_pdf,
         'docs_docx': job.docs_docx,
-        'num_crawlers': job.num_crawlers
+        'num_crawlers': job.num_crawlers,
+        'model_location': 'abc.com',
+        'labels': [1,2,3]
     }
     return JsonResponse(payload)
 

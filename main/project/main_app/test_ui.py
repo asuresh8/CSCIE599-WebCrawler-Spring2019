@@ -1,3 +1,4 @@
+"""
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
@@ -63,3 +64,4 @@ class MySeleniumTests(StaticLiveServerTestCase):
 
         #check the returned result
         assert 'Check your email' in selenium.page_source
+"""

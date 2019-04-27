@@ -90,7 +90,6 @@ def authenticate_user(request):
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
-#@permission_classes([AllowAny, ])
 def api_create_crawl(request):
     logger.info('In api new job')
     global JOB_ID

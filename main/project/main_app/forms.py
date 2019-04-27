@@ -1,5 +1,5 @@
 from django.forms import ModelForm, HiddenInput
-from .models import CrawlRequest, Profile
+from .models import CrawlRequest, Profile, MlModel
 
 class CrawlRequestForm(ModelForm):
     class Meta:
@@ -70,3 +70,25 @@ class ProfileForm(ModelForm):
         self.fields['api_key'].widget.attrs.update({'class': 'form-control', 'placeholder': 'S3 API Key'})
         self.fields['api_secret'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Secret'})
         self.fields['num_crawlers'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of concurrent crawler instances'})
+
+class MlModelForm(ModelForm):
+    """ Form to show a ml_model's data """
+    class Meta:
+        """ The meta class to set several important parameters for the form """
+        model = MlModel
+        fields = ['name', 'labels']
+        labels = {
+            'name': 'Enter Model Name',
+            'labels': 'Enter Model Labels',
+        }
+        widgets = {
+            'user': HiddenInput(),
+            'created': HiddenInput(),
+            'modified': HiddenInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        """ Instantiates an onject of type ProfileForm with custom widget attributes """
+        super(MlModelForm, self).__init__(*args, **kwargs)
+        self.fields['name'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter Model'})
+        self.fields['labels'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter Model Labels'})
