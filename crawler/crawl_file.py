@@ -13,20 +13,22 @@ class FileScraper(BaseScraper):
     def __init__(self, base_url, key, ext):
         BaseScraper.__init__(self,base_url, key)
         self.file_ext = ext
+        self.chunk_size =  2000
     
     def do_scrape(self):
         try:
             app.context.logger.info("Scraping URL: {}".format(self.base_url))
             r = requests.get(self.base_url, stream=True)
-            fpath = '/tmp/' + self.file_name
-
+            app.context.logger.info("request status: %d", r.status_code)
+            fpath = '/tmp/' + self.file_name + "." + self.file_ext
+            app.context.logger.info("file path is: %s",  fpath)
             with open(fpath, 'wb') as fd:
-                for chunk in r.iter_content(chunk_size):
+                for chunk in r.iter_content(self.chunk_size):
                     fd.write(chunk)
 
             return fpath
         except Exception as e:
-            print("error")
+            app.context.logger.info("error in writing file: %s", str(e))
             return None
     
     def get_links(self, data):
