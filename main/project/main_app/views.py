@@ -44,8 +44,6 @@ CRAWLER_MANAGER_USER_PREFIX = 'admin'
 
 # store the release timestamps here, like a job id meanwhile
 releases = []
-JOB_ID = 1
-URLS = "http://google.com"
 @login_required()
 def home(request):
     user = request.user
@@ -121,8 +119,6 @@ def crawler_manager_ping(requestUrl):
 def register_crawler_manager(request):
     logger.info("In Register-Crawl")
     id = request.data['job_id']
-    if ENVIRONMENT == 'local':
-        id = JOB_ID
     logger.info('JobID main: %s', id)
     endpoint = request.data['endpoint']
     logger.info("In Register-Crawl, jobid: %s, endpoint: %s",id,endpoint)
@@ -159,6 +155,7 @@ def complete_crawl(request):
     logger.info("In Crawl-Complete")
     logger.info('Crawl-Complete id - %s, manifest - %s', id, manifest)
     crawl_request = CrawlRequest.objects.get(pk=id)
+    crawl_request.s3_location = manifest
     crawl_request.manifest = manifest
     crawl_request.status = 3
     crawl_request.docs_collected = resources_count
@@ -190,25 +187,14 @@ def get_manager_token(jobId):
 
 @login_required()
 def new_job(request):
-    global JOB_ID
-    global URLS
     if request.method == "POST":
         crawl_request = CrawlRequest(user=request.user)
         form = CrawlRequestForm(instance=crawl_request, data=request.POST)
         if form.is_valid():
             form.save()
-            """
-            print("In new_job")
-            payload = {}
-            payload['jobId'] = crawl_request.id
-            payload['url'] = crawl_request.domain
-            """
-            JOB_ID = crawl_request.id
-            if crawl_request.urls != "":
-                URLS = crawl_request.urls
             logger.info('NewJob created: %s', crawl_request.id)
             logger.info('Received urls: %s', crawl_request.urls)
-            launch_crawler_manager(crawl_request, JOB_ID)
+            launch_crawler_manager(crawl_request, crawl_request.id)
             return redirect('mainapp_home')
     else:
         form = CrawlRequestForm()
@@ -220,7 +206,7 @@ def launch_crawler_manager(request, jobId):
         # Running in docker compose,
         print("Looks like this is not running on a Kuberenetes cluster, ")
         token = get_manager_token(jobId).decode("utf-8")
-        requests.post("http://crawler-manager:8002/crawl", json={"token" : token})
+        requests.post("http://crawler-manager:8002/crawl", json={"job_id" : jobId, "token" : token})
     else:
         # If ENVIRONMENT is prod, it means it is running in the Kubernetes Cluster
         # Use the Helm command to trigger a new Crawler Manager Instance

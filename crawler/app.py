@@ -115,6 +115,7 @@ def setup():
     try:
         requests.post(os.path.join(CRAWLER_MANAGER_ENDPOINT, 'register_crawler'),
                       json={'endpoint': ENDPOINT})
+        context.logger.info("Registreed successfully with crawler manager")
     except Exception as e:
         context.logger.info('Unable to register with crawler manager: %s', str(e))
 

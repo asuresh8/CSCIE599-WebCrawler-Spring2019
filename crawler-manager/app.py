@@ -62,11 +62,15 @@ def main():
     context.logger.info('Received request at home')
     return 'Crawler Manager'
 
+
 @app.route('/crawl', methods=['POST'])
 def crawl():
+    global JOB_ID
     global TOKEN
+    JOB_ID = flask.request.json['job_id']
     TOKEN = flask.request.json['token']
-    setup()
+    crawl_thread = threading.Thread(target=do_crawl)
+    crawl_thread.start()
     return ''
 
 
@@ -153,6 +157,13 @@ def run_flask():
     app.run(debug=DEBUG_MODE, host=HOSTNAME, port=PORT, use_reloader=False)
 
 
+def do_crawl():
+    setup()
+    processor = work_processor.Processor(context)
+    processor.run()
+    teardown()
+
+
 def setup():
     global context
     context.cache = redis_connect.RedisClient(redis.Redis(host='0.0.0.0', port=6379, db=0))
@@ -228,7 +239,8 @@ if __name__ == "__main__":
     context.logger.info('starting flask app in separate thread')
     flask_thread = threading.Thread(target=run_flask)
     flask_thread.start()
-    setup()
-    processor = work_processor.Processor(context)
-    processor.run()
-    teardown()
+    if ENVIRONMENT != 'local':
+        setup()
+        processor = work_processor.Processor(context)
+        processor.run()
+        teardown()

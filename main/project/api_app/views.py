@@ -4,8 +4,6 @@ from django.contrib.auth.hashers import make_password
 from main_app.models import CrawlRequest, Profile
 from main_app.views import launch_crawler_manager
 from main_app.views import get_google_cloud_manifest_contents
-from main_app.views import JOB_ID
-from main_app.views import URLS
 
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -92,8 +90,6 @@ def authenticate_user(request):
 @permission_classes((IsAuthenticated, ))
 def api_create_crawl(request):
     logger.info('In api new job')
-    global JOB_ID
-    global URLS
     username = request.data['username']
     user_obj = User.objects.get(username=username)
     crawl_request = CrawlRequest(user=user_obj)
@@ -101,12 +97,9 @@ def api_create_crawl(request):
     crawl_request.domain = request.data['domain']
     crawl_request.urls = request.data['urls']
     crawl_request.save()
-    JOB_ID = crawl_request.id
-    if crawl_request.urls != "":
-        URLS = crawl_request.urls
     logger.info('NewJob created: %s', crawl_request.id)
     logger.info('Received urls: %s', crawl_request.urls)
-    launch_crawler_manager(crawl_request, JOB_ID)
+    launch_crawler_manager(crawl_request, crawl_request.id)
     payload = {}
     payload['jobId'] = crawl_request.id
     return Response(payload, status=status.HTTP_200_OK)
