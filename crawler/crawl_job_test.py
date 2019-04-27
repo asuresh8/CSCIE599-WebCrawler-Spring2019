@@ -25,13 +25,13 @@ class TestCrawlerJob(unittest.TestCase):
         return mock_resp
 
 
+    """  
     def test_send_response_to_manager(self):
-        pass
-       """  with patch ("crawl_job.requests.post") as mock_post: 
+       with patch ("crawl_job.requests.post") as mock_post: 
             mock_post.return_value = self.do_mock_response()
             res = self.crawljob.send_response_to_manager()
-            self.assertEqual(res.status_code, 200) """
-        
+            self.assertEqual(res.status_code, 200)
+    """
     
     def test_execute(self):
         pass
