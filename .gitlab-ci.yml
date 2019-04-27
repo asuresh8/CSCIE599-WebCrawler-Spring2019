@@ -33,6 +33,13 @@ testCrawler:
   image: python:3.7.2-stretch
   before_script:
     - cd crawler
+    - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub
+    - echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+    - apk update
+    - apk add google-chrome-stable
+    - apk add unzip
+    - wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
+    - unzip /tmp/chromedriver.zip -d .
     - pip install -r requirements.txt
     - pip install -r test_requirements.txt
   script:
