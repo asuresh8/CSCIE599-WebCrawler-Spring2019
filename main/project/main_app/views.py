@@ -142,8 +142,8 @@ def register_crawler_manager(request):
         'docs_html': job.docs_html,
         'docs_pdf': job.docs_pdf,
         'docs_docx': job.docs_docx,
-        'num_crawlers': model_url,
-        'model_location': 'job',
+        'num_crawlers': job.num_crawlers,
+        'model_location': model_url,
         'labels': job.model_labels.split(';')
     }
     return JsonResponse(payload)
