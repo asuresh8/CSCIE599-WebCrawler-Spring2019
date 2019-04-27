@@ -5,30 +5,33 @@ import os
 
 logging.basicConfig(level=logging.INFO)
 
-redis_db = redis.StrictRedis(host=os.environ.get('REDIS_HOST','crawler-redis'), port=6379, db=0)
+class Cache:
+    def __init__(self):
+        self.rediscache = redis.StrictRedis(host=os.environ.get('REDIS_HOST','crawler-redis'), port=6379, db=0)
+
+    def get(self, key):
+        return json.loads(self.rediscache.get(key))
 
 
-def get(key):
-    return json.loads(redis_db.get(key))
+    def put(self,key, value):
+        return self.rediscache.set(key, json.dumps(value))
 
 
-def put(key, value):
-    return redis_db.set(key, json.dumps(value))
+    def exists(self, key):
+        return bool(self.rediscache.exists(key))
 
 
-def exists(key):
-    return bool(redis_db.exists(key))
+    def dump(self):
+        for key in self.rediscache.scan_iter("*"):
+            logging.info('redis value %s --- %s', key, self.rediscache.get(key))
+    
+    def ping(self):
+        try:
+           logging.info("Connecting to Redis: %s", os.environ.get('REDIS_HOST','crawler-redis'))
+           self.rediscache.ping()
+           return 'Connection successful (Redis)'
+        except redis.ConnectionError as e:
+            logging.error("Error connecting to redis: %s", str(e))    
 
 
-def dump():
-    for key in redis_db.scan_iter("*"):
-        logging.info('redis value %s --- %s', key, redis_db.get(key))
 
-
-def test_redis_connection():
-    try:
-        logging.info("Connecting to Redis: %s", os.environ.get('REDIS_HOST','crawler-redis'))
-        redis_db.ping()
-        return 'Connection successful (Redis)'
-    except redis.ConnectionError as e:
-        logging.error("Error connecting to redis: %s", str(e))

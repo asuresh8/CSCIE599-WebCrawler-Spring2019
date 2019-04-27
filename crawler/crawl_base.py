@@ -65,7 +65,7 @@ class BaseScraper:
     def store_in_redis(self, s3uri, links):
         try:
             app.context.logger.info('Caching s3_uri and child_urls')
-            redis_connect.put(self.base_url, {'s3_uri': s3uri, 'child_urls': links})
+            app.cache.put(self.base_url, {'s3_uri': s3uri, 'child_urls': links})
             app.context.logger.info('Caching was successful')
         except Exception as e:
             app.context.logger.error('Unable to cache data for %s: %s', self.base_url, str(e))

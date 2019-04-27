@@ -20,6 +20,7 @@ import _thread
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
 context = crawler_context.Context(app.logger)
+cache = redis_connect.Cache()
 
 CRAWLER_MANAGER_ENDPOINT = os.environ.get('CRAWLER_MANAGER_ENDPOINT', 'http://crawler-manager:8002')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
@@ -85,10 +86,25 @@ def crawl():
     executor.submit(crawljob.execute)
     return flask.jsonify({'accepted': True})
 
+@app.route('/crawler/')
+def do_crawl():
+    url =  flask.request.args.get('crawlurl')
+    context.logger.info('Crawling %s', url)
+    if context.active_thread_count.get() >= MAX_ACTIVE_THREADS:
+        return flask.jsonify({'accepted': False})
+
+    context.active_thread_count.increment()
+    crawljob = CrawlerJob(url)
+    executor.submit(crawljob.execute)
+    return flask.jsonify({'accepted': True})
 
 
 def test_connections():
-    redis_connect.test_redis_connection()
+    try:
+        cache.ping()
+        context.logger.info('connected to redis successfully')
+    except Exception as e:
+        context.logger.info('could not initialize redis: %s', str(e))
 
 
 def run_flask():

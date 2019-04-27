@@ -21,8 +21,8 @@ class CrawlerJob(object):
 
     def is_cached(self):
         app.context.logger.info('connecting to redis')
-        if redis_connect.exists(self.base_url):
-            cache_val = redis_connect.get(self.base_url)
+        if app.cache.exists(self.base_url):
+            cache_val = app.cache.get(self.base_url)
             if cache_val != None and 's3_uri' in cache_val and 'child_urls' in cache_val:
                 self.s3_uri = cache_val['s3_uri']
                 self.links = cache_val['child_urls']
