@@ -12,6 +12,7 @@ class FileScraper(BaseScraper):
 
     def __init__(self, base_url, key, ext):
         BaseScraper.__init__(self,base_url, key)
+        app.context.logger.info("instantiating file scraper")
         self.file_ext = ext
         self.chunk_size =  2000
     
@@ -20,7 +21,12 @@ class FileScraper(BaseScraper):
             app.context.logger.info("Scraping URL: {}".format(self.base_url))
             r = requests.get(self.base_url, stream=True)
             app.context.logger.info("request status: %d", r.status_code)
-            fpath = '/tmp/' + self.file_name + "." + self.file_ext
+
+            tmpfile = self.file_name
+            if (self.file_name.startswith('crawl_pages/')):
+                tmpfile = self.file_name[len('crawl_pages/'):]
+
+            fpath = '/tmp/' + tmpfile + self.file_ext
             app.context.logger.info("file path is: %s",  fpath)
             with open(fpath, 'wb') as fd:
                 for chunk in r.iter_content(self.chunk_size):
@@ -35,20 +41,22 @@ class FileScraper(BaseScraper):
         return []
         
     def store_in_gcs(self,fpath):
-        if data is None:
+        app.context.logger.info('Attempting to store in GCS')
+        if not fpath:
+            app.context.logger.info('no file to store in GCS')
             return
 
-        app.context.logger.info('Attempting to store in GCS')
         try:
             storage_client = storage.Client()
             bucket = storage_client.get_bucket(os.environ['GCS_BUCKET'])
             blob = bucket.blob(self.file_name)
-            blob.upload_from_file_name(fpath)
+            app.context.logger.info('Got the blob in GCS')
+            blob.upload_from_filename(fpath)
             blob.make_public()
             uri = blob.public_url
-            context.logger.info('uri successfully generated!')
+            app.context.logger.info('uri successfully generated!')
             return uri
         except Exception as e:
-            context.logger.error('Unable to store webpage for %s: %s', url, str(e))
+            app.context.logger.error('Unable to store webpage for %s: %s', self.base_url, str(e))
             return ''
     

@@ -16,8 +16,11 @@ class CrawlerJob(object):
         self.s3_uri = ''
         self.links = []
 
-    def get_extension(self):
-        return list(filter(lambda x: response.self.base_url.lower().endswith(x), ALLOWABLE_EXTENSIONS))[0]
+    def get_extension(self, url):
+        app.context.logger.info('url is: %s', self.base_url)
+        ext =  list(filter(lambda x: url.lower().endswith(x), ALLOWABLE_EXTENSIONS))[0]
+        app.context.logger.info('extension is: %s', ext)
+        return ext
 
     def is_cached(self):
         app.context.logger.info('connecting to redis')
@@ -40,12 +43,17 @@ class CrawlerJob(object):
 
             key = 'crawl_pages/{}'.format(str(uuid.uuid4()))
             app.context.logger.info('Generated key: %s', key)
-
+            
+            file_ext = self.get_extension(url)
+            
             # scraper object is decided (FileScraper, WebScraper, BaseScraper)
-            scraper = WebScraper(url, key)
+            if file_ext:
+                scraper = FileScraper(url, key, file_ext)
+            else:
+                scraper = WebScraper(url, key)
             # scrape the page
             self.data = scraper.do_scrape()
-            app.context.logger.info(self.data)
+            #app.context.logger.info(self.data)
             # store
             self.s3_uri = scraper.store_in_gcs(self.data)
             # get child urls
@@ -54,11 +62,11 @@ class CrawlerJob(object):
             scraper.store_in_redis(self.s3_uri, self.links)
             # callback manager
             self.send_response_to_manager()
-
         except Exception as e:
             app.context.logger.info("exception: {}".format(str(e)))
 
         app.context.active_thread_count.decrement()
+
     
     def send_response_to_manager(self):
         links_api = os.path.join(app.CRAWLER_MANAGER_ENDPOINT, 'links')
@@ -73,5 +81,7 @@ class CrawlerJob(object):
                                     )
             response.raise_for_status()
             app.context.logger.info('Response sent successfully!')
+            return response
         except Exception as e:
             app.context.logger.error("Could not connect to crawler manager: %s", str(e))
+            return None
