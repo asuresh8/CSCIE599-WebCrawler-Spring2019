@@ -128,6 +128,18 @@
                             </td>
                             <td>{{ job.docs_txt|escape }}</td>
                         </tr>
+						<tr>
+                            <td>
+                                <b>Model Name</b>
+                            </td>
+                            <td>{{ job.model_name|escape }}</td>
+                        </tr>
+						<tr>
+                            <td>
+                                <b>Model Classification Labels</b>
+                            </td>
+                            <td>{{ job.model_labels|escape }}</td>
+                        </tr>
                         <tr>
                             <td>
                                 <a href="{% url 'mainapp_crawlcontents' job_id=job.id %}"><b>Download Crawl Contents</b>

@@ -54,6 +54,15 @@ def home(request):
     jobs = CrawlRequest.objects.filter(user=user)
     return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
 
+def store_data_in_gcs(model_content, model_id):
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(os.environ['GCS_BUCKET'])
+    key = 'crawl_models/{}'.format(str(model_id))
+    blob = bucket.blob(key)
+    blob.upload_from_string(model_content)
+    blob.make_public()
+    return blob.public_url
+
 @login_required()
 def ml_model(request):
     user = request.user
@@ -65,7 +74,12 @@ def ml_model(request):
             form_model.user = request.user
             form_model.save()
             myfile = request.FILES['myfile']
-            data = myfile.read()
+            data = myfile.read().decode("utf-8")
+            s3_url = store_data_in_gcs(data, form_model.id)
+            form_model.s3_location = s3_url
+            print("S3Url: {}".format(s3_url))
+            form_model.save()
+
     form = MlModelForm(instance=ml_model_instance)
     models = MlModel.objects.filter(user=user)
     return render(request, "main_app/ml_model.html", {'form': form, 'models': models})
@@ -115,6 +129,11 @@ def register_crawler_manager(request):
     job = CrawlRequest.objects.get(pk=id)
     job.crawler_manager_endpoint = endpoint
     job.save()
+    models = MlModel.objects.filter(name=job.model_name)
+    if (len(models) > 0):
+        model_url = models[0].s3_location
+    else:
+        model_url = ""
     payload = {
         'job_id': id,
         'domain': job.domain.split(';'),
@@ -123,9 +142,9 @@ def register_crawler_manager(request):
         'docs_html': job.docs_html,
         'docs_pdf': job.docs_pdf,
         'docs_docx': job.docs_docx,
-        'num_crawlers': job.num_crawlers,
-        'model_location': 'abc.com',
-        'labels': [1,2,3]
+        'num_crawlers': model_url,
+        'model_location': 'job',
+        'labels': job.model_labels.split(';')
     }
     return JsonResponse(payload)
 

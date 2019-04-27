@@ -41,6 +41,8 @@ class CrawlRequest(models.Model):
     user = models.ForeignKey(User, related_name="crawl_requests_user", on_delete=models.CASCADE)
     created = models.DateTimeField("crawl request creation time", editable=False)
     modified = models.DateTimeField("crawl request modification time")
+    model_name = models.CharField(max_length=128, blank=True)
+    model_labels = models.CharField(max_length=128, blank=True)
 
     def save(self, *args, **kwargs):
         """ Update created and modified timestamps whenever a Crawl Request is saved """
