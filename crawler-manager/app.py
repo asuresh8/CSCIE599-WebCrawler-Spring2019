@@ -114,8 +114,7 @@ def register():
         docs_docx=context.parameters['docs_docx'],
         model_location=context.parameters['model_location'],
         labels=context.parameters['labels']
-        ), 200
-    # return ""
+        )
 
 
 #Result endpoint
