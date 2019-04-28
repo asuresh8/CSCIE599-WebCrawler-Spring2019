@@ -33,6 +33,7 @@ DEBUG_MODE = ENVIRONMENT == 'local'
 RELEASE_DATE = os.environ.get('RELEASE_DATE', '0')
 HOSTNAME = os.environ.get('JOB_IP', 'crawler-manager')
 MAIN_APPLICATION_ENDPOINT = os.environ.get('MAIN_APPLICATION_ENDPOINT', 'http://main:8001')
+CRAWLER_APPLICATION_ENDPOINT = os.environ.get('CRAWLER_APPLICATION_ENDPOINT', 'http://crawler:8003')
 PORT = 8002
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
 TOKEN = os.environ.get('TOKEN', '')
@@ -195,6 +196,8 @@ def setup():
             """
             context.logger.info('Running helm command: %s', helm_command)
             os.system(helm_command)
+    else:
+        requests.post(os.path.join(CRAWLER_APPLICATION_ENDPOINT, 'dev_crawl'))
 
 
 def teardown():

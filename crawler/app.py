@@ -73,6 +73,11 @@ def kill():
 def status():
     return flask.jsonify({'active_threads': context.active_thread_count.get()})
 
+@app.route('/dev_crawl', methods=['POST'])
+def dev_crawl():
+    dev_crawl_thread = threading.Thread(target=setup)
+    dev_crawl_thread.start()
+    return ''
 
 @app.route('/crawl', methods=['POST'])
 def crawl():
@@ -134,7 +139,6 @@ if __name__ == "__main__":
     ping_crawler_manager()
     test_connections()
     if ENVIRONMENT == 'local':
-        setup()
         run_flask()
     else:
         _thread.start_new_thread(run_flask,())

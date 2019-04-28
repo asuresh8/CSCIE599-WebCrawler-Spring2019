@@ -39,6 +39,8 @@ class CrawlerJob(object):
         try:
             if not self.is_cached():
                self.start_scrape()
+            else:
+                app.context.logger.info('Url %s already cached', self.base_url)
             
             # callback manager
             self.send_response_to_manager()
