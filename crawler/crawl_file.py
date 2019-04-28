@@ -49,7 +49,7 @@ class FileScraper(BaseScraper):
         try:
             storage_client = storage.Client()
             bucket = storage_client.get_bucket(os.environ['GCS_BUCKET'])
-            blob = bucket.blob(self.file_name)
+            blob = bucket.blob(self.file_name+self.file_ext)
             app.context.logger.info('Got the blob in GCS')
             blob.upload_from_filename(fpath)
             blob.make_public()
