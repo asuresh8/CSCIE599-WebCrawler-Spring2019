@@ -32,11 +32,11 @@ class TestCrawlerManagerApp(unittest.TestCase):
         response = self.app.post('/kill')
         self.assertEqual(response.status_code, 200)
     
-    def test_register_crawler(self):
-        endpoint = 'http://0.0.0.0'
-        response = self.app.post('/register_crawler', json={'endpoint': endpoint})
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(app.context.crawlers.contains(endpoint))
+    # def test_register_crawler(self):
+    #     endpoint = 'http://0.0.0.0'
+    #     response = self.app.post('/register_crawler', json={'endpoint': endpoint})
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertTrue(app.context.crawlers.contains(endpoint))
 
     def test_post_links(self):
         main_url = 'http://garbage.com'
