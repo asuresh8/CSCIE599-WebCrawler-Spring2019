@@ -29,7 +29,7 @@ class Context:
 
     def download_model_from_storage(self):
         try:
-            r = requests.get(self.base_url, stream=True)
+            r = requests.get(self.model_url, stream=True)
             self.logger.info("request status for downloading model file: %d", r.status_code)
             filepath = 'ml_model'
             with open(filepath, 'wb') as fd:
