@@ -29,6 +29,12 @@ class CrawlerJob(object):
             if cache_val != None and 's3_uri' in cache_val and 'child_urls' in cache_val:
                 self.s3_uri = cache_val['s3_uri']
                 self.links = cache_val['child_urls']
+                if (self.s3_uri is None):
+                    app.context.logger.info('Error condition. s3_uri None for cached url: %s', self.base_url)
+                    self.s3_uri = ''
+                if (self.links is None):
+                    app.context.logger.info('Error condition. links None for cached url: %s', self.base_url)
+                    self.links = []
                 return True
             else:
                 return False
