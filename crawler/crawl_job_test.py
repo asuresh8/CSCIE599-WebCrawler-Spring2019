@@ -18,20 +18,22 @@ class TestCrawlerJob(unittest.TestCase):
         ext = self.crawljob.get_extension(self.base_url)
         self.assertEqual(ext, ".pdf")
 
-    def do_mock_response(self, status=200):
+    def do_mock_response(self, content='CONTENT'):
         mock_resp = mock.Mock()
-        # set status code and content
-        mock_resp.status_code.side_effect = status
+        # set content
+        mock_resp.content = content
         return mock_resp
 
 
-    """  
+      
     def test_send_response_to_manager(self):
        with patch ("crawl_job.requests.post") as mock_post: 
-            mock_post.return_value = self.do_mock_response()
+            mock_resp = self.do_mock_response('success')
+            mock_post.return_value = mock_resp
             res = self.crawljob.send_response_to_manager()
-            self.assertEqual(res.status_code, 200)
-    """
+            
+            self.assertEqual(res.content, 'success')
+    
     
     def test_execute(self):
         pass
