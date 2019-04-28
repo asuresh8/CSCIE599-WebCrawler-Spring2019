@@ -12,15 +12,14 @@ import uuid
 
 import crawler_context
 import helpers
-import redis_connect
 from crawl_job import CrawlerJob
 import _thread
-
+from crawl_global import CrawlGlobal
 
 app = flask.Flask(__name__)
 app.logger.setLevel(logging.INFO)
 context = crawler_context.Context(app.logger)
-cache = redis_connect.Cache()
+CrawlGlobal.set_context(context)
 
 CRAWLER_MANAGER_ENDPOINT = os.environ.get('CRAWLER_MANAGER_ENDPOINT', 'http://crawler-manager:8002')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
@@ -58,20 +57,20 @@ def kill():
     @after_this_request
     def maybe_kill(response):
         if ENVIRONMENT == 'local':
-            context.logger.info('Not killing crawler because running locally')
+            CrawlGlobal.context().logger.info('Not killing crawler because running locally')
         else:
-            context.logger.info("Kill confirmed")
+            CrawlGlobal.context().logger.info("Kill confirmed")
             sys.exit()
 
         return response
 
-    context.logger.info('Kill called for')
+    CrawlGlobal.context().logger.info('Kill called for')
     return ""
 
 
 @app.route('/status', methods=['GET'])
 def status():
-    return flask.jsonify({'active_threads': context.active_thread_count.get()})
+    return flask.jsonify({'active_threads': CrawlGlobal.context().active_thread_count.get()})
 
 @app.route('/dev_crawl', methods=['POST'])
 def dev_crawl():
@@ -82,34 +81,34 @@ def dev_crawl():
 @app.route('/crawl', methods=['POST'])
 def crawl():
     url =  flask.request.json['url']
-    context.logger.info('Crawling %s', url)
-    if context.active_thread_count.get() >= MAX_ACTIVE_THREADS:
+    CrawlGlobal.context().logger.info('Crawling %s', url)
+    if CrawlGlobal.context().active_thread_count.get() >= MAX_ACTIVE_THREADS:
         return flask.jsonify({'accepted': False})
 
-    context.active_thread_count.increment() 
+    CrawlGlobal.context().active_thread_count.increment() 
     crawljob = CrawlerJob(url)
-    executor.submit(crawljob.execute)
+    executor.submit(crawljob.execute, CRAWLER_MANAGER_ENDPOINT)
     return flask.jsonify({'accepted': True})
 
 @app.route('/crawler/')
 def do_crawl():
     url =  flask.request.args.get('crawlurl')
-    context.logger.info('Crawling %s', url)
-    if context.active_thread_count.get() >= MAX_ACTIVE_THREADS:
+    CrawlGlobal.context().logger.info('Crawling %s', url)
+    if CrawlGlobal.context().active_thread_count.get() >= MAX_ACTIVE_THREADS:
         return flask.jsonify({'accepted': False})
 
-    context.active_thread_count.increment()
-    crawljob = CrawlerJob(url)
-    executor.submit(crawljob.execute)
+    CrawlGlobal.context().active_thread_count.increment()
+    crawljob = CrawlerJob(url,)
+    executor.submit(crawljob.execute,CRAWLER_MANAGER_ENDPOINT)
     return flask.jsonify({'accepted': True})
 
 
 def test_connections():
     try:
-        cache.ping()
-        context.logger.info('connected to redis successfully')
+        CrawlGlobal.context().cache.ping()
+        CrawlGlobal.context().logger.info('connected to redis successfully')
     except Exception as e:
-        context.logger.info('could not initialize redis: %s', str(e))
+        CrawlGlobal.context().logger.info('could not initialize redis: %s', str(e))
 
 
 def run_flask():
@@ -120,19 +119,19 @@ def setup():
     try:
         requests.post(os.path.join(CRAWLER_MANAGER_ENDPOINT, 'register_crawler'),
                       json={'endpoint': ENDPOINT})
-        context.logger.info("Registreed successfully with crawler manager")
+        CrawlGlobal.context().logger.info("Registreed successfully with crawler manager")
     except Exception as e:
-        context.logger.info('Unable to register with crawler manager: %s', str(e))
+        CrawlGlobal.context().logger.info('Unable to register with crawler manager: %s', str(e))
 
 
 def ping_crawler_manager():
     try:
-        context.logger.info('pinging CRAWLER_MANAGER_ENDPOINT - %s', CRAWLER_MANAGER_ENDPOINT)
+        CrawlGlobal.context().logger.info('pinging CRAWLER_MANAGER_ENDPOINT - %s', CRAWLER_MANAGER_ENDPOINT)
         response = requests.get(CRAWLER_MANAGER_ENDPOINT)
         response.raise_for_status()
-        context.logger.info('ping successful!')
+        CrawlGlobal.context().logger.info('ping successful!')
     except Exception as e:
-        context.logger.error("Could not connect to crawler manager: %s", str(e))
+        CrawlGlobal.context().logger.error("Could not connect to crawler manager: %s", str(e))
 
 
 if __name__ == "__main__":

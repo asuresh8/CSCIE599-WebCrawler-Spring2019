@@ -5,6 +5,7 @@ from crawl_web import *
 from crawl_base import *
 import google.cloud.storage.blob
 from unittest import mock
+from crawl_global import CrawlGlobal
 
 """ 
 mocking google cloud
@@ -46,12 +47,12 @@ class TestWebScraper(unittest.TestCase):
         self.assertEquals(uri, blob.public_url)        """
     
     def test_store_in_redis(self):
-        app.cache.rediscache = fakeredis.FakeStrictRedis()
+        CrawlGlobal.context().cache.rediscache = fakeredis.FakeStrictRedis()
         
         links = ["x","y","z"]
         s3uri ="abc"
         self.scraper.store_in_redis(s3uri,links)
-        val = app.cache.get(self.url)
+        val = CrawlGlobal.context().cache.get(self.url)
         self.assertEqual(val, {"s3_uri": "abc", "child_urls": ["x", "y", "z"]})
 
 
@@ -59,5 +60,5 @@ class TestWebScraper(unittest.TestCase):
     def test_get_links(self):
         links = ['/', '/login', '/js/page/2/', 'https://www.goodreads.com/quotes', 'https://scrapinghub.com']
         res_links = self.scraper.get_links(self.scraper.do_scrape())
-        self.assertEquals(links, res_links)
+        self.assertEqual(links, res_links)
 

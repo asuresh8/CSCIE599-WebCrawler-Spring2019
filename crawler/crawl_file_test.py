@@ -1,5 +1,4 @@
 import unittest
-import app
 import fakeredis
 from crawl_file import *
 from crawl_base import *

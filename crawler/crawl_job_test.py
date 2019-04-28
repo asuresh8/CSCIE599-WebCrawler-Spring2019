@@ -1,9 +1,10 @@
+import os
 import unittest
-import app
 import fakeredis
 from unittest import mock
 from crawl_job import *
 from unittest.mock import patch
+from crawl_global import CrawlGlobal
 
 class TestCrawlerJob(unittest.TestCase):
 
@@ -31,7 +32,8 @@ class TestCrawlerJob(unittest.TestCase):
        with patch ("crawl_job.requests.post") as mock_post: 
             mock_resp = self.do_mock_response('success')
             mock_post.return_value = mock_resp
-            res = self.crawljob.send_response_to_manager()
+            manager = os.environ.get('CRAWLER_MANAGER_ENDPOINT', 'http://crawler-manager:8002')
+            res = self.crawljob.send_response_to_manager(manager)
             
             self.assertEqual(res.content, 'success')
     
@@ -41,7 +43,7 @@ class TestCrawlerJob(unittest.TestCase):
         self.crawljob.execute() """
         
     def test_is_cached(self):
-        app.cache.rediscache = fakeredis.FakeStrictRedis()
+        CrawlGlobal.context().cache.rediscache = fakeredis.FakeStrictRedis()
         retval = self.crawljob.is_cached()
         self.assertIs(retval, False)
 

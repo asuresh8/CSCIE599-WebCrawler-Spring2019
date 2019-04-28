@@ -4,10 +4,10 @@ import os
 import redis
 import requests
 import uuid
-import app
 import redis_connect
 from bs4 import BeautifulSoup
 from google.cloud import storage
+from crawl_global import CrawlGlobal
 
 class BaseScraper:
     def __init__(self, base_url, key):
@@ -26,9 +26,9 @@ class BaseScraper:
     # get_links - parses the url 'a' tags using beautiful soup
     def get_links(self, data):
         if data is None:
-            return
+            return []
 
-        app.context.logger.info('Parsing links...')
+        CrawlGlobal.context().logger.info('Parsing links...')
         try:
             bs_obj = BeautifulSoup(data, 'html.parser')
             links_obj = {}
@@ -38,17 +38,17 @@ class BaseScraper:
 
         
             links = list(links_obj.keys())
-            app.context.logger.info('Found links in %s: %s', self.base_url, str(links))
+            CrawlGlobal.context().logger.info('Found links in %s: %s', self.base_url, str(links))
             return links
         except Exception as e:
-            app.context.logger.error("Could not list links in url: %s", str(e))
+            CrawlGlobal.context().logger.error("Could not list links in url: %s", str(e))
             return []
     
     def store_in_gcs(self, data):
         if data is None:
-            return
+            return ''
 
-        app.context.logger.info('Attempting to store in GCS')
+        CrawlGlobal.context().logger.info('Attempting to store in GCS')
         try:
             storage_client = storage.Client()
             bucket = storage_client.get_bucket(os.environ['GCS_BUCKET'])
@@ -56,17 +56,17 @@ class BaseScraper:
             blob.upload_from_string(data)
             blob.make_public()
             uri = blob.public_url
-            app.context.logger.info('uri successfully generated!')
+            CrawlGlobal.context().logger.info('uri successfully generated!')
             return uri
         except Exception as e:
-            app.context.logger.error('Unable to store webpage for %s: %s', url, str(e))
+            CrawlGlobal.context().logger.error('Unable to store webpage for %s: %s', url, str(e))
             return ''
     
     def store_in_redis(self, s3uri, links):
         try:
-            app.context.logger.info('Caching s3_uri and child_urls')
-            app.cache.put(self.base_url, {'s3_uri': s3uri, 'child_urls': links})
-            app.context.logger.info('Caching was successful')
+            CrawlGlobal.context().logger.info('Caching s3_uri and child_urls')
+            CrawlGlobal.context().cache.put(self.base_url, {'s3_uri': s3uri, 'child_urls': links})
+            CrawlGlobal.context().logger.info('Caching was successful')
         except Exception as e:
-            app.context.logger.error('Unable to cache data for %s: %s', self.base_url, str(e))
+            CrawlGlobal.context().logger.error('Unable to cache data for %s: %s', self.base_url, str(e))
 
