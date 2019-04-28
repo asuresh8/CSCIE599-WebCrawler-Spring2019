@@ -17,6 +17,7 @@ import crawler_manager_context
 import helpers
 import redis_connect
 import work_processor
+from flask import jsonify
 
 
 
@@ -101,10 +102,20 @@ def kill():
 #An endpoint that the crawler will call to register itself once instantiated, ip/dns added to available crawler list.
 @app.route('/register_crawler', methods=['POST'])
 def register():
+    global context
     crawler_endpoint = flask.request.json['endpoint']
     context.logger.info('registering crawler with endpoint %s', crawler_endpoint)
     context.crawlers.add(crawler_endpoint)
-    return ""
+    context.logger.info(context.parameters)
+    return jsonify(
+        docs_all=context.parameters['docs_all'],
+        docs_html=context.parameters['docs_html'],
+        docs_pdf=context.parameters['docs_pdf'],
+        docs_docx=context.parameters['docs_docx'],
+        model_location=context.parameters['model_location'],
+        labels=context.parameters['labels']
+        ), 200
+    # return ""
 
 
 #Result endpoint
@@ -175,6 +186,7 @@ def setup():
                                  json={'job_id': JOB_ID, 'endpoint': ENDPOINT},
                                  headers=header)
         context.parameters = json.loads(response.text)
+        context.logger.info(context.parameters)
         context.logger.info('Registered with main application!')
     except Exception as e:
         context.logger.error('Unable to register with main application: %s', str(e))
