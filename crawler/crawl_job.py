@@ -32,34 +32,14 @@ class CrawlerJob(object):
                 return True
             else:
                 return False
+        return False
 
     def execute(self):
-        url = self.base_url
-        app.context.logger.info('Starting crawl thread for %s', url)     
+        app.context.logger.info('Starting crawl thread for %s', self.base_url)     
         try:
-            if self.is_cached():
-                app.context.logger.info('url %s is crawled before', url)    
-                return
-
-            key = 'crawl_pages/{}'.format(str(uuid.uuid4()))
-            app.context.logger.info('Generated key: %s', key)
+            if not self.is_cached():
+               self.start_scrape()
             
-            file_ext = self.get_extension(url)
-            
-            # scraper object is decided (FileScraper, WebScraper, BaseScraper)
-            if file_ext:
-                scraper = FileScraper(url, key, file_ext)
-            else:
-                scraper = WebScraper(url, key)
-            # scrape the page
-            self.data = scraper.do_scrape()
-            #app.context.logger.info(self.data)
-            # store
-            self.s3_uri = scraper.store_in_gcs(self.data)
-            # get child urls
-            self.links = scraper.get_links(self.data)
-            # put in cache
-            scraper.store_in_redis(self.s3_uri, self.links)
             # callback manager
             self.send_response_to_manager()
         except Exception as e:
@@ -68,6 +48,29 @@ class CrawlerJob(object):
         app.context.active_thread_count.decrement()
 
     
+    def start_scrape(self):
+        url = self.base_url
+        app.context.logger.info('start scraping')
+        key = 'crawl_pages/{}'.format(str(uuid.uuid4()))
+        app.context.logger.info('Generated key: %s', key)
+        
+        file_ext = self.get_extension(url)
+        
+        # scraper object is decided (FileScraper, WebScraper, BaseScraper)
+        if file_ext:
+            scraper = FileScraper(url, key, file_ext)
+        else:
+            scraper = WebScraper(url, key)
+        # scrape the page
+        self.data = scraper.do_scrape()
+        #app.context.logger.info(self.data)
+        # store
+        self.s3_uri = scraper.store_in_gcs(self.data)
+        # get child urls
+        self.links = scraper.get_links(self.data)
+        # put in cache
+        scraper.store_in_redis(self.s3_uri, self.links)
+
     def send_response_to_manager(self):
         links_api = os.path.join(app.CRAWLER_MANAGER_ENDPOINT, 'links')
         app.context.logger.info('Endpoint on Crawler manager: %s', links_api)

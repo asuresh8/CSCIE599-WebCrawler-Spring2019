@@ -1,5 +1,6 @@
 import unittest
 import app
+import fakeredis
 from unittest import mock
 from crawl_job import *
 from unittest.mock import patch
@@ -35,11 +36,15 @@ class TestCrawlerJob(unittest.TestCase):
             self.assertEqual(res.content, 'success')
     
     
-    def test_execute(self):
-        pass
+    """ def test_execute(self):
+        app.cache.rediscache = fakeredis.FakeStrictRedis()
+        self.crawljob.execute() """
         
     def test_is_cached(self):
-        pass
+        app.cache.rediscache = fakeredis.FakeStrictRedis()
+        retval = self.crawljob.is_cached()
+        self.assertIs(retval, False)
+
 
 if __name__ == 'main':
     unittest.main()
