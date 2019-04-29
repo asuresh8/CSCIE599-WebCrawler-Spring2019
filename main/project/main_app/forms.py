@@ -4,7 +4,7 @@ from .models import CrawlRequest, Profile, MlModel
 class CrawlRequestForm(ModelForm):
     class Meta:
         model = CrawlRequest
-        fields = ('name', 'type', 'domain', 'urls', 'description', 'docs_all', 'docs_html', 'docs_docx', 'docs_pdf', 'docs_xml', 'docs_txt', 's3_location', 'num_crawlers', 'model_name', 'model_labels')
+        fields = ('name', 'type', 'domain', 'urls', 'description', 'docs_all', 'docs_html', 'docs_docx', 'docs_pdf', 'docs_xml', 'docs_txt', 'num_crawlers', 'model_name', 'model_labels')
         labels = {
             'name': 'Job Name',
             'type': 'Crawl Type',
@@ -17,7 +17,6 @@ class CrawlRequestForm(ModelForm):
             'docs_pdf': 'Collect PDF files',
             'docs_xml': 'Collect XML files',
             'docs_txt': 'Collect TXT files',
-            's3_location': 'AWS S3 Location',
             'num_crawlers': 'Number of crawler instances',
             'model_name' : 'Model Name',
             'model_labels' : 'Model Classification Labels',
@@ -44,7 +43,6 @@ class CrawlRequestForm(ModelForm):
         self.fields['docs_pdf'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect PDF files'})
         self.fields['docs_xml'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect XML files'})
         self.fields['docs_txt'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect TXT files'})
-        self.fields['s3_location'].widget.attrs.update({'class': 'form-control', 'placeholder': 'AWS S3 Location'})
         self.fields['num_crawlers'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number crawler instances'})
         self.fields['model_name'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Model Name'})
         self.fields['model_labels'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Model Classification Labels'})
