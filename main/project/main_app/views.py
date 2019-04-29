@@ -282,19 +282,6 @@ def get_api_job_status(request):
     return JsonResponse(job_info)
 
 
-@login_required()
-def profile(request):
-    profile = Profile.objects.get(user=request.user)
-    if request.method == "POST":
-        form = ProfileForm(instance=profile, data=request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('mainapp_home')
-    else:
-        form = ProfileForm(instance=profile)
-    return render(request, "main_app/settings.html", {'form': form})
-
-
 def get_google_cloud_manifest_contents(manifest):
     client = storage.Client()
     bucket = client.get_bucket(os.environ['GCS_BUCKET'])

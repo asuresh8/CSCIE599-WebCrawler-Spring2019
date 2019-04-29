@@ -8,7 +8,6 @@ urlpatterns = [
     url(r'home$', views.home, name="mainapp_home"),
     url(r'new_job$', views.new_job, name="mainapp_new_job"),
     url(r'api/job_status', views.api_job_status, name="api_job_status"),
-    url(r'profile$', views.profile, name="mainapp_profile"),
     path(r'job/<int:job_id>', views.job_details, name="mainapp_jobdetails"),
     path(r'contents/<int:job_id>', views.crawl_contents, name="mainapp_crawlcontents"),
     url(r'login$', LoginView.as_view(template_name="main_app/login_form.html"), name="mainapp_login"),
