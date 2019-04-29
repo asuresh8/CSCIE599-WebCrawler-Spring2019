@@ -1,3 +1,11 @@
+### Run tests locally
+
+Unit tests can be run locally with the following command:
+
+```shell
+./run_unit_tests.sh
+```
+
 #### Local Dev Environment with Docker
 
 The application requires the following containers:

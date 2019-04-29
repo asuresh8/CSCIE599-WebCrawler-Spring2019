@@ -62,3 +62,6 @@ class TestWebScraper(unittest.TestCase):
         res_links = self.scraper.get_links(self.scraper.do_scrape())
         self.assertEqual(links, res_links)
 
+
+if __name__ == 'main':
+    unittest.main()
