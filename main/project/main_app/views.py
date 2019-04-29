@@ -52,12 +52,12 @@ def home(request):
     jobs = CrawlRequest.objects.filter(user=user)
     return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
 
-def store_data_in_gcs(model_content, model_id):
+def store_data_in_gcs(filename, model_id):
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(os.environ['GCS_BUCKET'])
     key = 'crawl_models/{}'.format(str(model_id))
     blob = bucket.blob(key)
-    blob.upload_from_string(model_content)
+    blob.upload_from_filename(filename)
     blob.make_public()
     return blob.public_url
 
@@ -72,9 +72,12 @@ def ml_model(request):
             form_model.user = request.user
             form_model.save()
             myfile = request.FILES['myfile']
-            data = myfile.read().decode("utf-8")
-            s3_url = store_data_in_gcs(data, form_model.id)
+            tmp_file = 'tmp_file'
+            data = myfile.read()
+            open(tmp_file, 'wb').write(data)
+            s3_url = store_data_in_gcs(tmp_file, form_model.id)
             form_model.s3_location = s3_url
+            os.remove(tmp_file)
             print("S3Url: {}".format(s3_url))
             form_model.save()
 
