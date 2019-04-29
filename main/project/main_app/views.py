@@ -23,6 +23,7 @@ from django.http import HttpRequest
 from django.http import HttpResponse
 from io import BytesIO
 from google.cloud import storage
+import uuid
 
 import requests, jwt, json, os, zipfile, time, sys
 
@@ -55,7 +56,7 @@ def home(request):
 def store_data_in_gcs(filename, model_id):
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(os.environ['GCS_BUCKET'])
-    key = 'crawl_models/{}'.format(str(model_id))
+    key = 'crawl_models/{}'.format(str(uuid.uuid4()))
     blob = bucket.blob(key)
     blob.upload_from_filename(filename)
     blob.make_public()
