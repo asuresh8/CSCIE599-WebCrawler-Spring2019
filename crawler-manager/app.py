@@ -102,7 +102,6 @@ def kill():
 #An endpoint that the crawler will call to register itself once instantiated, ip/dns added to available crawler list.
 @app.route('/register_crawler', methods=['POST'])
 def register():
-    global context
     crawler_endpoint = flask.request.json['endpoint']
     context.logger.info('registering crawler with endpoint %s', crawler_endpoint)
     context.crawlers.add(crawler_endpoint)
@@ -191,6 +190,7 @@ def setup():
         context.logger.error('Unable to register with main application: %s', str(e))
         sys.exit(1)
 
+    context.start_time = round(time.time() * 1000)
     for url in context.parameters['urls']:
         context.queued_urls.add(url)
 
@@ -235,15 +235,18 @@ def teardown():
     crawl_complete_api = os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/crawl_complete')
     try:
         context.logger.info("Calling crawl_complete api %s", crawl_complete_api)
+        time_taken = int(round(time.time() * 1000) - context.start_time)
         json_data = {
             'job_id': JOB_ID,
             'manifest': public_manifest,
-            'resources_count': context.processed_urls.get()
+            'resources_count': context.processed_urls.get(),
+            'time_taken': time_taken
         }
         header = {'Authorization': TOKEN_PREFIX + TOKEN}
         response = requests.post(crawl_complete_api, json=json_data, headers=header)
         response.raise_for_status()
         context.logger.info("crawl_complete call successful")
+        context.logger.info("Crawl time taken: %d", time_taken)
     except Exception as e:
         context.logger.error('Unable to send crawl_complete to main applications: %s', str(e))
 
