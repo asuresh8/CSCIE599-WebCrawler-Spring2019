@@ -129,7 +129,7 @@ def register_crawler_manager(request):
     job = CrawlRequest.objects.get(pk=id)
     job.crawler_manager_endpoint = endpoint
     job.save()
-    models = MlModel.objects.filter(name=job.model_name)
+    models = MlModel.objects.filter(name=job.model)
     if (len(models) > 0):
         model_url = models[0].s3_location
     else:
