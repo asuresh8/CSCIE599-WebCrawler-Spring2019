@@ -37,6 +37,7 @@ class TestCrawlerManagerAtomic(unittest.TestCase):
         self.assertEqual(queue.size(), 1)
         self.assertEqual(queue.poll(), (len('www.recurship.com'), 'www.recurship.com'))
         self.assertEqual(queue.size(), 0)
+        self.assertEqual(queue.poll(), (None, None))
 
     def test_set(self):
         my_set = atomic.AtomicSet()

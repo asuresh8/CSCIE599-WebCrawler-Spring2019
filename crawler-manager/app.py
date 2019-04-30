@@ -143,7 +143,8 @@ def links():
           not context.in_process_urls.contains(absolute_url) and \
           not context.cache.exists(absolute_url):
             context.logger.info('Adding %s to queue', absolute_url)
-            context.queued_urls.add(absolute_url)
+            # context.queued_urls.add(absolute_url)
+            context.queued_urls.add(absolute_url, len(absolute_url))
 
     context.processed_urls.increment()
     context.in_process_urls.remove(main_url)
@@ -192,7 +193,8 @@ def setup():
 
     context.start_time = round(time.time() * 1000)
     for url in context.parameters['urls']:
-        context.queued_urls.add(url)
+        # context.queued_urls.add(url)
+        context.queued_urls.add(url, len(url))
 
     if ENVIRONMENT != 'local':
         context.logger.info('deploying crawlers')
