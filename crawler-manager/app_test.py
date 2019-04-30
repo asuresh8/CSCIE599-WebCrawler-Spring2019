@@ -13,7 +13,13 @@ class TestCrawlerManagerApp(unittest.TestCase):
     def setUp(self):
         app.context.cache = redis_connect.RedisClient(fakeredis.FakeStrictRedis())
         app.context.parameters = {
-            'domain': 'http://garbage.com'
+            'domain': 'http://garbage.com',
+            'docs_all': True,
+            'docs_html': False,
+            'docs_pdf': False,
+            'docs_docx': False,
+            'model_location': '',
+            'labels': [],
         }
         self.app = app.app.test_client()
         self.app.testing = True

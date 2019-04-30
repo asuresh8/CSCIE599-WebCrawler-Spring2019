@@ -4,8 +4,8 @@ from django.http import Http404
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 
-from .models import CrawlRequest, Profile
-from .forms import CrawlRequestForm, ProfileForm
+from .models import CrawlRequest, Profile, MlModel
+from .forms import CrawlRequestForm, ProfileForm, MlModelForm
 
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -23,6 +23,7 @@ from django.http import HttpRequest
 from django.http import HttpResponse
 from io import BytesIO
 from google.cloud import storage
+import uuid
 
 import requests, jwt, json, os, zipfile, time, sys
 
@@ -41,10 +42,9 @@ IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 CRAWLER_MANAGER_USER_PREFIX = 'admin'
 
+
 # store the release timestamps here, like a job id meanwhile
 releases = []
-JOB_ID = 1
-URLS = "http://google.com"
 @login_required()
 def home(request):
     user = request.user
@@ -52,6 +52,41 @@ def home(request):
     form = CrawlRequestForm(instance=crawl_request)
     jobs = CrawlRequest.objects.filter(user=user)
     return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
+
+def store_data_in_gcs(filename, model_id):
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(os.environ['GCS_BUCKET'])
+    key = 'crawl_models/{}'.format(str(uuid.uuid4()))
+    blob = bucket.blob(key)
+    blob.upload_from_filename(filename)
+    blob.make_public()
+    return blob.public_url
+
+@login_required()
+def ml_model(request):
+    user = request.user
+    ml_model_instance = MlModel(user=user)
+    if request.method == "POST":
+        form = MlModelForm(instance=ml_model_instance, data=request.POST)
+        if form.is_valid():
+            form_model = form.save(commit=False)
+            form_model.user = request.user
+            form_model.save()
+            myfile = request.FILES['myfile']
+            tmp_file = 'tmp_file'
+            data = myfile.read()
+            with open(tmp_file, 'wb') as f:
+                f.write(data)
+            s3_url = store_data_in_gcs(tmp_file, form_model.id)
+            form_model.s3_location = s3_url
+            os.remove(tmp_file)
+            print("S3Url: {}".format(s3_url))
+            form_model.save()
+
+    form = MlModelForm(instance=ml_model_instance)
+    models = MlModel.objects.filter(user=user)
+    return render(request, "main_app/ml_model.html", {'form': form, 'models': models})
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny, ])
@@ -69,6 +104,7 @@ def api_ping(request):
 
     return JsonResponse(data)
 
+
 def crawler_manager_ping(requestUrl):
     try:
         manager_url = os.path.join(requestUrl, 'ping')
@@ -82,19 +118,23 @@ def crawler_manager_ping(requestUrl):
     except Exception as ex:
         return "general exception"
 
+
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def register_crawler_manager(request):
     logger.info("In Register-Crawl")
     id = request.data['job_id']
-    if ENVIRONMENT == 'local':
-        id = JOB_ID
     logger.info('JobID main: %s', id)
     endpoint = request.data['endpoint']
     logger.info("In Register-Crawl, jobid: %s, endpoint: %s",id,endpoint)
     job = CrawlRequest.objects.get(pk=id)
     job.crawler_manager_endpoint = endpoint
     job.save()
+    models = MlModel.objects.filter(name=job.model)
+    if (len(models) > 0):
+        model_url = models[0].s3_location
+    else:
+        model_url = ""
     payload = {
         'job_id': id,
         'domain': job.domain.split(';'),
@@ -103,9 +143,12 @@ def register_crawler_manager(request):
         'docs_html': job.docs_html,
         'docs_pdf': job.docs_pdf,
         'docs_docx': job.docs_docx,
-        'num_crawlers': job.num_crawlers
+        'num_crawlers': job.num_crawlers,
+        'model_location': model_url,
+        'labels': job.model_labels.split(';')
     }
     return JsonResponse(payload)
+
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
@@ -117,6 +160,7 @@ def complete_crawl(request):
     logger.info("In Crawl-Complete")
     logger.info('Crawl-Complete id - %s, manifest - %s', id, manifest)
     crawl_request = CrawlRequest.objects.get(pk=id)
+    crawl_request.s3_location = manifest
     crawl_request.manifest = manifest
     crawl_request.status = 3
     crawl_request.docs_collected = resources_count
@@ -131,8 +175,9 @@ def complete_crawl(request):
 def check_user_password(current_password, incoming_password):
     salt = current_password.split('$')[2]
     hashed_password = make_password(incoming_password, salt)
-
     return current_password == hashed_password
+
+
 def get_manager_token(jobId):
     username = CRAWLER_MANAGER_USER_PREFIX + str(jobId)
     email = CRAWLER_MANAGER_USER_PREFIX + str(jobId) + '@' + CRAWLER_MANAGER_USER_PREFIX + '.com'
@@ -147,36 +192,26 @@ def get_manager_token(jobId):
 
 @login_required()
 def new_job(request):
-    global JOB_ID
-    global URLS
     if request.method == "POST":
         crawl_request = CrawlRequest(user=request.user)
         form = CrawlRequestForm(instance=crawl_request, data=request.POST)
         if form.is_valid():
             form.save()
-            """
-            print("In new_job")
-            payload = {}
-            payload['jobId'] = crawl_request.id
-            payload['url'] = crawl_request.domain
-            """
-            JOB_ID = crawl_request.id
-            if crawl_request.urls != "":
-                URLS = crawl_request.urls
             logger.info('NewJob created: %s', crawl_request.id)
             logger.info('Received urls: %s', crawl_request.urls)
-            launch_crawler_manager(crawl_request, JOB_ID)
+            launch_crawler_manager(crawl_request, crawl_request.id)
             return redirect('mainapp_home')
     else:
         form = CrawlRequestForm()
     return render(request, "main_app/new_job.html", {'form': form})
+
 
 def launch_crawler_manager(request, jobId):
     if ENVIRONMENT == 'local' or ENVIRONMENT == 'test':
         # Running in docker compose,
         print("Looks like this is not running on a Kuberenetes cluster, ")
         token = get_manager_token(jobId).decode("utf-8")
-        requests.post("http://crawler-manager:8002/crawl", json={"token" : token})
+        requests.post("http://crawler-manager:8002/crawl", json={"job_id" : jobId, "token" : token})
     else:
         # If ENVIRONMENT is prod, it means it is running in the Kubernetes Cluster
         # Use the Helm command to trigger a new Crawler Manager Instance
@@ -229,6 +264,7 @@ def job_details(request, job_id):
         raise Http404("Job does not exist.")
     return render(request, "main_app/job_details.html", {"job": job})
 
+
 #copied to api_app, check if need to be removed from here
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
@@ -248,24 +284,13 @@ def get_api_job_status(request):
     return JsonResponse(job_info)
 
 
-@login_required()
-def profile(request):
-    profile = Profile.objects.get(user=request.user)
-    if request.method == "POST":
-        form = ProfileForm(instance=profile, data=request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('mainapp_home')
-    else:
-        form = ProfileForm(instance=profile)
-    return render(request, "main_app/settings.html", {'form': form})
-
 def get_google_cloud_manifest_contents(manifest):
     client = storage.Client()
     bucket = client.get_bucket(os.environ['GCS_BUCKET'])
     blob = storage.Blob(manifest, bucket)
     content = blob.download_as_string()
     return content
+
 
 @login_required()
 def crawl_contents(request, job_id):
@@ -282,7 +307,8 @@ def crawl_contents(request, job_id):
 
     # Read manifest content from cloud
     content = get_google_cloud_manifest_contents(manifest)
-    open(manifest_file, 'wb').write(content)
+    with open(manifest_file, 'wb') as f:
+        f.write(content)
     z.write(manifest_file)
     z.close()
     os.remove(manifest_file)

@@ -13,6 +13,7 @@ class Context:
         self.disallowed_urls = atomic.AtomicCounter()
         self.cache = None
         self.parameters = {}
+        self.start_time = None
 
 
     

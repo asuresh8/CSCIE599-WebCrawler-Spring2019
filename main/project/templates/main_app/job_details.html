@@ -12,7 +12,7 @@
          <ul class="nav nav-tabs">
              <li class="active"><a href="{% url 'mainapp_home' %}">Current Jobs</a></li>
              <li><a href="{% url 'mainapp_new_job' %}">New Job</a></li>
-             <li><a href="{% url 'mainapp_profile' %}">Settings</a></li>
+             <li><a href="{% url 'mainapp_mlmodel' %}">Models</a></li>
         </ul>
 
         <div class="tab-content">
@@ -127,6 +127,18 @@
                                 <b>Collect TXT</b>
                             </td>
                             <td>{{ job.docs_txt|escape }}</td>
+                        </tr>
+						<tr>
+                            <td>
+                                <b>Model Name</b>
+                            </td>
+                            <td>{{ job.model|escape }}</td>
+                        </tr>
+						<tr>
+                            <td>
+                                <b>Model Classification Labels</b>
+                            </td>
+                            <td>{{ job.model_labels|escape }}</td>
                         </tr>
                         <tr>
                             <td>

@@ -26,6 +26,18 @@ class TestCrawlerManagerAtomic(unittest.TestCase):
         self.assertEqual(queue.poll(), '2')
         self.assertEqual(queue.size(), 0)
     
+    def test_priority_queue(self):
+        queue = atomic.AtomicPriorityQueue()
+        queue.add('www.recurship.com', len('www.recurship.com'))
+        queue.add('www.google.com', len('www.google.com'))
+        self.assertTrue(queue.contains('www.google.com'))
+        self.assertTrue(queue.contains('www.recurship.com'))
+        self.assertEqual(queue.size(), 2)
+        self.assertEqual(queue.poll(), (len('www.google.com'), 'www.google.com'))
+        self.assertEqual(queue.size(), 1)
+        self.assertEqual(queue.poll(), (len('www.recurship.com'), 'www.recurship.com'))
+        self.assertEqual(queue.size(), 0)
+
     def test_set(self):
         my_set = atomic.AtomicSet()
         my_set.add('1')

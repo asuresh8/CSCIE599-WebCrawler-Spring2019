@@ -17,6 +17,7 @@ import crawler_manager_context
 import helpers
 import redis_connect
 import work_processor
+from flask import jsonify
 
 
 
@@ -33,6 +34,7 @@ DEBUG_MODE = ENVIRONMENT == 'local'
 RELEASE_DATE = os.environ.get('RELEASE_DATE', '0')
 HOSTNAME = os.environ.get('JOB_IP', 'crawler-manager')
 MAIN_APPLICATION_ENDPOINT = os.environ.get('MAIN_APPLICATION_ENDPOINT', 'http://main:8001')
+CRAWLER_APPLICATION_ENDPOINT = os.environ.get('CRAWLER_APPLICATION_ENDPOINT', 'http://crawler:8003')
 PORT = 8002
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
 TOKEN = os.environ.get('TOKEN', '')
@@ -62,11 +64,15 @@ def main():
     context.logger.info('Received request at home')
     return 'Crawler Manager'
 
+
 @app.route('/crawl', methods=['POST'])
 def crawl():
+    global JOB_ID
     global TOKEN
+    JOB_ID = flask.request.json['job_id']
     TOKEN = flask.request.json['token']
-    setup()
+    crawl_thread = threading.Thread(target=do_crawl)
+    crawl_thread.start()
     return ''
 
 
@@ -99,7 +105,15 @@ def register():
     crawler_endpoint = flask.request.json['endpoint']
     context.logger.info('registering crawler with endpoint %s', crawler_endpoint)
     context.crawlers.add(crawler_endpoint)
-    return ""
+    context.logger.info(context.parameters)
+    return jsonify(
+        docs_all=context.parameters['docs_all'],
+        docs_html=context.parameters['docs_html'],
+        docs_pdf=context.parameters['docs_pdf'],
+        docs_docx=context.parameters['docs_docx'],
+        model_location=context.parameters['model_location'],
+        labels=context.parameters['labels']
+        )
 
 
 #Result endpoint
@@ -153,6 +167,13 @@ def run_flask():
     app.run(debug=DEBUG_MODE, host=HOSTNAME, port=PORT, use_reloader=False)
 
 
+def do_crawl():
+    setup()
+    processor = work_processor.Processor(context)
+    processor.run()
+    teardown()
+
+
 def setup():
     global context
     context.cache = redis_connect.RedisClient(redis.Redis(host='0.0.0.0', port=6379, db=0))
@@ -163,11 +184,13 @@ def setup():
                                  json={'job_id': JOB_ID, 'endpoint': ENDPOINT},
                                  headers=header)
         context.parameters = json.loads(response.text)
+        context.logger.info(context.parameters)
         context.logger.info('Registered with main application!')
     except Exception as e:
         context.logger.error('Unable to register with main application: %s', str(e))
         sys.exit(1)
 
+    context.start_time = round(time.time() * 1000)
     for url in context.parameters['urls']:
         context.queued_urls.add(url)
 
@@ -184,6 +207,8 @@ def setup():
             """
             context.logger.info('Running helm command: %s', helm_command)
             os.system(helm_command)
+    else:
+        requests.post(os.path.join(CRAWLER_APPLICATION_ENDPOINT, 'dev_crawl'))
 
 
 def teardown():
@@ -210,15 +235,18 @@ def teardown():
     crawl_complete_api = os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/crawl_complete')
     try:
         context.logger.info("Calling crawl_complete api %s", crawl_complete_api)
+        time_taken = int(round(time.time() * 1000) - context.start_time)
         json_data = {
             'job_id': JOB_ID,
             'manifest': public_manifest,
-            'resources_count': context.processed_urls.get()
+            'resources_count': context.processed_urls.get(),
+            'time_taken': time_taken
         }
         header = {'Authorization': TOKEN_PREFIX + TOKEN}
         response = requests.post(crawl_complete_api, json=json_data, headers=header)
         response.raise_for_status()
         context.logger.info("crawl_complete call successful")
+        context.logger.info("Crawl time taken: %d", time_taken)
     except Exception as e:
         context.logger.error('Unable to send crawl_complete to main applications: %s', str(e))
 
@@ -228,7 +256,8 @@ if __name__ == "__main__":
     context.logger.info('starting flask app in separate thread')
     flask_thread = threading.Thread(target=run_flask)
     flask_thread.start()
-    setup()
-    processor = work_processor.Processor(context)
-    processor.run()
-    teardown()
+    if ENVIRONMENT != 'local':
+        setup()
+        processor = work_processor.Processor(context)
+        processor.run()
+        teardown()

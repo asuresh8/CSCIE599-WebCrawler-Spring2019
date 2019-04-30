@@ -1,1 +1,2 @@
 # add test dependencies here
+fakeredis==1.0.3

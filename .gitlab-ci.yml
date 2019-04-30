@@ -9,7 +9,7 @@ stages:
 
 testMain:
   stage: test
-  image: python:3.7.2-stretch
+  image: joyzoursky/python-chromedriver:3.7
   before_script:
     - cd main
     - export ENVIRONMENT=test
@@ -30,9 +30,10 @@ testCrawlerManager:
 
 testCrawler:
   stage: test
-  image: python:3.7.2-stretch
+  image: joyzoursky/python-chromedriver:3.7
   before_script:
     - cd crawler
+    - cp /usr/local/bin/chromedriver .
     - pip install -r requirements.txt
     - pip install -r test_requirements.txt
   script:
