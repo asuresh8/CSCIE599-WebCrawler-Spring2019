@@ -75,7 +75,8 @@ def ml_model(request):
             myfile = request.FILES['myfile']
             tmp_file = 'tmp_file'
             data = myfile.read()
-            open(tmp_file, 'wb').write(data)
+            with open(tmp_file, 'wb') as f:
+                f.write(data)
             s3_url = store_data_in_gcs(tmp_file, form_model.id)
             form_model.s3_location = s3_url
             os.remove(tmp_file)
@@ -306,7 +307,8 @@ def crawl_contents(request, job_id):
 
     # Read manifest content from cloud
     content = get_google_cloud_manifest_contents(manifest)
-    open(manifest_file, 'wb').write(content)
+    with open(manifest_file, 'wb') as f:
+        f.write(content)
     z.write(manifest_file)
     z.close()
     os.remove(manifest_file)
