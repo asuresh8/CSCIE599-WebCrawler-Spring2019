@@ -4,7 +4,9 @@ services:
 stages:
   - test
   - build
+  - integration-setup
   - integration
+  - integration-cleanup
   - deploy
 
 testMain:
@@ -76,7 +78,7 @@ buildCrawlerManager:
     - develop
 
 setup:
-  stage: integration
+  stage: integration-setup
   image: python:3.7.3-alpine
   before_script:
     - echo "$GCLOUD_CREDENTIALS" > service-account.json
@@ -120,7 +122,7 @@ stress-tests:
     - develop
 
 cleanup:
-  stage: integration
+  stage: integration-cleanup
   image: python:3.7.3-alpine
   before_script:
     - echo "$GCLOUD_CREDENTIALS" > service-account.json

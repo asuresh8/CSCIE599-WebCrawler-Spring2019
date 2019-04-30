@@ -4,7 +4,11 @@ from kubernetes import client, config
 MAIN_APP = '{}/api_app'.format(os.environ.get('DEV_API_ENDPOINT', 'http://localhost:8001'))
 JWT = None
 JOB_ID = None
+<<<<<<< HEAD
+NUM_CRAWLERS = 0 # should be greater than 0 once the crawling flow is fixed
+=======
 NUM_CRAWLERS = 0 #should be greater than 0 once the crawling flow is fixed
+>>>>>>> develop
 TEST_DOMAIN = "https://invaliddomain.cow"
 TEST_URL = "https://invaliddomain.cow/random"
 
@@ -79,13 +83,12 @@ class TestCreateJob(unittest.TestCase):
     self.assertIs(len(ret.items), NUM_CRAWLERS)
 
 class StressTest(unittest.TestCase):
-  TEST_DOMAIN = "https://colombianspanish.co"
-  TEST_URL = "https://colombianspanish.co/what-to-study"
-
-
   def test_1_auth(self):
-    global JWT, NUM_CRAWLERS
+    global JWT, NUM_CRAWLERS, TEST_DOMAIN, TEST_URL
+
     NUM_CRAWLERS = 3
+    TEST_DOMAIN = "https://colombianspanish.co"
+    TEST_URL = "https://colombianspanish.co/what-to-study"
 
     try:
       data = do_request('authenticate_user', {
