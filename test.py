@@ -5,6 +5,8 @@ MAIN_APP = '{}/api_app'.format(os.environ.get('DEV_API_ENDPOINT', 'http://localh
 JWT = None
 JOB_ID = None
 NUM_CRAWLERS = 0 #should be greater than 0 once the crawling flow is fixed
+TEST_DOMAIN = "https://invaliddomain.cow"
+TEST_URL = "https://invaliddomain.cow/random"
 
 def do_request(uri, data={}, headers={}):
   try:
@@ -30,7 +32,7 @@ class TestCreateJob(unittest.TestCase):
     self.assertIsNot(JWT, None)
 
   def test_2_create_job(self):
-    global JOB_ID, JWT
+    global JOB_ID, JWT, TEST_DOMAIN, TEST_URL
 
     token = 'Bearer {}'.format(JWT)
 
@@ -38,8 +40,8 @@ class TestCreateJob(unittest.TestCase):
       data = do_request('api/create_crawl', {
         "username": "admin",
         "name": "test job",
-        "domain": "https://colombianspanish.co",
-        "urls": "https://colombianspanish.co/what-to-study"
+        "domain": TEST_DOMAIN,
+        "urls": TEST_URL
       }, {'Authorization': token})
       JOB_ID = data['jobId']
     except Exception as e:
@@ -58,7 +60,7 @@ class TestCreateJob(unittest.TestCase):
       }, {'Authorization': token})
     except Exception as e:
       print('Exception -- ', e)
-    print('jo id', JOB_ID)
+
     self.assertIsNot(data['status'], None)
     self.assertIs(data['status'], 1)
 
@@ -75,6 +77,31 @@ class TestCreateJob(unittest.TestCase):
 
     self.assertIsNot(ret.items, None)
     self.assertIs(len(ret.items), NUM_CRAWLERS)
+
+class StressTest(unittest.TestCase):
+  TEST_DOMAIN = "https://colombianspanish.co"
+  TEST_URL = "https://colombianspanish.co/what-to-study"
+
+
+  def test_1_auth(self):
+    global JWT, NUM_CRAWLERS
+    NUM_CRAWLERS = 3
+
+    try:
+      data = do_request('authenticate_user', {
+        "username": "admin",
+        "password": "s3cr3tp4ss"
+      })
+      JWT = data['token']
+    except Exception as e:
+      print('Exception -- ', e)
+
+    self.assertIsNot(JWT, None)
+
+  def test_2_create_multiple_jobs(self):
+    global NUM_CRAWLERS
+    print('crawlers', NUM_CRAWLERS)
+    self.assertIsNot(True, None)
 
 if __name__ == '__main__':
   unittest.main()
