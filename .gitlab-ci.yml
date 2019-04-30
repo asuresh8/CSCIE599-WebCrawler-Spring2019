@@ -79,8 +79,9 @@ integration-tests:
   stage: integration
   image: python:3.7.3-alpine
   before_script:
-    - echo -e "$GCLOUD_CREDENTIALS" > service-account.json
-    - apk add --no-cache curl wget tar bash openssl
+    - echo "$GCLOUD_CREDENTIALS" > service-account.json
+    - apk add --no-cache curl wget tar bash openssl python2
+    - export CLOUDSDK_PYTHON=$(which python2)
     - pip install requests==2.21.0
     - pip install kubernetes==9.0.0
     - ./cluster-setup/kube_setup
