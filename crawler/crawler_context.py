@@ -1,7 +1,11 @@
+import os
 import atomic
 import requests
 import redis_connect
 from model_runner import ModelRunner
+from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.chrome.options import Options
 
 class Context:
     def __init__(self, logger):
@@ -9,6 +13,33 @@ class Context:
         self.modelrunner = None
         self.active_thread_count = atomic.AtomicCounter()
         self.cache = redis_connect.Cache()
+        self.driver = None
+        self.initialize_driver()
+
+    def initialize_driver(self):
+        dir_path = os.path.dirname(os.path.realpath(__file__)) + "/chromedriver"
+        self.logger.info("Chrome driver path: {}".format(dir_path))
+        exists = os.path.isfile(dir_path)
+    
+        if not exists:
+            return
+
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-setuid-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--remote-debugging-port=9222")
+
+        try:
+            self.driver = webdriver.Chrome(executable_path= dir_path, options= chrome_options ) 
+            self.logger.info('browser initialized')       
+        except WebDriverException as e:
+            self.logger.info("could not instantiate browser: {}".format(str(e)))
+   
+
+    def get_driver(self):
+        return self.driver
 
     def set_useroptions(self, jsonObj):   
         if jsonObj is None:
@@ -37,6 +68,8 @@ class Context:
             return True
         else:
             return False
+
+    
 
     def download_model_from_storage(self):
         if len(self.model_url) == 0:
