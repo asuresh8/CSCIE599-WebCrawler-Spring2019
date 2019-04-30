@@ -5,6 +5,34 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+class MlModel(models.Model):
+    """
+    The model to represent the user Machine Learning Models.
+    """
+    name = models.CharField(max_length=128)
+    #ml_model = models.FileField(upload_to='models/')
+    labels = models.TextField(default='', max_length=100, blank=True)
+    created = models.DateTimeField("model creation time", editable=False)
+    modified = models.DateTimeField("model modification time")
+    s3_location = models.URLField(default='', max_length=1000, blank=True)
+    user = models.ForeignKey(User, related_name="ml_models_user", on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        """ Update created and modified timestamps whenever settings are saved """
+        # only in the beginning (when the object doesn't exist yet) set the creation time.
+        if not self.id:
+            self.created = timezone.now()
+        # set modified whenever an instance is saved
+        self.modified = timezone.now()
+        return super(MlModel, self).save(*args, **kwargs)
+
+    def __str__(self):
+        """
+        String for representing a Profile.
+        """
+        return f'{self.id} {self.name}'
+
+
 class CrawlRequest(models.Model):
     """
     The model to represent a crawl request.
@@ -41,7 +69,7 @@ class CrawlRequest(models.Model):
     user = models.ForeignKey(User, related_name="crawl_requests_user", on_delete=models.CASCADE)
     created = models.DateTimeField("crawl request creation time", editable=False)
     modified = models.DateTimeField("crawl request modification time")
-    model_name = models.CharField(max_length=128, blank=True)
+    model = models.ForeignKey(MlModel, default='', related_name="crawl_requests_model", on_delete=models.CASCADE, blank=True)
     model_labels = models.CharField(max_length=128, blank=True)
 
     def save(self, *args, **kwargs):
@@ -105,29 +133,3 @@ class Profile(models.Model):
         """ This method saves that profile instance to the database """
         instance.profile.save()
 
-class MlModel(models.Model):
-    """
-    The model to represent the user Machine Learning Models.
-    """
-    name = models.CharField(max_length=128)
-    #ml_model = models.FileField(upload_to='models/')
-    labels = models.TextField(default='', max_length=100, blank=True)
-    created = models.DateTimeField("model creation time", editable=False)
-    modified = models.DateTimeField("model modification time")
-    s3_location = models.URLField(default='', max_length=1000, blank=True)
-    user = models.ForeignKey(User, related_name="ml_models_user", on_delete=models.CASCADE)
-
-    def save(self, *args, **kwargs):
-        """ Update created and modified timestamps whenever settings are saved """
-        # only in the beginning (when the object doesn't exist yet) set the creation time.
-        if not self.id:
-            self.created = timezone.now()
-        # set modified whenever an instance is saved
-        self.modified = timezone.now()
-        return super(MlModel, self).save(*args, **kwargs)
-
-    def __str__(self):
-        """
-        String for representing a Profile.
-        """
-        return f'{self.id} {self.name}'
