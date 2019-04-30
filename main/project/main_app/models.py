@@ -28,7 +28,7 @@ class MlModel(models.Model):
 
     def __str__(self):
         """
-        String for representing a Profile.
+        String for representing a MlModel.
         """
         return f'{self.id} {self.name}'
 
@@ -69,7 +69,7 @@ class CrawlRequest(models.Model):
     user = models.ForeignKey(User, related_name="crawl_requests_user", on_delete=models.CASCADE)
     created = models.DateTimeField("crawl request creation time", editable=False)
     modified = models.DateTimeField("crawl request modification time")
-    model = models.ForeignKey(MlModel, default='', related_name="crawl_requests_model", on_delete=models.CASCADE, blank=True)
+    model = models.ForeignKey(MlModel, default='', related_name="crawl_requests_model", on_delete=models.CASCADE, blank=True, null=True)
     model_labels = models.CharField(max_length=128, blank=True)
 
     def save(self, *args, **kwargs):
