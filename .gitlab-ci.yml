@@ -92,7 +92,6 @@ setup:
     - ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=service-account.json
   script:
     - ./google-cloud-sdk/bin/gcloud container clusters resize $GCLOUD_GKE_CLUSTER --project=$GCLOUD_PROJECT_ID --region=$GCLOUD_REGION --size=3 --quiet
-    - sleep 300
     - helm init --service-account tiller
     - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set-string application.namespace="development" 'main-application' ./cluster-templates/chart-main
     - sleep 30
