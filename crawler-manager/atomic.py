@@ -48,7 +48,7 @@ class AtomicPriorityQueue:
     def poll(self):
         with self._lock:
             if len(self.heap) == 0:
-                return None
+                return (None, None)
             else:
                 return heapq.heappop(self.heap)
 
