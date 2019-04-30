@@ -2,24 +2,24 @@ import json
 import logging
 import os
 import redis_connect
-import reppy
 import requests
 import time
 
 import helpers
 
 
-class DefaultValidator:
-    def __init__(self):
-        pass
+class SimpleValidator:
+    def __init__(self, action=True):
+        self.action = action
     
     def allowed(self, url, agent):
-        return True
+        return self.action
 
 
 class Processor():
-    def __init__(self, context):
+    def __init__(self, context, robots_txt_fetcher):
         self.context = context
+        self.robots_txt_fetcher = robots_txt_fetcher
         self.robot_validators = {}
 
     def run(self):
@@ -29,6 +29,8 @@ class Processor():
         
         self.context.logger.info('Entering processor loop')
         while self.context.queued_urls.size() > 0 or self.context.in_process_urls.size() > 0:
+            self.context.logger.info('%d urls queued, %d in process',
+                                     self.context.queued_urls.size(), self.context.in_process_urls.size())
             self.context.logger.info('Entered processor loop')
             crawlers = self.context.crawlers.get()
             self.context.logger.info('Iterating through crawlers: %s', str(crawlers))
@@ -46,9 +48,10 @@ class Processor():
                 root = helpers.get_root_url(url)
                 if domain not in self.robot_validators:
                     try:
-                        self.robot_validators[domain] = reppy.robots.Robots.fetch(os.path.join(root, 'robots.txt'))
+                        self.robot_validators[domain] = self.robots_txt_fetcher.fetch(
+                            os.path.join(root, 'robots.txt'))
                     except:
-                        self.robot_validators[domain] = DefaultValidator()
+                        self.robot_validators[domain] = SimpleValidator()
                 
                 # If this url is disallowed, then skip it
                 if not self.robot_validators[domain].allowed(url, 'Googlebot'):
@@ -73,5 +76,5 @@ class Processor():
             
             # TODO: eliminate this. This is completely arbitrary
             sleep_time = 0.1
-            self.context.logger.info('Work processor sleeping %d seconds', sleep_time)
+            self.context.logger.info('Work processor sleeping %f seconds', sleep_time)
             time.sleep(sleep_time)

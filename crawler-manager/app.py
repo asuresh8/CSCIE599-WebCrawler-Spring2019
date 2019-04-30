@@ -170,7 +170,7 @@ def run_flask():
 
 def do_crawl():
     setup()
-    processor = work_processor.Processor(context)
+    processor = work_processor.Processor(context, reppy.robots.Robots)
     processor.run()
     teardown()
 
@@ -260,6 +260,6 @@ if __name__ == "__main__":
     flask_thread.start()
     if ENVIRONMENT != 'local':
         setup()
-        processor = work_processor.Processor(context)
+        processor = work_processor.Processor(context, reppy.robots.Robots)
         processor.run()
         teardown()
