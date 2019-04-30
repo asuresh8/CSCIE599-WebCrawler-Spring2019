@@ -67,7 +67,7 @@ Crawler Manager container also has an internal Redis service.
 
     To clear Redis cache
     ```
-    docker exec -it web-crawler_crawler-redis_1 redis-cli FLUSHALL
+    docker exec -it webcrawler_crawler-redis_1 redis-cli FLUSHALL
     ```
 
     Crawler runs for 15s  

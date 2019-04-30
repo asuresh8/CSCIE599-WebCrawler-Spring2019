@@ -117,9 +117,10 @@ def run_flask():
 
 def setup():
     try:
-        requests.post(os.path.join(CRAWLER_MANAGER_ENDPOINT, 'register_crawler'),
+        res = requests.post(os.path.join(CRAWLER_MANAGER_ENDPOINT, 'register_crawler'),
                       json={'endpoint': ENDPOINT})
         CrawlGlobal.context().logger.info("Registreed successfully with crawler manager")
+        CrawlGlobal.context().set_useroptions(res.json())
     except Exception as e:
         CrawlGlobal.context().logger.info('Unable to register with crawler manager: %s', str(e))
 

@@ -71,15 +71,26 @@ class CrawlerJob(object):
         
         # scrape the page
         self.data = scraper.do_scrape()
-        # 
-        #CrawlGlobal.context().modelrunner.run(self.data)
+        
         #CrawlGlobal.context().logger.info(self.data)
         # store
-        self.s3_uri = scraper.store_in_gcs(self.data)
+        if self.do_store(file_ext):
+            self.s3_uri = scraper.store_in_gcs(self.data)
+            
         # get child urls
         self.links = scraper.get_links(self.data)
         # put in cache
         scraper.store_in_redis(self.s3_uri, self.links)
+
+
+    def do_store(self, ext):
+        if ext or not CrawlGlobal.context().has_model():
+            CrawlGlobal.context().logger.info("need to store the data for ext %s", ext)
+            return True
+        else:
+            cur_pred = CrawlGlobal.context().modelrunner.run(self.data)
+            return cur_pred == -1 or CrawlGlobal.context().has_label(cur_pred)
+
 
     def send_response_to_manager(self, endpoint):
         links_api = os.path.join(endpoint, 'links')
