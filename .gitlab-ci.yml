@@ -9,7 +9,7 @@ stages:
 
 testMain:
   stage: test
-  image: python:3.7.2-stretch
+  image: joyzoursky/python-chromedriver:3.7
   before_script:
     - cd main
     - export ENVIRONMENT=test
