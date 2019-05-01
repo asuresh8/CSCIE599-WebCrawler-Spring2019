@@ -142,6 +142,7 @@ if __name__ == "__main__":
         run_flask()
     else:
         _thread.start_new_thread(run_flask,())
-        crawljob = CrawlerJob(URL)
-        executor.submit(crawljob.execute, URL)
-        sys.exit(0)
+        setup()
+        #crawljob = CrawlerJob(URL)
+        #executor.submit(crawljob.execute, CRAWLER_MANAGER_ENDPOINT)
+        #sys.exit(0)
