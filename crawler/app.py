@@ -26,6 +26,8 @@ ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 URL = os.environ.get('URL', 'https://google.com')
 DEBUG_MODE = ENVIRONMENT == 'local'
 HOSTNAME = os.environ.get('JOB_IP', 'crawler')
+RELEASE_DATE = os.environ.get('RELEASE_DATE', '0')
+NAMESPACE = os.environ.get('NAMESPACE', 'default')
 MAX_ACTIVE_THREADS = 4
 PORT = 8003
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
