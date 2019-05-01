@@ -160,12 +160,14 @@ def complete_crawl(request):
     logger.info("In Crawl-Complete")
     logger.info('Crawl-Complete id - %s, manifest - %s', id, manifest)
     crawl_request = CrawlRequest.objects.get(pk=id)
+    logger.info('Crawl-Complete2 id - %s, manifest - %s', id, manifest)
     crawl_request.s3_location = manifest
     crawl_request.manifest = manifest
     crawl_request.status = 3
     crawl_request.docs_collected = resources_count
     crawl_request.save()
     data = {"CrawlComplete" : "done"}
+    logger.info('Crawl-Complete3 id - %s, manifest - %s', id, manifest)
     requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), json={})
     user = User.objects.get(username=(CRAWLER_MANAGER_USER_PREFIX + str(id)))
     user.delete()
