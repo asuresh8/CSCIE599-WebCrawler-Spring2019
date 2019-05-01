@@ -169,8 +169,11 @@ def complete_crawl(request):
     data = {"CrawlComplete" : "done"}
     logger.info('Crawl-Complete3 id - %s, manifest - %s', id, manifest)
     requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), json={})
+    logger.info('Crawl-Complete4 id - %s, manifest - %s', id, manifest)
     user = User.objects.get(username=(CRAWLER_MANAGER_USER_PREFIX + str(id)))
+    logger.info('Crawl-Complete5 id - %s, manifest - %s', id, manifest)
     user.delete()
+    logger.info('Crawl-Complete6 id - %s, manifest - %s', id, manifest)
     return JsonResponse(data)
 
 
