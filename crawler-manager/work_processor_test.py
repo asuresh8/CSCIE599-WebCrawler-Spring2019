@@ -44,7 +44,22 @@ class TestCrawlerManagerWorkProcessor(unittest.TestCase):
         time.sleep(1)
         self.context.in_process_urls.remove(url)
         processor_thread.join()
- 
+    
+    @responses.activate
+    def test_work_processor_disallowed(self):
+        self.processor.robots_txt_fetcher = MockRobotsFetcher(work_processor.SimpleValidator(action=False))
+        crawler = 'http://dummy-crawler'
+        url = 'http://dummy.com'
+        responses.add(responses.POST, os.path.join(crawler, 'crawl'),
+                      json={'accepted': True}, status=200)
+        self.context.queued_urls.add(url, len(url))
+        self.context.crawlers.add(crawler)
+        processor_thread = threading.Thread(target=self.processor.run)
+        processor_thread.start()
+        time.sleep(1)
+        self.context.in_process_urls.remove(url)
+        processor_thread.join()
+
 
 if __name__ == '__main__':
     unittest.main()
