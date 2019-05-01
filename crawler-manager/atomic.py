@@ -55,7 +55,75 @@ class AtomicPriorityQueue:
     def size(self):
         with self._lock:
             return len(self.heap)
+
+class AtomicPriorityCountQueue(dict):
+    """Dictionary that can be used as a priority queue.
+        Keys are urls and priority is based on the number of occurences
+        of a specific url in the domain that is being crawled.
+        Based upon: https://gist.github.com/matteodellamico/4451520
+    """
     
+    def __init__(self, *args, **kwargs):
+        super(AtomicPriorityCountQueue, self).__init__(*args, **kwargs)
+        self._rebuild_heap()
+        self._lock = threading.Lock()
+
+    def _rebuild_heap(self):
+        self._heap = [(c, u) for u, c in self.items()]
+        heapq._heapify_max(self._heap)
+
+    def __setitem__(self, url, count):
+        # with self._lock:
+        super(AtomicPriorityCountQueue, self).__setitem__(url, count)
+        
+        if len(self._heap) < 2 * len(self):
+            heapq.heappush(self._heap, (count, url))
+        
+        self._rebuild_heap()
+
+    def poll(self):
+        """Return the url with the highest number of
+           occurences.
+        """
+        with self._lock:
+            if len(self._heap) == 0:
+                return (None, None)
+            else:
+                heap = self._heap
+                c, u = heapq._heappop_max(heap)
+
+                while u not in self or self[u] != c:
+                    c, u = heapq._heappop_max(heap)
+                del self[u]
+                return (c, u)
+
+    
+    def add(self, url, count=None):
+        with self._lock:
+            if url not in self and count is None:
+                self[url] = 1
+                self._rebuild_heap()
+            elif url not in self:
+                self[url] = count
+                self._rebuild_heap()
+            else:
+                count = self[url]
+                count += 1
+                self.__setitem__(url, count)
+    
+    def contains(self, url):
+        with self._lock:
+            return url in self
+    
+    def size(self):
+        with self._lock:
+            return len(self._heap)
+
+    def update(self, *args, **kwargs):
+        # Just rebuild the heap from scratch after passing to super.
+        super(AtomicPriorityCountQueue, self).update(*args, **kwargs)
+        self._rebuild_heap()
+
 
 class AtomicSet:
     def __init__(self):

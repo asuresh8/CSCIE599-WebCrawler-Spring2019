@@ -38,6 +38,36 @@ class TestCrawlerManagerAtomic(unittest.TestCase):
         self.assertEqual(queue.poll(), (len('www.recurship.com'), 'www.recurship.com'))
         self.assertEqual(queue.size(), 0)
         self.assertEqual(queue.poll(), (None, None))
+    
+    def test_priority_count_queue(self):
+        queue = atomic.AtomicPriorityCountQueue({})
+        queue.add('www.firefox.com')
+        queue.add('www.firefox.com')
+        queue.add('www.google.com')
+        queue.add('www.bing.com')
+        queue.add('www.bing.com')
+        queue.add('www.bing.com')
+        queue.add('www.duckduckgo.com')
+        queue.add('www.duckduckgo.com')
+        self.assertTrue(queue.contains('www.firefox.com'))
+        self.assertFalse(queue.contains('www.firefoxes.com'))
+        self.assertEqual(queue.size(), 4)
+        self.assertEqual(queue.poll(), (3, 'www.bing.com'))
+        self.assertEqual(queue.size(), 3)
+        queue.add('www.bing.com', count=3)
+        self.assertEqual(queue.size(), 4)
+        self.assertEqual(queue.poll(), (3, 'www.bing.com'))
+        self.assertEqual(queue.size(), 3)
+        self.assertEqual(queue.poll(), (2, 'www.firefox.com'))
+        self.assertEqual(queue.size(), 2)
+        self.assertEqual(queue.poll(), (2, 'www.duckduckgo.com'))
+        self.assertEqual(queue.size(), 1)
+        self.assertEqual(queue.poll(), (1, 'www.google.com'))
+        self.assertEqual(queue.size(), 0)
+        self.assertEqual(queue.poll(), (None, None))
+
+        
+
 
     def test_set(self):
         my_set = atomic.AtomicSet()
