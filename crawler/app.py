@@ -31,8 +31,7 @@ NAMESPACE = os.environ.get('NAMESPACE', 'default')
 MAX_ACTIVE_THREADS = 4
 PORT = 8003
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
-if (ENVIRONMENT == 'prod' and RELEASE_DATE != '0'):
-   ENDPOINT = f"http://crawler-{RELEASE_DATE}.{NAMESPACE}/"
+
 
 executor = concurrent.futures.ThreadPoolExecutor(MAX_ACTIVE_THREADS)
 
