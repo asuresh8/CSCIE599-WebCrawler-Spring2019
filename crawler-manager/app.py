@@ -183,6 +183,7 @@ def setup():
         #response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
         #                         json={'job_id': JOB_ID, 'endpoint': ENDPOINT},
         #                         headers=header)
+        context.logger.info('TOKEN_PREFIX: %s, TOKEN: %s', TOKEN_PREFIX, TOKEN)
         response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
                                  json={'job_id': JOB_ID, 'endpoint': ENDPOINT})
         response.raise_for_status()
@@ -245,8 +246,9 @@ def teardown():
             'resources_count': context.processed_urls.get(),
             'time_taken': time_taken
         }
-        header = {'Authorization': TOKEN_PREFIX + TOKEN}
-        response = requests.post(crawl_complete_api, json=json_data, headers=header)
+        #header = {'Authorization': TOKEN_PREFIX + TOKEN}
+        #response = requests.post(crawl_complete_api, json=json_data, headers=header)
+        response = requests.post(crawl_complete_api, json=json_data)
         response.raise_for_status()
         context.logger.info("crawl_complete call successful")
         context.logger.info("Crawl time taken: %d", time_taken)
