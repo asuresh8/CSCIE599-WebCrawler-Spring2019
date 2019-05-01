@@ -96,7 +96,7 @@ setup:
     - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set-string application.namespace="development" 'main-application' ./cluster-templates/chart-main
     - sleep 30
   only:
-    - develop
+    - master
 
 integration-tests:
   stage: integration
@@ -107,7 +107,7 @@ integration-tests:
   script:
     - python -m unittest test.TestCreateJob
   only:
-    - develop
+    - master
 
 stress-tests:
   stage: integration
@@ -118,7 +118,7 @@ stress-tests:
   script:
     - python -m unittest test.StressTest
   only:
-    - develop
+    - master
 
 cleanup:
   stage: integration-cleanup
@@ -133,7 +133,7 @@ cleanup:
   script:
     - ./google-cloud-sdk/bin/gcloud container clusters resize $GCLOUD_GKE_CLUSTER --project=$GCLOUD_PROJECT_ID --region=$GCLOUD_REGION --size=0 --quiet
   only:
-    - develop
+    - master
   when: always
 
 kube_deploy:
