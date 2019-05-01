@@ -143,7 +143,6 @@ def links():
           not context.in_process_urls.contains(absolute_url) and \
           not context.cache.exists(absolute_url):
             context.logger.info('Adding %s to queue', absolute_url)
-            # context.queued_urls.add(absolute_url)
             context.queued_urls.add(absolute_url, len(absolute_url))
 
     context.processed_urls.increment()
@@ -184,6 +183,7 @@ def setup():
         response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
                                  json={'job_id': JOB_ID, 'endpoint': ENDPOINT},
                                  headers=header)
+        response.raise_for_status()
         context.parameters = json.loads(response.text)
         context.logger.info(context.parameters)
         context.logger.info('Registered with main application!')
@@ -193,7 +193,6 @@ def setup():
 
     context.start_time = round(time.time() * 1000)
     for url in context.parameters['urls']:
-        # context.queued_urls.add(url)
         context.queued_urls.add(url, len(url))
 
     if ENVIRONMENT != 'local':
@@ -221,7 +220,7 @@ def teardown():
         try:
             context.logger.info("Sending kill request to crawler: %s", crawler)
             response = requests.post(kill_api, json={})
-            #response.raise_for_status()
+            response.raise_for_status()
             context.logger.info("Successfully killed crawler: %s", crawler)
         except Exception as e:
             context.logger.error('Unable to kill crawler: %s', str(e))
