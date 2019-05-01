@@ -37,7 +37,7 @@ class TestCrawlerManagerWorkProcessor(unittest.TestCase):
         url = 'http://dummy.com'
         responses.add(responses.POST, os.path.join(crawler, 'crawl'),
                       json={'accepted': True}, status=200)
-        self.context.queued_urls.add(url, len(url))
+        self.context.queued_urls.add(url)
         self.context.crawlers.add(crawler)
         processor_thread = threading.Thread(target=self.processor.run)
         processor_thread.start()
@@ -52,7 +52,7 @@ class TestCrawlerManagerWorkProcessor(unittest.TestCase):
         url = 'http://dummy.com'
         responses.add(responses.POST, os.path.join(crawler, 'crawl'),
                       json={'accepted': True}, status=200)
-        self.context.queued_urls.add(url, len(url))
+        self.context.queued_urls.add(url)
         self.context.crawlers.add(crawler)
         processor_thread = threading.Thread(target=self.processor.run)
         processor_thread.start()

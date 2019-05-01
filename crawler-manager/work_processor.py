@@ -35,10 +35,9 @@ class Processor():
             crawlers = self.context.crawlers.get()
             self.context.logger.info('Iterating through crawlers: %s', str(crawlers))
             for crawler in crawlers:
-                # url = self.context.queued_urls.poll()
-                (url_len, url) = self.context.queued_urls.poll()
+                (url_count, url) = self.context.queued_urls.poll()
                 self.context.logger.info('Pulled %s from queue', url)
-                self.context.logger.info('It has length of %s', url_len)
+                self.context.logger.info('It has a count of %s', url_count)
                 # If no urls's in queue
                 if url is None:
                     break
@@ -71,8 +70,7 @@ class Processor():
                         self.context.in_process_urls.add(url)
                     else:
                         self.context.logger.warning('Crawler %s rejected request', crawler)
-                        # self.context.queued_urls.add(url)
-                        self.context.queued_urls.add(url, len(url))
+                        self.context.queued_urls.add(url, count=url_count)
             
             # TODO: eliminate this. This is completely arbitrary
             sleep_time = 0.1
