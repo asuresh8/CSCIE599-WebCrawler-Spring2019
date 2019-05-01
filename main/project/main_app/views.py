@@ -120,7 +120,8 @@ def crawler_manager_ping(requestUrl):
 
 
 @api_view(['POST'])
-@permission_classes((IsAuthenticated, ))
+#@permission_classes((IsAuthenticated, ))
+@permission_classes([AllowAny, ])
 def register_crawler_manager(request):
     logger.info("In Register-Crawl")
     id = request.data['job_id']
