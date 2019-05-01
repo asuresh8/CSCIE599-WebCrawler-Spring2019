@@ -117,7 +117,7 @@ def run_flask():
 
 def setup():
     try:
-        CrawlGlobal.context().logger.info("crawler job ip: %s", JOB_IP)
+        #CrawlGlobal.context().logger.info("crawler job ip: %s", JOB_IP)
         CrawlGlobal.context().logger.info("crawler end point: %s", ENDPOINT)
         res = requests.post(os.path.join(CRAWLER_MANAGER_ENDPOINT, 'register_crawler'),
                       json={'endpoint': ENDPOINT})
