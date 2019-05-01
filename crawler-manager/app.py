@@ -186,6 +186,7 @@ def setup():
         context.logger.info('TOKEN_PREFIX: %s, TOKEN: %s', TOKEN_PREFIX, TOKEN)
         context.logger.info('Crawler manager endpoint %s', ENDPOINT)
         context.logger.info('Crawler manager endpoint2 %s', CRAWLER_MANAGER_ENDPOINT)
+        context.logger.info('Main application endpoint %s', MAIN_APPLICATION_ENDPOINT)
         response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
                                  json={'job_id': JOB_ID, 'endpoint': CRAWLER_MANAGER_ENDPOINT})
         response.raise_for_status()
