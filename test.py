@@ -4,11 +4,7 @@ from kubernetes import client, config
 MAIN_APP = '{}/api_app'.format(os.environ.get('DEV_API_ENDPOINT', 'http://localhost:8001'))
 JWT = None
 JOB_ID = None
-<<<<<<< HEAD
-NUM_CRAWLERS = 0 # should be greater than 0 once the crawling flow is fixed
-=======
 NUM_CRAWLERS = 0 #should be greater than 0 once the crawling flow is fixed
->>>>>>> develop
 TEST_DOMAIN = "https://invaliddomain.cow"
 TEST_URL = "https://invaliddomain.cow/random"
 
