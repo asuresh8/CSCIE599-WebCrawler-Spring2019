@@ -179,10 +179,12 @@ def setup():
     context.cache = redis_connect.RedisClient(redis.Redis(host='0.0.0.0', port=6379, db=0))
     try:
         context.logger.info('Attempting to register with main application')
-        header = {'Authorization': TOKEN_PREFIX + TOKEN}
+        #header = {'Authorization': TOKEN_PREFIX + TOKEN}
+        #response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
+        #                         json={'job_id': JOB_ID, 'endpoint': ENDPOINT},
+        #                         headers=header)
         response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
-                                 json={'job_id': JOB_ID, 'endpoint': ENDPOINT},
-                                 headers=header)
+                                 json={'job_id': JOB_ID, 'endpoint': ENDPOINT})
         response.raise_for_status()
         context.parameters = json.loads(response.text)
         context.logger.info(context.parameters)

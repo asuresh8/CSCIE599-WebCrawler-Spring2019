@@ -120,7 +120,6 @@ def crawler_manager_ping(requestUrl):
 
 
 @api_view(['POST'])
-#@permission_classes((IsAuthenticated, ))
 @permission_classes([AllowAny, ])
 def register_crawler_manager(request):
     logger.info("In Register-Crawl")
@@ -152,7 +151,7 @@ def register_crawler_manager(request):
 
 
 @api_view(['POST'])
-@permission_classes((IsAuthenticated, ))
+@permission_classes([AllowAny, ])
 def complete_crawl(request):
     id = request.data['job_id']
     manifest = request.data['manifest']
