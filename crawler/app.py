@@ -29,6 +29,8 @@ HOSTNAME = os.environ.get('JOB_IP', 'crawler')
 MAX_ACTIVE_THREADS = 4
 PORT = 8003
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
+if (ENVIRONMENT == 'prod' and RELEASE_DATE != '0'):
+   ENDPOINT = f"http://crawler-{RELEASE_DATE}.{NAMESPACE}/"
 
 executor = concurrent.futures.ThreadPoolExecutor(MAX_ACTIVE_THREADS)
 
@@ -118,6 +120,7 @@ def run_flask():
 def setup():
     try:
         CrawlGlobal.context().logger.info("crawler end point: %s", ENDPOINT)
+        CrawlGlobal.context().logger.info("crawler manager end point: %s",CRAWLER_MANAGER_ENDPOINT)
         res = requests.post(os.path.join(CRAWLER_MANAGER_ENDPOINT, 'register_crawler'),
                       json={'endpoint': ENDPOINT})
         CrawlGlobal.context().logger.info("Registreed successfully with crawler manager")
