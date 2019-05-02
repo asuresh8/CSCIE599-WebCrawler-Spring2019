@@ -180,17 +180,17 @@ def setup():
     context.cache = redis_connect.RedisClient(redis.Redis(host='0.0.0.0', port=6379, db=0))
     try:
         context.logger.info('Attempting to register with main application')
-        #header = {'Authorization': TOKEN_PREFIX + TOKEN}
-        #response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
-        #                         json={'job_id': JOB_ID, 'endpoint': ENDPOINT},
-        #                         headers=header)
         context.logger.info('TOKEN_PREFIX: %s, TOKEN: %s', TOKEN_PREFIX, TOKEN)
         context.logger.info('Crawler manager endpoint %s', ENDPOINT)
         context.logger.info('Crawler manager endpoint2 %s', CRAWLER_MANAGER_ENDPOINT)
-        context.logger.info('Main application endpoint %s', MAIN_APPLICATION_ENDPOINT)
+        header = {'Authorization': TOKEN_PREFIX + TOKEN}
         response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
-                                 json={'job_id': JOB_ID, 'endpoint': CRAWLER_MANAGER_ENDPOINT})
+                                 json={'job_id': JOB_ID, 'endpoint': ENDPOINT},
+                                 headers=header)
+        #response = requests.post(os.path.join(MAIN_APPLICATION_ENDPOINT, 'main_app/api/register_crawler_manager'),
+        #                         json={'job_id': JOB_ID, 'endpoint': CRAWLER_MANAGER_ENDPOINT})
         response.raise_for_status()
+        context.logger.info('Main application endpoint %s', MAIN_APPLICATION_ENDPOINT)
         context.parameters = json.loads(response.text)
         context.logger.info(context.parameters)
         context.logger.info('Registered with main application!')
