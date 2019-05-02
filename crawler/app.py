@@ -162,7 +162,7 @@ if __name__ == "__main__":
     flask_thread.start()
     if ENVIRONMENT != 'local':
         setup()
-        processor = work_processor.Processor(context, reppy.robots.Robots)
-        processor.run()
-        teardown()
+        #processor = work_processor.Processor(context, reppy.robots.Robots)
+        #processor.run()
+        #teardown()
 
