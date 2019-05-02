@@ -116,6 +116,7 @@ def test_connections():
 
 
 def run_flask():
+    CrawlGlobal.context().logger.info("start flask with host: %s", CRAWLER_HOSTNAME)
     app.run(debug=DEBUG_MODE, host=CRAWLER_HOSTNAME, port=PORT, use_reloader=False)
 
 
