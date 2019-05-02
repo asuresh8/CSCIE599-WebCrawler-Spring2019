@@ -69,7 +69,7 @@ def kill():
         return response
 
     CrawlGlobal.context().logger.info('Kill called for')
-    return ""
+    return "ok"
 
 
 @app.route('/status', methods=['GET'])

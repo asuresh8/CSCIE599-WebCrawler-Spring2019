@@ -95,7 +95,7 @@ def kill():
         return response
 
     context.logger.info('Kill called for')
-    return ""
+    return "ok"
 
 
 #Register endpoint
