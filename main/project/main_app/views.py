@@ -130,11 +130,12 @@ def register_crawler_manager(request):
     job = CrawlRequest.objects.get(pk=id)
     job.crawler_manager_endpoint = endpoint
     job.save()
-    models = MlModel.objects.filter(name=job.model)
+    models = MlModel.objects.filter(name=job.model.name)
     if (len(models) > 0):
         model_url = models[0].s3_location
     else:
         model_url = ""
+    logger.info('Model url: %s', model_url)
     payload = {
         'job_id': id,
         'domain': job.domain.split(';'),
@@ -168,7 +169,7 @@ def complete_crawl(request):
     crawl_request.save()
     data = {"CrawlComplete" : "done"}
     logger.info('Crawl-Complete3 id - %s, manifest - %s', id, crawl_request.crawler_manager_endpoint)
-    requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), json={})
+    #requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), json={})
     logger.info('Crawl-Complete4 id - %s, manifest - %s', id, manifest)
     user = User.objects.get(username=(CRAWLER_MANAGER_USER_PREFIX + str(id)))
     logger.info('Crawl-Complete5 id - %s, manifest - %s', id, manifest)
