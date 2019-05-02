@@ -143,13 +143,26 @@ def ping_crawler_manager():
 
 
 if __name__ == "__main__":
-    ping_crawler_manager()
-    test_connections()
-    if ENVIRONMENT == 'local':
-        run_flask()
-    else:
-        _thread.start_new_thread(run_flask,())
-        setup()
+    #ping_crawler_manager()
+    #test_connections()
+    #if ENVIRONMENT == 'local':
+    #    run_flask()
+    #else:
+    #    _thread.start_new_thread(run_flask,())
+    #    setup()
         #crawljob = CrawlerJob(URL)
         #executor.submit(crawljob.execute, CRAWLER_MANAGER_ENDPOINT)
         #sys.exit(0)
+
+    ping_crawler_manager()
+    test_connections()
+    CrawlGlobal.context().logger.info('ENVIRONMENT -- %s ', ENVIRONMENT)
+    CrawlGlobal.context().logger.info('starting flask app in separate thread')
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.start()
+    if ENVIRONMENT != 'local':
+        setup()
+        processor = work_processor.Processor(context, reppy.robots.Robots)
+        processor.run()
+        teardown()
+
