@@ -90,7 +90,7 @@ def kill():
             context.logger.info("Not killing crawler manager because running locally")
         else:
             context.logger.info("Kill confirmed")
-            sys.exit(0)
+            #sys.exit(0)
 
         return response
 
@@ -259,6 +259,12 @@ def teardown():
         context.logger.info("Crawl time taken: %d", time_taken)
     except Exception as e:
         context.logger.error('Unable to send crawl_complete to main applications: %s', str(e))
+    _thread.start_new_thread(kill_after,(3,))
+
+def kill_after(secs):
+  context.logger.info('system will be killed in %s seconds', secs)
+  time.sleep(secs)
+  os._exit(0)
 
 
 if __name__ == "__main__":
