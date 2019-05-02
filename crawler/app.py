@@ -26,6 +26,7 @@ ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 URL = os.environ.get('URL', 'https://google.com')
 DEBUG_MODE = ENVIRONMENT == 'local'
 HOSTNAME = os.environ.get('JOB_IP', 'crawler')
+CRAWLER_HOSTNAME = os.environ.get('CRAWLER_HOSTNAME', 'crawler')
 RELEASE_DATE = os.environ.get('RELEASE_DATE', '0')
 NAMESPACE = os.environ.get('NAMESPACE', 'default')
 MAX_ACTIVE_THREADS = 4
@@ -115,7 +116,7 @@ def test_connections():
 
 
 def run_flask():
-    app.run(debug=DEBUG_MODE, host=HOSTNAME, port=PORT, use_reloader=False)
+    app.run(debug=DEBUG_MODE, host=CRAWLER_HOSTNAME, port=PORT, use_reloader=False)
 
 
 def setup():

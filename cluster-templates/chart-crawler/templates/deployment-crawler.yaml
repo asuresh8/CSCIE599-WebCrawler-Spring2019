@@ -54,6 +54,8 @@ spec:
           value: "{{ .Values.params.crawlerManagerEndpoint }}"
         - name: NAMESPACE
           value: "{{ .Values.application.namespace }}"
+        - name: CRAWLER_HOSTNAME
+          value: "{{ .Values.params.crawlerHostname }}"
         resources:
           requests:
             cpu: 200m
