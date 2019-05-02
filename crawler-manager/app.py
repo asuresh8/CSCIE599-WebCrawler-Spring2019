@@ -90,7 +90,7 @@ def kill():
             context.logger.info("Not killing crawler manager because running locally")
         else:
             context.logger.info("Kill confirmed")
-            #sys.exit(0)
+            sys.exit(0)
 
         return response
 
