@@ -84,19 +84,20 @@ def ping():
 
 @app.route('/kill', methods=['POST'])
 def kill():
-    @after_this_request
-    def maybe_kill(response):
-        if ENVIRONMENT == 'local':
-            context.logger.info("Not killing crawler manager because running locally")
-        else:
-            context.logger.info("Kill confirmed")
-            sys.exit(0)
+    if ENVIRONMENT == 'local':
+        context.logger.info("Not killing crawler manager because running locally")
+    else:
+        context.logger.info("Will kill flask server in 3 seconds")
+        kill_thread = threading.Thread(target=kill_main_thread)
+        kill_thread.start()
 
-        return response
-
-    context.logger.info('Kill called for')
+    context.logger.info('Kill called')
     return "ok"
 
+def kill_main_thread():
+    time.sleep(3)
+    context.logger.info("Kill confirmed")
+    os._exit(0)
 
 #Register endpoint
 #An endpoint that the crawler will call to register itself once instantiated, ip/dns added to available crawler list.

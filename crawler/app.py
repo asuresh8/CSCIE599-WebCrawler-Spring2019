@@ -58,19 +58,20 @@ def main():
 
 @app.route('/kill', methods=['POST'])
 def kill():
-    @after_this_request
-    def maybe_kill(response):
-        if ENVIRONMENT == 'local':
-            CrawlGlobal.context().logger.info('Not killing crawler because running locally')
-        else:
-            CrawlGlobal.context().logger.info("Kill confirmed")
-            sys.exit()
+    if ENVIRONMENT == 'local':
+        CrawlGlobal.context().logger.info('Not killing crawler because running locally')
+    else:
+        CrawlGlobal.context().logger.info("Will kill flask server in 3 seconds")
+        kill_thread = threading.Thread(target=kill_main_thread)
+        kill_thread.start()
 
-        return response
-
-    CrawlGlobal.context().logger.info('Kill called for')
+    CrawlGlobal.context().logger.info('Kill called')
     return "ok"
 
+def kill_main_thread():
+    time.sleep(3)
+    CrawlGlobal.context().logger.info("Kill confirmed")
+    os._exit(0)
 
 @app.route('/status', methods=['GET'])
 def status():
@@ -89,7 +90,7 @@ def crawl():
     if CrawlGlobal.context().active_thread_count.get() >= MAX_ACTIVE_THREADS:
         return flask.jsonify({'accepted': False})
 
-    CrawlGlobal.context().active_thread_count.increment() 
+    CrawlGlobal.context().active_thread_count.increment()
     crawljob = CrawlerJob(url)
     executor.submit(crawljob.execute, CRAWLER_MANAGER_ENDPOINT)
     return flask.jsonify({'accepted': True})
