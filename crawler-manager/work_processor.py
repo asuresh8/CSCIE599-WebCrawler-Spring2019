@@ -25,7 +25,7 @@ class Processor():
     def run(self):
         self.context.logger.info('Waiting for crawlers...')
         while self.context.crawlers.size() == 0:
-            time.sleep(10)
+            time.sleep(4)
         
         self.context.logger.info('Entering processor loop')
         while self.context.queued_urls.size() > 0 or self.context.in_process_urls.size() > 0:
