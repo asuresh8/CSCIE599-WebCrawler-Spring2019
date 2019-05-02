@@ -10,6 +10,8 @@ spec:
   template:
     metadata:
       name: crawler
+      labels:
+        app: "crawler-{{date "20060102150405" .Release.Time }}"
     spec:
       containers:
       - name: crawler
@@ -45,7 +47,7 @@ spec:
         - name: ENVIRONMENT
           value: "prod"
         - name: JOB_IP
-          value: "0.0.0.0"
+          value: "crawler-{{date "20060102150405" .Release.Time }}.{{ .Values.application.namespace }}"
         - name: URL
           value: "{{ .Values.params.url }}"
         - name: CRAWLER_MANAGER_ENDPOINT
@@ -62,3 +64,20 @@ spec:
       restartPolicy: Never
       imagePullSecrets:
       - name: docker-gitlab
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "crawler-{{date "20060102150405" .Release.Time }}"
+  namespace: "{{ .Values.application.namespace }}"
+  labels:
+    app: crawler-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.service.externalPort }}
+    targetPort: {{ .Values.service.internalPort }}
+    protocol: TCP
+    name: {{ .Values.service.name }}
+  selector:
+    app: "crawler-{{date "20060102150405" .Release.Time }}"
