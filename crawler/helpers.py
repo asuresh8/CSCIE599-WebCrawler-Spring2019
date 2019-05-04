@@ -10,7 +10,6 @@ import redis
 import requests
 import uuid
 
-import app
 import redis_connect
 
 

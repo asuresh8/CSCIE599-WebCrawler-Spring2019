@@ -87,11 +87,26 @@ class CrawlerJob(object):
 
 
     def do_store(self, ext):
-        if ext or not CrawlGlobal.context().has_model():     
-            return True
+        docs_all = CrawlGlobal.context().scrape_all
+        docs_pdf = CrawlGlobal.context().scrape_pdf
+        docs_docx = CrawlGlobal.context().scrape_docx
+        if ext or not CrawlGlobal.context().has_model():
+            if  ((docs_all == True) or
+                 (ext == '.pdf' and  docs_pdf == True) or
+                 (ext == '.docx' and  docs_docx == True) or
+                 (docs_pdf == False and docs_docx == False and docs_all == False)):
+                return True
+            else:
+                CrawlGlobal.context().logger.info('Non model: No matching doc type')
+                return False
         else:
-            cur_pred = CrawlGlobal.context().modelrunner.run(self.data)
-            return cur_pred == -1 or CrawlGlobal.context().has_label(cur_pred)
+            if ((docs_all == True) or
+                (docs_pdf == False and docs_docx == False and docs_all == False)):
+                cur_pred = CrawlGlobal.context().modelrunner.run(self.data)
+                return cur_pred == -1 or CrawlGlobal.context().has_label(cur_pred)
+            else:
+                CrawlGlobal.context().logger.info('Model: No matching doc type')
+                return False
 
 
     def send_response_to_manager(self, endpoint):
