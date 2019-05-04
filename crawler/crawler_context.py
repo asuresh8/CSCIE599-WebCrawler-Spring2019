@@ -64,7 +64,7 @@ class Context:
         return self.modelrunner != None
 
     def has_label(self, curval):
-        if curval in self.label_list:
+        if str(curval) in self.label_list:
             return True
         else:
             return False

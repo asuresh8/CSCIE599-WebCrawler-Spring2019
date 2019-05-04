@@ -12,6 +12,7 @@ class Context:
         self.in_process_urls = atomic.AtomicSet()
         self.processed_urls = atomic.AtomicCounter()
         self.disallowed_urls = atomic.AtomicCounter()
+        self.downloaded_pages = atomic.AtomicCounter()
         self.cache = None
         self.parameters = {}
         self.start_time = None
@@ -22,6 +23,7 @@ class Context:
         self.processed_urls.reset()
         self.processed_urls.reset()
         self.disallowed_urls.reset()
+        self.downloaded_pages.reset()
         if self.cache is not None:
             self.cache.reset()
 

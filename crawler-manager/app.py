@@ -133,6 +133,9 @@ def links():
     main_url = flask.request.json['main_url']
     s3_uri = flask.request.json['s3_uri']
     child_urls = flask.request.json['child_urls']
+
+    if s3_uri:
+        context.downloaded_pages.increment()
     for url in child_urls:
         if helpers.is_absolute_url(url):
             absolute_url = url
@@ -163,6 +166,7 @@ def links():
 @app.route('/status', methods=['GET'])
 def status():
     context.logger.info('Received status request')
+    context.logger.info('number of pages downloaded: %d', context.downloaded_pages)
     return flask.jsonify({
         'job_id': JOB_ID,
         'processed_count' : context.processed_urls.get(),

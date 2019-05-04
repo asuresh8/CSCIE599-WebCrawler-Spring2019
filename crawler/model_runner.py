@@ -6,12 +6,13 @@ from sklearn.feature_extraction.text import *
 class ModelRunner:
     def __init__(self, filepath):
         self.model_file = filepath
+        self.construct_model()
 
     def run(self, text):
         CrawlGlobal.context().logger.info("start running the model")
         try:
-            self.construct_model()
-            return self.make_prediction(text)
+            pred = self.make_prediction(text)
+            return pred
         except Exception as e:
             CrawlGlobal.context().logger.info("exception thrown while running model %s", str(e))
 
