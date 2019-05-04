@@ -14,7 +14,7 @@ docker stop test-crawler && docker rm test-crawler
 docker run --name test-crawler-manager web-crawler_crawler-manager /bin/bash -c \
     'pip install -r test_requirements.txt && 
      coverage run -m unittest $(ls | grep _test.py) &&
-     cover report'
+     coverage report'
 docker stop test-crawler-manager && docker rm test-crawler-manager
 
 # run main application tests
