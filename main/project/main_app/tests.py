@@ -53,7 +53,7 @@ class MainAppViewsTestCase(TestCase):
             crawl_request.urls = "http://abc.com"
             crawl_request.save()
             User.objects.create_user('admin'+str(crawl_request.id), 'test4@user.com', 'testpassword')
-            data = {'job_id' : crawl_request.id, 'manifest' : 'http://abc.com', 'csv' : 'http://def.com', 'resources_count' : 20}
+            data = {'job_id' : crawl_request.id, 'manifest' : 'http://abc.com', 'csv' : 'http://def.com', 'resources_count' : 20, 'downloaded_pages' : 20}
             response = client.post(reverse('api_complete_crawl'), data, format="json")
             payload = json.loads(response.content)
             self.assertEqual("done", payload["CrawlComplete"])
