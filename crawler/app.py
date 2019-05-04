@@ -11,7 +11,7 @@ import time
 import uuid
 
 import crawler_context
-import helpers
+
 from crawl_job import CrawlerJob
 import _thread
 from crawl_global import CrawlGlobal
