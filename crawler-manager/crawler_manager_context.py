@@ -22,6 +22,8 @@ class Context:
         self.processed_urls.reset()
         self.processed_urls.reset()
         self.disallowed_urls.reset()
+        if self.cache is not None:
+            self.cache.reset()
 
 
     

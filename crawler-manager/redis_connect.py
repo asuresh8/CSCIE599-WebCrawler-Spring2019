@@ -39,3 +39,8 @@ class RedisClient:
                 tmp.write(record)
 
         return path
+
+    def reset(self):
+        keys = self.conn.keys()
+        for key in keys:
+            self.conn.delete(key)
