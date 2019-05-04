@@ -41,7 +41,7 @@ NAMESPACE = os.environ.get('NAMESPACE', 'default')
 IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 CRAWLER_MANAGER_USER_PREFIX = 'admin'
-
+CRAWL_LIBRARY = 'selenium'
 
 # store the release timestamps here, like a job id meanwhile
 releases = []
@@ -146,7 +146,8 @@ def register_crawler_manager(request):
         'docs_docx': job.docs_docx,
         'num_crawlers': job.num_crawlers,
         'model_location': model_url,
-        'labels': job.model_labels.split(';')
+        'labels': job.model_labels.split(';'),
+        'crawl_library' : CRAWL_LIBRARY
     }
     return JsonResponse(payload)
 

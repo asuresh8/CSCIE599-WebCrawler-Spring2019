@@ -113,7 +113,8 @@ def register():
         docs_pdf=context.parameters['docs_pdf'],
         docs_docx=context.parameters['docs_docx'],
         model_location=context.parameters['model_location'],
-        labels=context.parameters['labels']
+        labels=context.parameters['labels'],
+        crawl_library=context.parameters['crawl_library']
         )
 
 
