@@ -253,9 +253,9 @@ def teardown():
             'resources_count': context.processed_urls.get(),
             'time_taken': time_taken
         }
-        #header = {'Authorization': TOKEN_PREFIX + TOKEN}
-        #response = requests.post(crawl_complete_api, json=json_data, headers=header)
-        response = requests.post(crawl_complete_api, json=json_data)
+        header = {'Authorization': TOKEN_PREFIX + TOKEN}
+        response = requests.post(crawl_complete_api, json=json_data, headers=header)
+        #response = requests.post(crawl_complete_api, json=json_data)
         response.raise_for_status()
         context.logger.info("crawl_complete call successful")
         context.logger.info("Crawl time taken: %d", time_taken)
