@@ -154,7 +154,8 @@ def register_crawler_manager(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny, ])
+#@permission_classes([AllowAny, ])
+@permission_classes((IsAuthenticated, ))
 def complete_crawl(request):
     id = request.data['job_id']
     manifest = request.data['manifest']
