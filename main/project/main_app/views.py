@@ -120,7 +120,8 @@ def crawler_manager_ping(requestUrl):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny, ])
+#@permission_classes([AllowAny, ])
+@permission_classes((IsAuthenticated, ))
 def register_crawler_manager(request):
     logger.info("In Register-Crawl")
     id = request.data['job_id']
@@ -232,7 +233,7 @@ def launch_crawler_manager(request, jobId):
 def getHelmCommand(request):
     releaseDate = int(time.time())
     releases.append(releaseDate)
-    token = get_manager_token(request.id)
+    token = get_manager_token(request.id).decode("utf-8")
 
     return f"""helm init --service-account tiller && \\
       helm upgrade --install --wait \\
