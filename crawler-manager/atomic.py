@@ -29,6 +29,10 @@ class AtomicQueue:
         with self._lock:
             return len(self._queue)
 
+    def reset(self):
+        with self._lock:
+            self._queue.clear()
+
 
 class AtomicPriorityQueue:
 
@@ -55,6 +59,10 @@ class AtomicPriorityQueue:
     def size(self):
         with self._lock:
             return len(self.heap)
+
+    def reset(self):
+        with self._lock:
+            self.heap.clear()
 
 class AtomicPriorityCountQueue(dict):
     """Dictionary that can be used as a priority queue.
@@ -124,6 +132,12 @@ class AtomicPriorityCountQueue(dict):
         super(AtomicPriorityCountQueue, self).update(*args, **kwargs)
         self._rebuild_heap()
 
+    def reset(self):
+        with self._lock:
+            if self._heap is not None:
+                self._heap.clear()
+            self.clear()
+
 
 class AtomicSet:
     def __init__(self):
@@ -151,6 +165,10 @@ class AtomicSet:
         with self._lock:
             return len(self._set)
 
+    def reset(self):
+        with self._lock:
+            self._set.clear()
+
 class AtomicCounter:
     def __init__(self):
         self._count = 0
@@ -163,3 +181,7 @@ class AtomicCounter:
     def increment(self):
         with self._lock:
             self._count += 1
+
+    def reset(self):
+        with self._lock:
+            self._count = 0

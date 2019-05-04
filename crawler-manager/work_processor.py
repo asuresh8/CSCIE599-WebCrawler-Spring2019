@@ -28,7 +28,8 @@ class Processor():
             time.sleep(4)
         
         self.context.logger.info('Entering processor loop')
-        while self.context.queued_urls.size() > 0 or self.context.in_process_urls.size() > 0:
+        while ((self.context.queued_urls.size() > 0 or self.context.in_process_urls.size() > 0) and
+               self.context.parameters['num_crawl_pages_limit'] > self.context.processed_urls.get()):
             self.context.logger.info('%d urls queued, %d in process',
                                      self.context.queued_urls.size(), self.context.in_process_urls.size())
             self.context.logger.info('Entered processor loop')

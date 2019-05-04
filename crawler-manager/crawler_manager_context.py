@@ -16,5 +16,12 @@ class Context:
         self.parameters = {}
         self.start_time = None
 
+    def reset(self):
+        self.queued_urls.reset()
+        self.in_process_urls.reset()
+        self.processed_urls.reset()
+        self.processed_urls.reset()
+        self.disallowed_urls.reset()
+
 
     

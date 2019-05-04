@@ -39,6 +39,7 @@ class TestCrawlerManagerWorkProcessor(unittest.TestCase):
                       json={'accepted': True}, status=200)
         self.context.queued_urls.add(url)
         self.context.crawlers.add(crawler)
+        self.context.parameters['num_crawl_pages_limit'] = 10
         processor_thread = threading.Thread(target=self.processor.run)
         processor_thread.start()
         time.sleep(1)
@@ -54,6 +55,7 @@ class TestCrawlerManagerWorkProcessor(unittest.TestCase):
                       json={'accepted': True}, status=200)
         self.context.queued_urls.add(url)
         self.context.crawlers.add(crawler)
+        self.context.parameters['num_crawl_pages_limit'] = 10
         processor_thread = threading.Thread(target=self.processor.run)
         processor_thread.start()
         time.sleep(1)

@@ -20,6 +20,7 @@ class TestCrawlerManagerApp(unittest.TestCase):
             'docs_docx': False,
             'model_location': '',
             'labels': [],
+            'num_crawl_pages_limit': 10,
             'crawl_library': 'selenium',
         }
         self.app = app.app.test_client()

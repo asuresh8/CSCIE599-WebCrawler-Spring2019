@@ -71,6 +71,7 @@ def crawl():
     global TOKEN
     JOB_ID = flask.request.json['job_id']
     TOKEN = flask.request.json['token']
+    context.reset()
     crawl_thread = threading.Thread(target=do_crawl)
     crawl_thread.start()
     return ''
@@ -148,10 +149,13 @@ def links():
             context.queued_urls.add(absolute_url)
             # context.queued_urls.add(absolute_url, len(absolute_url))
 
-    context.processed_urls.increment()
     context.in_process_urls.remove(main_url)
-    context.logger.info('added to cache')
-    context.cache.put(main_url, s3_uri)
+    if context.parameters['num_crawl_pages_limit'] > context.processed_urls.get():
+        context.logger.info('added to cache')
+        context.processed_urls.increment()
+        context.cache.put(main_url, s3_uri)
+    context.logger.info('In links, queued urls: %d, in_process_urls: %d', 
+                        context.queued_urls.size(), context.in_process_urls.size())
     return ""
 
 
@@ -160,6 +164,7 @@ def links():
 def status():
     context.logger.info('Received status request')
     return flask.jsonify({
+        'job_id': JOB_ID,
         'processed_count' : context.processed_urls.get(),
         'processing_count': context.in_process_urls.size(),
         'queued_count' : context.queued_urls.size()
