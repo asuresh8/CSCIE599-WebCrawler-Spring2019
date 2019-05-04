@@ -19,7 +19,7 @@ class ApiAppViewsTestCase(unittest.TestCase):
         user = User.objects.create_user('testUser5', 'test5@user.com', 'testpassword')
         client = APIClient()
         response_auth = client.post(reverse('authenticate_user'), {'username' : 'testUser5', 'password' : 'testpassword'}, format="json")
-        access_token = response_auth.data['token'].decode('utf-8')
+        access_token = response_auth.data['token']
         self.assertNotEqual('', access_token)
 
     def test_api_create_crawl(self):
@@ -27,12 +27,12 @@ class ApiAppViewsTestCase(unittest.TestCase):
             user = User.objects.create_user('testUser', 'test@user.com', 'testpassword')
             client = APIClient()
             response_auth = client.post(reverse('authenticate_user'), {'username' : 'testUser', 'password' : 'testpassword'}, format="json")
-            access_token = response_auth.data['token'].decode('utf-8')
+            access_token = response_auth.data['token']
             self.assertNotEqual('', access_token)
             client.credentials(HTTP_AUTHORIZATION='Bearer ' + access_token)
 
             # Post request to start a crawl.
-            self.payload = {'username': 'testUser', 'name' : 'testJob', 'domain' : 'http://google.com', 'urls' : 'http://bing.com'}
+            self.payload = {'token' : access_token, 'username': 'testUser', 'name' : 'testJob', 'domain' : 'http://google.com', 'urls' : 'http://bing.com'}
             response = client.post(
                 reverse('api_create_crawl'),
                 self.payload,
@@ -47,7 +47,10 @@ class ApiAppViewsTestCase(unittest.TestCase):
             crawl_request.s3_location = "abc/def"
             crawl_request.save()
             id = crawl_request.id
-            params = {'JOB_ID' : id, 'complete_crawl' : 0}
             client = APIClient()
+            response_auth = client.post(reverse('authenticate_user'), {'username' : 'testUser2', 'password' : 'testpassword'}, format="json")
+            access_token = response_auth.data['token']
+            self.assertNotEqual('', access_token)
+            params = {'JOB_ID' : id, 'complete_crawl' : 0, 'token' : access_token}
             response_get = client.get(reverse('api_crawl_contents'), params)
             self.assertNotEqual('', response_get.data["crawl_contents"])

@@ -28,7 +28,7 @@ class MainAppViewsTestCase(TestCase):
         user = User.objects.create_user('testUser3', 'test3@user.com', 'testpassword')
         client = APIClient()
         response_auth = client.post(reverse('authenticate_user'), {'username' : 'testUser3', 'password' : 'testpassword'}, format="json")
-        access_token = response_auth.data['token'].decode('utf-8')
+        access_token = response_auth.data['token']
         self.assertNotEqual('', access_token)
         client.credentials(HTTP_AUTHORIZATION='Bearer ' + access_token)
         
@@ -45,7 +45,7 @@ class MainAppViewsTestCase(TestCase):
             user = User.objects.create_user('testUser4', 'test4@user.com', 'testpassword')
             client = APIClient()
             response_auth = client.post(reverse('authenticate_user'), {'username' : 'testUser4', 'password' : 'testpassword'}, format="json")
-            access_token = response_auth.data['token'].decode('utf-8')
+            access_token = response_auth.data['token']
             self.assertNotEqual('', access_token)
             client.credentials(HTTP_AUTHORIZATION='Bearer ' + access_token)
         

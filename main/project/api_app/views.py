@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import make_password
 from main_app.models import CrawlRequest, Profile
 from main_app.views import launch_crawler_manager
 from main_app.views import get_google_cloud_manifest_contents
+from main_app import utilities
 
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -69,7 +70,7 @@ def authenticate_user(request):
         if user:# and check_user_password(user.password, password):
             try:
                 payload = jwt_payload_handler(user)
-                token = jwt.encode(payload, settings.SECRET_KEY)
+                token = jwt.encode(payload, settings.SECRET_KEY).decode('utf-8')
                 user_details = {}
                 user_details['name'] = "%s %s" % (user.first_name, user.last_name)
                 user_details['token'] = token
@@ -89,6 +90,8 @@ def authenticate_user(request):
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
 def api_create_crawl(request):
+    if (utilities.check_post_authentication(request) == False):
+        return Response("Invalid token", status=status.HTTP_401_UNAUTHORIZED)
     logger.info('In api new job')
     username = request.data['username']
     user_obj = User.objects.get(username=username)
@@ -133,6 +136,8 @@ def get_google_cloud_crawl_pages(manifest):
 @api_view(['GET'])
 @permission_classes([AllowAny, ])
 def api_crawl_contents(request):
+    if (utilities.check_get_authentication(request) == False):
+        return Response("Invalid token", status=status.HTTP_401_UNAUTHORIZED)
     jobId = request.query_params.get('JOB_ID')
     content = ""
     payload = {}
