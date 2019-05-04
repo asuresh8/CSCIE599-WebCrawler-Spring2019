@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_nose',
     'main_app',
     'crispy_forms',
     'api_app',
@@ -74,6 +75,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'webcrawler.wsgi.application'
 
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=main_app'
+]
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
