@@ -60,17 +60,18 @@ class Processor():
                 crawl_api = os.path.join(crawler, "crawl")
                 try:
                     self.context.logger.info("Sending crawl request for %s to %s", url, crawler)
+                    self.context.in_process_urls.add(url)
                     response = requests.post(crawl_api, json={'url': url})
                     response.raise_for_status()
-                except Exception as e:
-                    self.context.logger.error('Unable to send crawl request to crawler %s: %s', crawler, str(e))
-                else:
                     if json.loads(response.text)['accepted']:
                         self.context.logger.info('Crawler %s accepted request', crawler)
-                        self.context.in_process_urls.add(url)
                     else:
                         self.context.logger.warning('Crawler %s rejected request', crawler)
                         self.context.queued_urls.add(url, count=url_count)
+                        self.context.in_process_urls.remove(url)
+                except Exception as e:
+                    self.context.in_process_urls.remove(url)
+                    self.context.logger.error('Unable to send crawl request to crawler %s: %s', crawler, str(e))
             
             # TODO: eliminate this. This is completely arbitrary
             sleep_time = 0.1
