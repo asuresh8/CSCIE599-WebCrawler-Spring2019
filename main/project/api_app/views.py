@@ -118,11 +118,16 @@ def get_google_cloud_crawl_pages(manifest):
         url = link_arr[0]
         file_location = link_arr[1]
         logger.info('url: %s, file_location: %s', url, file_location)
-        file_location_arr = file_location.split('/')
-        file_name = file_location_arr[-2] + "/" + file_location_arr[-1][:-1]
-        logger.info('file_name: %s', file_name)
-        blob = storage.Blob(file_name, bucket)
-        content[url] = blob.download_as_string()
+        if (url.endswith('.docx') or url.endswith('.pdf')):
+            content[url] = file_location
+        else:
+            file_location_arr = file_location.split('/')
+            directory = file_location_arr[-2].strip()
+            file_name = file_location_arr[-1].strip()
+            file_name = directory + "/" + file_name
+            logger.info('file_name: %s', file_name)
+            blob = storage.Blob(file_name, bucket)
+            content[url] = blob.download_as_string()
     return content
 
 @api_view(['GET'])
@@ -136,6 +141,7 @@ def api_crawl_contents(request):
     manifest = job.s3_location.split('/')[-1]
     payload['jobId'] = jobId
     if complete_crawl == "1":
+        content = get_google_cloud_manifest_contents(manifest)
         content = get_google_cloud_crawl_pages(content)
     else:
         try:
