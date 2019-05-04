@@ -52,6 +52,8 @@ def home(request):
     crawl_request = CrawlRequest(user=user)
     form = CrawlRequestForm(instance=crawl_request)
     jobs = CrawlRequest.objects.filter(user=user)
+    for job in jobs:
+        update_job_status(job)
     return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
 
 def store_data_in_gcs(filename, model_id):
@@ -162,24 +164,20 @@ def complete_crawl(request):
     id = request.data['job_id']
     manifest = request.data['manifest']
     resources_count = request.data['resources_count']
+    downloaded_pages = request.data['downloaded_pages']
 
     logger.info("In Crawl-Complete")
-    logger.info('Crawl-Complete id - %s, manifest - %s', id, manifest)
+    logger.info('Crawl-Complete id - %s, manifest - %s, pages - %d', id, manifest, downloaded_pages)
     crawl_request = CrawlRequest.objects.get(pk=id)
-    logger.info('Crawl-Complete2 id - %s, manifest - %s', id, manifest)
     crawl_request.s3_location = manifest
     crawl_request.manifest = manifest
     crawl_request.status = 3
     crawl_request.docs_collected = resources_count
     crawl_request.save()
     data = {"CrawlComplete" : "done"}
-    logger.info('Crawl-Complete3 id - %s, manifest - %s', id, crawl_request.crawler_manager_endpoint)
     requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), json={})
-    logger.info('Crawl-Complete4 id - %s, manifest - %s', id, manifest)
     user = User.objects.get(username=(CRAWLER_MANAGER_USER_PREFIX + str(id)))
-    logger.info('Crawl-Complete5 id - %s, manifest - %s', id, manifest)
     user.delete()
-    logger.info('Crawl-Complete6 id - %s, manifest - %s', id, manifest)
     return JsonResponse(data)
 
 
@@ -211,6 +209,8 @@ def new_job(request):
             logger.info('NewJob created: %s', crawl_request.id)
             logger.info('Received urls: %s', crawl_request.urls)
             launch_crawler_manager(crawl_request, crawl_request.id)
+            crawl_request.status = 2
+            crawl_request.save()
             return redirect('mainapp_home')
     else:
         form = CrawlRequestForm()
@@ -263,6 +263,31 @@ def api_job_status(request):
     response_data = {"Message" : "Status Received"}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
+def update_job_status(job):
+    if (job.status != 3 and job.status != 4):
+        logger.info('Getting status from crawler-manager')
+        jobs = CrawlRequest.objects.filter(user=job.user)
+        last_job = True
+        if (len(jobs) > 0):
+            for j in jobs:
+                if (j.id > job.id):
+                    logger.info('Marking it failed because it doesnt have finished status yet.')
+                    job.status = 4
+                    job.save()
+                    last_job = False
+        if (last_job == True):
+            try:
+                if (job.crawler_manager_endpoint != ""):
+                    resp = requests.get(job.crawler_manager_endpoint+'/status')
+                    logger.info('Received status response')
+                    logger.info('response content:{}'.format(resp.text))
+                    payload = json.loads(resp.text)
+                    logger.info('job id: {}'.format(payload["job_id"]))
+                    if (payload["job_id"] == job.id):
+                        job.docs_collected = payload["processed_count"]
+                        job.save()
+            except Exception as ex:
+                logger.info('Exception in getting status')
 
 @login_required()
 def job_details(request, job_id):
@@ -271,6 +296,7 @@ def job_details(request, job_id):
     """
     try:
         job = CrawlRequest.objects.get(pk=job_id)
+        update_job_status(job)
     except CrawlRequest.DoesNotExist:
         raise Http404("Job does not exist.")
     return render(request, "main_app/job_details.html", {"job": job})

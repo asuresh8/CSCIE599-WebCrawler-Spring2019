@@ -134,8 +134,6 @@ def links():
     s3_uri = flask.request.json['s3_uri']
     child_urls = flask.request.json['child_urls']
 
-    if s3_uri:
-        context.downloaded_pages.increment()
     for url in child_urls:
         if helpers.is_absolute_url(url):
             absolute_url = url
@@ -157,6 +155,8 @@ def links():
         context.logger.info('added to cache')
         context.processed_urls.increment()
         context.cache.put(main_url, s3_uri)
+        if s3_uri:
+            context.downloaded_pages.increment()
     context.logger.info('In links, queued urls: %d, in_process_urls: %d', 
                         context.queued_urls.size(), context.in_process_urls.size())
     return ""
@@ -166,12 +166,12 @@ def links():
 @app.route('/status', methods=['GET'])
 def status():
     context.logger.info('Received status request')
-    context.logger.info('number of pages downloaded: %d', context.downloaded_pages)
     return flask.jsonify({
         'job_id': JOB_ID,
         'processed_count' : context.processed_urls.get(),
         'processing_count': context.in_process_urls.size(),
-        'queued_count' : context.queued_urls.size()
+        'queued_count' : context.queued_urls.size(),
+        'downloaded_pages' : context.downloaded_pages.get()
     })
 
 
@@ -260,6 +260,7 @@ def teardown():
             'job_id': JOB_ID,
             'manifest': public_manifest,
             'resources_count': context.processed_urls.get(),
+            'downloaded_pages' : context.downloaded_pages.get(),
             'time_taken': time_taken
         }
         header = {'Authorization': TOKEN_PREFIX + TOKEN}
