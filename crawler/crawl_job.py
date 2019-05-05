@@ -75,7 +75,7 @@ class CrawlerJob(object):
         
         #CrawlGlobal.context().logger.info(self.data)
         # store
-        if self.do_store(file_ext):
+        if self.do_store(file_ext, data):
             CrawlGlobal.context().logger.info("need to store the data for url: %s", self.base_url)
             self.s3_uri = scraper.store_in_gcs(data)
         else:
@@ -87,7 +87,7 @@ class CrawlerJob(object):
         scraper.store_in_redis(self.s3_uri, self.links)
 
 
-    def do_store(self, ext):
+    def do_store(self, ext, data):
         docs_all = CrawlGlobal.context().scrape_all
         docs_pdf = CrawlGlobal.context().scrape_pdf
         docs_docx = CrawlGlobal.context().scrape_docx
@@ -103,7 +103,7 @@ class CrawlerJob(object):
         else:
             if ((docs_all == True) or
                 (docs_pdf == False and docs_docx == False and docs_all == False)):
-                cur_pred = CrawlGlobal.context().modelrunner.run(self.data)
+                cur_pred = CrawlGlobal.context().modelrunner.run(data)
                 return cur_pred == -1 or CrawlGlobal.context().has_label(cur_pred)
             else:
                 CrawlGlobal.context().logger.info('Model: No matching doc type')
