@@ -3,7 +3,7 @@ from django.test import TestCase
 from unittest.mock import Mock, patch
 from unittest import mock
 from main_app import views
-from main_app.models import CrawlRequest
+from main_app.models import CrawlRequest, MlModel
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from django.test.client import Client
@@ -132,6 +132,43 @@ class MainAppViewsTestCase(TestCase):
                 self.payload,
                 format="json")
             self.assertEqual(response.status_code, 200)
+
+    def test_ml_model(self):
+        user = User.objects.create_user('testModelUser', 'testModel@user.com', 'testpassword')
+        ml_model_instance = MlModel(user=user)
+        ml_model_instance.name = 'modelTest'
+        ml_model_instance.labels = '1;2;3'
+        ml_model_instance.s3_location = 'http://s3.com'
+        ml_model_instance.save()
+        models = MlModel.objects.filter(name='modelTest')
+        self.assertEqual(1, len(models))
+        self.assertEqual("1 modelTest", str(models[0]))
+
+    def test_crawl_request_model(self):
+        user = User.objects.create_user('testCrawlRequestUser', 'testCrawlRequest@user.com', 'testpassword')
+        crawl_instance = CrawlRequest(user=user)
+        crawl_instance.name = 'crawl_model_test'
+        crawl_instance.type = 1
+        crawl_instance.domain = 'http://abc.com'
+        crawl_instance.urls = 'http://url.com'
+        crawl_instance.description = 'Test Crawl Request'
+        crawl_instance.docs_all = True
+        crawl_instance.docs_html = False
+        crawl_instance.docs_docx = False
+        crawl_instance.docs_pdf = False
+        crawl_instance.docs_xml = False
+        crawl_instance.docs_txt = False
+        crawl_instance.docs_collected = 10
+        crawl_instance.status = 1
+        crawl_instance.s3_location = 'http://s3.com'
+        crawl_instance.crawler_manager_endpoint = 'http://end.com'
+        crawl_instance.manifest = 'http://manifest.com'
+        crawl_instance.num_crawlers = 1
+        crawl_instance.save()
+        crawl_instance.get_absolute_url()
+        crawl_instances = CrawlRequest.objects.filter(name='crawl_model_test')
+        self.assertEqual(1, len(crawl_instances))
+        self.assertEqual("1 crawl_model_test", str(crawl_instances[0]))
 
 
 
