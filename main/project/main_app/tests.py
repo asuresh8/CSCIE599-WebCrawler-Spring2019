@@ -2,7 +2,7 @@ from django.test import TestCase
 #import unittest
 from unittest.mock import Mock, patch
 from unittest import mock
-from main_app import views
+from main_app import views,utilities
 from main_app.models import CrawlRequest, MlModel
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
@@ -169,6 +169,24 @@ class MainAppViewsTestCase(TestCase):
         crawl_instances = CrawlRequest.objects.filter(name='crawl_model_test')
         self.assertEqual(1, len(crawl_instances))
         self.assertEqual("1 crawl_model_test", str(crawl_instances[0]))
+
+    def test_update_job_status(self):
+        with patch('main_app.utilities.requests.get') as mock_get:
+            user = User.objects.create_user('testUpdateStatus', 'testUpdateStatus@user.com', 'testpassword')
+            crawl_request = CrawlRequest(user=user)
+            crawl_request.crawler_manager_endpoint = "http://abc.com"
+            crawl_request.name = 'test_update_status' 
+            crawl_request.save()
+            mock_response = mock.Mock()
+            resp_string = '{"job_id":' + str(crawl_request.id) + ', "processed_count":10}'
+            mock_response.text = resp_string
+            mock_get.return_value = mock_response
+            utilities.update_job_status(crawl_request)
+            crawl_request2 = CrawlRequest(user=user)
+            crawl_request2.crawler_manager_endpoint = "http://abc.com"
+            crawl_request2.name = 'test_update_status_second' 
+            crawl_request2.save()
+            utilities.update_job_status(crawl_request)
 
 
 
