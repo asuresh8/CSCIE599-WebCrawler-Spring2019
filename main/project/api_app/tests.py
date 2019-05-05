@@ -44,7 +44,7 @@ class ApiAppViewsTestCase(unittest.TestCase):
             mock_cloud.return_value = "Test"
             user = User.objects.create_user('testUser2', 'test2@user.com', 'testpassword')
             crawl_request = CrawlRequest(user=user)
-            crawl_request.s3_location = "abc/def"
+            crawl_request.storage_location = "abc/def"
             crawl_request.save()
             id = crawl_request.id
             client = APIClient()

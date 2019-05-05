@@ -50,10 +50,10 @@ class TestWebScraper(unittest.TestCase):
         CrawlGlobal.context().cache.rediscache = fakeredis.FakeStrictRedis()
         
         links = ["x","y","z"]
-        s3uri ="abc"
-        self.scraper.store_in_redis(s3uri,links)
+        storageuri ="abc"
+        self.scraper.store_in_redis(storageuri,links)
         val = CrawlGlobal.context().cache.get(self.url)
-        self.assertEqual(val, {"s3_uri": "abc", "child_urls": ["x", "y", "z"]})
+        self.assertEqual(val, {"storage_uri": "abc", "child_urls": ["x", "y", "z"]})
 
 
 

@@ -112,7 +112,7 @@ class MainAppViewsTestCase(TestCase):
             mock_cloud.return_value = b'Test'
             user = User.objects.create_user('testCrawlContents', 'testCrawlContents@user.com', 'testpassword')
             crawl_request = CrawlRequest(user=user)
-            crawl_request.s3_location = "abc/def"
+            crawl_request.storage_location = "abc/def"
             crawl_request.save()
             id = crawl_request.id
             client = Client()
@@ -138,7 +138,7 @@ class MainAppViewsTestCase(TestCase):
         ml_model_instance = MlModel(user=user)
         ml_model_instance.name = 'modelTest'
         ml_model_instance.labels = '1;2;3'
-        ml_model_instance.s3_location = 'http://s3.com'
+        ml_model_instance.storage_location = 'http://storage.com'
         ml_model_instance.save()
         models = MlModel.objects.filter(name='modelTest')
         self.assertEqual(1, len(models))
@@ -160,7 +160,7 @@ class MainAppViewsTestCase(TestCase):
         crawl_instance.docs_txt = False
         crawl_instance.docs_collected = 10
         crawl_instance.status = 1
-        crawl_instance.s3_location = 'http://s3.com'
+        crawl_instance.storage_location = 'http://storage.com'
         crawl_instance.crawler_manager_endpoint = 'http://end.com'
         crawl_instance.manifest = 'http://manifest.com'
         crawl_instance.num_crawlers = 1

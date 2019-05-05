@@ -34,36 +34,6 @@ class AtomicQueue:
             self._queue.clear()
 
 
-class AtomicPriorityQueue:
-
-    def __init__(self):
-        self.heap = []
-        self._lock = threading.Lock()
-
-    def add(self, item, priority):
-        with self._lock:
-            pair = (priority,item)
-            heapq.heappush(self.heap,pair)
-
-    def contains(self, item):
-        with self._lock:
-            return item in (x[1] for x in self.heap)
-
-    def poll(self):
-        with self._lock:
-            if len(self.heap) == 0:
-                return (None, None)
-            else:
-                return heapq.heappop(self.heap)
-
-    def size(self):
-        with self._lock:
-            return len(self.heap)
-
-    def reset(self):
-        with self._lock:
-            self.heap.clear()
-
 class AtomicPriorityCountQueue(dict):
     """Dictionary that can be used as a priority queue.
         Keys are urls and priority is based on the number of occurences
@@ -81,7 +51,6 @@ class AtomicPriorityCountQueue(dict):
         heapq._heapify_max(self._heap)
 
     def __setitem__(self, url, count):
-        # with self._lock:
         super(AtomicPriorityCountQueue, self).__setitem__(url, count)
         
         if len(self._heap) < 2 * len(self):
@@ -91,7 +60,7 @@ class AtomicPriorityCountQueue(dict):
 
     def poll(self):
         """Return the url with the highest number of
-           occurences.
+           local occurences.
         """
         with self._lock:
             if len(self._heap) == 0:

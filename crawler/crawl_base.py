@@ -62,10 +62,10 @@ class BaseScraper:
             CrawlGlobal.context().logger.error('Unable to store webpage for %s: %s', url, str(e))
             return ''
     
-    def store_in_redis(self, s3uri, links):
+    def store_in_redis(self, storageuri, links):
         try:
-            CrawlGlobal.context().logger.info('Caching s3_uri and child_urls')
-            CrawlGlobal.context().cache.put(self.base_url, {'s3_uri': s3uri, 'child_urls': links})
+            CrawlGlobal.context().logger.info('Caching storage_uri and child_urls')
+            CrawlGlobal.context().cache.put(self.base_url, {'storage_uri': storageuri, 'child_urls': links})
             CrawlGlobal.context().logger.info('Caching was successful')
         except Exception as e:
             CrawlGlobal.context().logger.error('Unable to cache data for %s: %s', self.base_url, str(e))

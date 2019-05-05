@@ -65,9 +65,9 @@ def ml_model(request):
             form_model = form.save(commit=False)
             form_model.user = request.user
             form_model.save() 
-            s3_url = store_data_in_gcs(request)
-            form_model.s3_location = s3_url
-            logger.info("Cloud_Url: {}".format(s3_url))
+            storage_url = store_data_in_gcs(request)
+            form_model.storage_location = storage_url
+            logger.info("Cloud_Url: {}".format(storage_url))
             form_model.save()
 
     form = MlModelForm(instance=ml_model_instance)
@@ -121,7 +121,7 @@ def register_crawler_manager(request):
     if (job.model != None):
         models = MlModel.objects.filter(name=job.model.name)
         if (len(models) > 0):
-            model_url = models[0].s3_location
+            model_url = models[0].storage_location
     logger.info('Model url: %s', model_url)
     payload = {
         'job_id': id,
@@ -151,7 +151,7 @@ def complete_crawl(request):
     logger.info("In Crawl-Complete")
     logger.info('Crawl-Complete id - %s, manifest - %s, pages - %d', id, manifest, downloaded_pages)
     crawl_request = CrawlRequest.objects.get(pk=id)
-    crawl_request.s3_location = manifest
+    crawl_request.storage_location = manifest
     crawl_request.manifest = manifest
     crawl_request.status = 3
     crawl_request.docs_collected = resources_count

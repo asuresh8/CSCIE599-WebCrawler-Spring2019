@@ -58,13 +58,13 @@ def per_request_callbacks(response):
         response = func(response)
     return response
 
-
+# Will return crawler manager if the service has started successfully
 @app.route('/', methods=['GET'])
 def main():
     context.logger.info('Received request at home')
     return 'Crawler Manager'
 
-
+# This endpoint is called by the main application to begin crawling after the user job request has been instantiated.
 @app.route('/crawl', methods=['POST'])
 def crawl():
     global JOB_ID
@@ -82,7 +82,7 @@ def ping():
     context.logger.info('Received request at PING')
     return 'PONG'
 
-
+# Kills crawler manager
 @app.route('/kill', methods=['POST'])
 def kill():
     if ENVIRONMENT == 'local':
@@ -108,6 +108,7 @@ def register():
     context.logger.info('registering crawler with endpoint %s', crawler_endpoint)
     context.crawlers.add(crawler_endpoint)
     context.logger.info(context.parameters)
+    # Parameters passed in from the user are returned to the crawler when it registers itself
     return jsonify(
         docs_all=context.parameters['docs_all'],
         docs_html=context.parameters['docs_html'],
@@ -120,20 +121,24 @@ def register():
 
 
 #Result endpoint
-#An endpoint that the  crawler calls to respond with the url assigned, it's corresponding S3 Link and the list of child url's
+#An endpoint that the  crawler calls to respond with the url assigned, it's corresponding cloud storage Link and the list of child url's
 #example JSON
 # {
 # "main_url":"http://recurship.com/",
-# "S3":"https://bucket.s3-aws-region.amazonaws.com/key",
+# "storage_uri":"https://storage.googleapis.com/cscie-599-spring-2019-web-crawler/crawl_pages/key"
 # "child_urls":[ "a", "b", "c" ]
 # }
 @app.route('/links', methods=['POST'])
 def links():
     context.logger.info('Received response from crawler: %s', flask.request.data)
     main_url = flask.request.json['main_url']
-    s3_uri = flask.request.json['s3_uri']
+    storage_uri = flask.request.json['storage_uri']
     child_urls = flask.request.json['child_urls']
 
+    # Adding all the urls returned to the queue, after doing the following:
+    # - converting child urls to absolute urls
+    # - taking only links with the specified domain name
+    # - not including links already being processed or in cache
     for url in child_urls:
         if helpers.is_absolute_url(url):
             absolute_url = url
@@ -148,14 +153,16 @@ def links():
           not context.cache.exists(absolute_url):
             context.logger.info('Adding %s to queue', absolute_url)
             context.queued_urls.add(absolute_url)
-            # context.queued_urls.add(absolute_url, len(absolute_url))
 
+    # Remove the url scraped from the in process queue
     context.in_process_urls.remove(main_url)
+
+    # Continue only if the number of processed urls has not crossed the specified limit
     if context.parameters['num_crawl_pages_limit'] > context.processed_urls.get():
         context.logger.info('added to cache')
         context.processed_urls.increment()
-        context.cache.put(main_url, s3_uri)
-        if s3_uri:
+        context.cache.put(main_url, storage_uri)
+        if storage_uri:
             context.downloaded_pages.increment()
     context.logger.info('In links, queued urls: %d, in_process_urls: %d', 
                         context.queued_urls.size(), context.in_process_urls.size())
@@ -185,7 +192,8 @@ def do_crawl():
     processor.run()
     teardown()
 
-
+# This method registers the crawler-manager with the main application,
+# and adds the seed urls provided by the user to the queue
 def setup():
     global context
     context.cache = redis_connect.RedisClient(redis.Redis(host='0.0.0.0', port=6379, db=0))
@@ -211,7 +219,6 @@ def setup():
 
     context.start_time = round(time.time() * 1000)
     for url in context.parameters['urls']:
-        # context.queued_urls.add(url, len(url))
         context.queued_urls.add(url)
 
     if ENVIRONMENT != 'local':
@@ -230,7 +237,7 @@ def setup():
     else:
         requests.post(os.path.join(CRAWLER_APPLICATION_ENDPOINT, 'dev_crawl'))
 
-
+# Kills Crawlers, writes the saved local data into a manifest file, and uploads it to cloud storage
 def teardown():
     context.logger.info("Killing crawlers")
     crawlers = context.crawlers.get()

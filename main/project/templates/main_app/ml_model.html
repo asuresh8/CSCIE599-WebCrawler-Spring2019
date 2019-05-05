@@ -25,7 +25,7 @@
                             <th>Model Name</th>
                             <th>Labels</th>
                             <th>Model Creation date</th>
-                            <th>Model S3 Location</th>
+                            <th>Model Storage Location</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -41,7 +41,7 @@
                                 {{ model.created|escape }}
                             </td>
 							<td>
-                                {{ model.s3_location|escape }}
+                                {{ model.storage_location|escape }}
                             </td>
                         </tr>
                     {% endfor %}

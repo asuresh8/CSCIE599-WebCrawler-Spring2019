@@ -13,7 +13,7 @@ class MlModel(models.Model):
     labels = models.TextField(default='', max_length=100, blank=True)
     created = models.DateTimeField("model creation time", editable=False)
     modified = models.DateTimeField("model modification time")
-    s3_location = models.URLField(default='', max_length=1000, blank=True)
+    storage_location = models.URLField(default='', max_length=1000, blank=True)
     user = models.ForeignKey(User, related_name="ml_models_user", on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
@@ -59,7 +59,7 @@ class CrawlRequest(models.Model):
     docs_txt = models.BooleanField(default=False, blank=True)
     docs_collected = models.PositiveIntegerField(default=0, blank=True)
     status = models.PositiveSmallIntegerField("crawl status", default=1, choices=STATUS)
-    s3_location = models.URLField(default='', max_length=1000, blank=True)
+    storage_location = models.URLField(default='', max_length=1000, blank=True)
     crawler_manager_endpoint = models.URLField(default='', max_length=500, blank=True)
     manifest = models.URLField(default='', max_length=1000, blank=True)
     num_crawlers = models.PositiveIntegerField("Number crawler instances", default=1)
@@ -99,7 +99,7 @@ class Profile(models.Model):
     The model to represent the user settings.
     """
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
-    s3_bucket = models.URLField("AWS S3 Bucket", default='', max_length=500, blank=True)
+    storage_bucket = models.URLField("Google Storage Bucket", default='', max_length=500, blank=True)
     api_key = models.CharField("API Key", max_length=512)
     api_secret = models.CharField("API Secret", max_length=512)
     num_crawlers = models.PositiveIntegerField("Number crawler instances", default=1)

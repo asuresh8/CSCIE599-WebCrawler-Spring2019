@@ -12,7 +12,7 @@ ALLOWABLE_EXTENSIONS = [".pdf", ".doc", ".docx", ""]
 class CrawlerJob(object):
     def __init__(self, base_url):
         self.base_url = base_url
-        self.s3_uri = ''
+        self.storage_uri = ''
         self.links = []
 
     def get_extension(self, url):
@@ -25,12 +25,12 @@ class CrawlerJob(object):
         CrawlGlobal.context().logger.info('connecting to redis')
         if CrawlGlobal.context().cache.exists(self.base_url):
             cache_val =  CrawlGlobal.context().cache.get(self.base_url)
-            if cache_val != None and 's3_uri' in cache_val and 'child_urls' in cache_val:
-                self.s3_uri = cache_val['s3_uri']
+            if cache_val != None and 'storage_uri' in cache_val and 'child_urls' in cache_val:
+                self.storage_uri = cache_val['storage_uri']
                 self.links = cache_val['child_urls']
-                if (self.s3_uri is None):
-                    CrawlGlobal.context().logger.info('Error condition. s3_uri None for cached url: %s', self.base_url)
-                    self.s3_uri = ''
+                if (self.storage_uri is None):
+                    CrawlGlobal.context().logger.info('Error condition. storage_uri None for cached url: %s', self.base_url)
+                    self.storage_uri = ''
                 if (self.links is None):
                     CrawlGlobal.context().logger.info('Error condition. links None for cached url: %s', self.base_url)
                     self.links = []
@@ -77,14 +77,14 @@ class CrawlerJob(object):
         # store
         if self.do_store(file_ext, data):
             CrawlGlobal.context().logger.info("need to store the data for url: %s", self.base_url)
-            self.s3_uri = scraper.store_in_gcs(data)
+            self.storage_uri = scraper.store_in_gcs(data)
         else:
             CrawlGlobal.context().logger.info("not storing the data for url: %s", self.base_url)  
               
         # get child urls
         self.links = scraper.get_links(data)
         # put in cache
-        scraper.store_in_redis(self.s3_uri, self.links)
+        scraper.store_in_redis(self.storage_uri, self.links)
 
 
     def do_store(self, ext, data):
@@ -118,7 +118,7 @@ class CrawlerJob(object):
             response = requests.post(
                                         links_api,
                                         json={'main_url':self.base_url, 
-                                              's3_uri': self.s3_uri, 
+                                              'storage_uri': self.storage_uri, 
                                               'child_urls': self.links}
                                     )
             response.raise_for_status()

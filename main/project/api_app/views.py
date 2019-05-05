@@ -96,7 +96,7 @@ def api_crawl_contents(request):
     payload = {}
     complete_crawl = request.query_params.get('complete_crawl')
     job = CrawlRequest.objects.get(pk=jobId)
-    manifest = job.s3_location.split('/')[-1]
+    manifest = job.storage_location.split('/')[-1]
     payload['jobId'] = jobId
     if complete_crawl == "1":
         content = get_google_cloud_manifest_contents(manifest)
