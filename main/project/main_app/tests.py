@@ -120,6 +120,19 @@ class MainAppViewsTestCase(TestCase):
             response = client.get(reverse('mainapp_crawlcontents', kwargs={'job_id':crawl_request.id}))
             self.assertEqual(response.status_code, 200)
 
+    def test_add_model(self):
+        with patch('main_app.views.store_data_in_gcs') as mock_cloud:
+            mock_cloud.return_value = b'http://abc.com'
+            user = User.objects.create_user('testAddModel', 'testAddModel@user.com', 'testpassword')
+            client = Client()
+            client.login(username='testAddModel', password='testpassword')
+            self.payload = {'name': 'model', 'labels' : '1;2'}
+            response = client.post(
+                reverse('mainapp_mlmodel'),
+                self.payload,
+                format="json")
+            self.assertEqual(response.status_code, 200)
+
 
 
 

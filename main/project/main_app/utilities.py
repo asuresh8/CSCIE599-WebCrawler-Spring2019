@@ -28,13 +28,19 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def store_data_in_gcs(filename, model_id):
+def store_data_in_gcs(request):
+    myfile = request.FILES['myfile']
+    filename = 'tmp_file'
+    data = myfile.read()
+    with open(filename, 'wb') as f:
+        f.write(data)
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(os.environ['GCS_BUCKET'])
     key = 'crawl_models/{}'.format(str(uuid.uuid4()))
     blob = bucket.blob(key)
     blob.upload_from_filename(filename)
     blob.make_public()
+    os.remove(filename)
     return blob.public_url
 
 

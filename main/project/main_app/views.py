@@ -66,16 +66,10 @@ def ml_model(request):
         if form.is_valid():
             form_model = form.save(commit=False)
             form_model.user = request.user
-            form_model.save()
-            myfile = request.FILES['myfile']
-            tmp_file = 'tmp_file'
-            data = myfile.read()
-            with open(tmp_file, 'wb') as f:
-                f.write(data)
-            s3_url = store_data_in_gcs(tmp_file, form_model.id)
+            form_model.save() 
+            s3_url = store_data_in_gcs(request)
             form_model.s3_location = s3_url
-            os.remove(tmp_file)
-            print("S3Url: {}".format(s3_url))
+            logger.info("Cloud_Url: {}".format(s3_url))
             form_model.save()
 
     form = MlModelForm(instance=ml_model_instance)
