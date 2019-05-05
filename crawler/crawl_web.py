@@ -16,7 +16,7 @@ class WebScraper(BaseScraper):
     def do_scrape(self):
         if not self.is_valid():
             return super(WebScraper,self).do_scrape()
-
+        CrawlGlobal.context().logger.info("Using Web Scraper")
         try:
             CrawlGlobal.context().logger.info("Scraping URL: {}".format(self.base_url))    
             return CrawlGlobal.context().get_data(self.base_url)
