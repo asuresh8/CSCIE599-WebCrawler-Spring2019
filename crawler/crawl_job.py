@@ -40,9 +40,10 @@ class CrawlerJob(object):
         return False
 
     def execute(self, endpoint):
+
         CrawlGlobal.context().logger.info('Starting crawl thread for %s', self.base_url)     
         try:
-            if not self.is_cached():
+            if not self.is_cached() or CrawlGlobal.context().has_model():
                self.start_scrape()
             else:
                 CrawlGlobal.context().logger.info('Url %s already cached', self.base_url)
@@ -70,18 +71,18 @@ class CrawlerJob(object):
             scraper = WebScraper(url, key)
         
         # scrape the page
-        self.data = scraper.do_scrape()
+        data = scraper.do_scrape()
         
         #CrawlGlobal.context().logger.info(self.data)
         # store
         if self.do_store(file_ext):
             CrawlGlobal.context().logger.info("need to store the data for url: %s", self.base_url)
-            self.s3_uri = scraper.store_in_gcs(self.data)
+            self.s3_uri = scraper.store_in_gcs(data)
         else:
             CrawlGlobal.context().logger.info("not storing the data for url: %s", self.base_url)  
               
         # get child urls
-        self.links = scraper.get_links(self.data)
+        self.links = scraper.get_links(data)
         # put in cache
         scraper.store_in_redis(self.s3_uri, self.links)
 

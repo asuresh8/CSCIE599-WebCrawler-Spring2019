@@ -95,18 +95,6 @@ def crawl():
     executor.submit(crawljob.execute, CRAWLER_MANAGER_ENDPOINT)
     return flask.jsonify({'accepted': True})
 
-@app.route('/crawler/')
-def do_crawl():
-    url =  flask.request.args.get('crawlurl')
-    CrawlGlobal.context().logger.info('Crawling %s', url)
-    if CrawlGlobal.context().active_thread_count.get() >= MAX_ACTIVE_THREADS:
-        return flask.jsonify({'accepted': False})
-
-    CrawlGlobal.context().active_thread_count.increment()
-    crawljob = CrawlerJob(url,)
-    executor.submit(crawljob.execute,CRAWLER_MANAGER_ENDPOINT)
-    return flask.jsonify({'accepted': True})
-
 
 def test_connections():
     try:

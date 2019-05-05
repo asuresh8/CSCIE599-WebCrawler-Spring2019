@@ -2,10 +2,12 @@ import os
 import atomic
 import requests
 import redis_connect
+import threading
 from model_runner import ModelRunner
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
+
 
 class Context:
     def __init__(self, logger):
@@ -15,6 +17,8 @@ class Context:
         self.cache = redis_connect.Cache()
         self.driver = None
         self.initialize_driver()
+        self._lock = threading.Lock()
+        
 
     def initialize_driver(self):
         dir_path = os.path.dirname(os.path.realpath(__file__)) + "/chromedriver"
@@ -35,11 +39,17 @@ class Context:
             self.driver = webdriver.Chrome(executable_path= dir_path, options= chrome_options ) 
             self.logger.info('browser initialized')       
         except WebDriverException as e:
+            self.driver = None
             self.logger.info("could not instantiate browser: {}".format(str(e)))
-   
 
+   
     def get_driver(self):
         return self.driver
+
+    def get_data(self, url):
+        with self._lock:
+            self.driver.get(url)
+            return self.driver.page_source
 
     def set_useroptions(self, jsonObj):   
         if jsonObj is None:
