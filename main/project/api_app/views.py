@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from main_app.models import CrawlRequest, Profile
 from main_app.views import launch_crawler_manager
-from main_app.views import get_google_cloud_manifest_contents
+from main_app.utilities import get_google_cloud_manifest_contents
 from main_app import utilities
 
 from rest_framework.request import Request
@@ -30,17 +30,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
-
-# when the container is running in docker compose, set IMAGE_TAG = 0
-# when running on Kubernetes, it is the Pipeline Id, which is used for naming the Docker images in the registry.
-NAMESPACE = os.environ.get('NAMESPACE', 'default')
-IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
-ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
-CRAWLER_MANAGER_USER_PREFIX = 'admin'
-
-def check_user_password(current_password, incoming_password):
-    salt = current_password.split('$')[2]
-    hashed_password = make_password(incoming_password, salt)
 
 
 @api_view(['POST'])
