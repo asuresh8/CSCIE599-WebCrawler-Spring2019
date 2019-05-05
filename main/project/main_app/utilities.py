@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 def store_data_in_gcs(request):
+    """
+    Function to store the model contents in cloud storage.
+    """
     myfile = request.FILES['myfile']
     filename = 'tmp_file'
     data = myfile.read()
@@ -31,6 +34,9 @@ def store_data_in_gcs(request):
 
 
 def get_google_cloud_manifest_contents(manifest):
+    """
+    Function to retrieve the manifest contents.
+    """
     client = storage.Client()
     bucket = client.get_bucket(os.environ['GCS_BUCKET'])
     blob = storage.Blob(manifest, bucket)
@@ -38,6 +44,9 @@ def get_google_cloud_manifest_contents(manifest):
     return content
 
 def get_google_cloud_crawl_pages(manifest):
+    """
+    Function to retrieve the crawled page contents from cloud storage.
+    """
     client = storage.Client()
     bucket = client.get_bucket(os.environ['GCS_BUCKET'])
     content = {}
@@ -64,6 +73,10 @@ def get_google_cloud_crawl_pages(manifest):
 
 
 def update_job_status(job):
+    """
+    Function to get the status of a job from crawler manager service and
+    update it in the sql database.
+    """
     if (job.status != 3 and job.status != 4):
         logger.info('Getting status from crawler-manager')
         jobs = CrawlRequest.objects.filter(user=job.user)
@@ -92,6 +105,9 @@ def update_job_status(job):
 
 
 def check_user_password(current_password, incoming_password):
+    """
+    Function to retrieve the hashed version of password.
+    """
     salt = current_password.split('$')[2]
     hashed_password = make_password(incoming_password, salt)
     return current_password == hashed_password

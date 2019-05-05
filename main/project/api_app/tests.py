@@ -9,13 +9,17 @@ from rest_framework import status
 from django.urls import reverse
 import json
 import time
-# Create your tests here.
+
+# Tests for code in api_app.
 
 class ApiAppViewsTestCase(unittest.TestCase):
     def setUp(self):
         pass
     
     def test_authenticate(self):
+        """
+        Test to check jwt token generation code using authenticate end-point.
+        """
         user = User.objects.create_user('testUser5', 'test5@user.com', 'testpassword')
         client = APIClient()
         response_auth = client.post(reverse('authenticate_user'), {'username' : 'testUser5', 'password' : 'testpassword'}, format="json")
@@ -23,6 +27,9 @@ class ApiAppViewsTestCase(unittest.TestCase):
         self.assertNotEqual('', access_token)
 
     def test_api_create_crawl(self):
+        """
+        Test to create a new crawl request for an external user using an API end-point directly.
+        """
         with patch('api_app.views.launch_crawler_manager') as mock_launch:
             user = User.objects.create_user('testUser', 'test@user.com', 'testpassword')
             client = APIClient()
@@ -40,6 +47,9 @@ class ApiAppViewsTestCase(unittest.TestCase):
             self.assertNotEqual(0, response.data["jobId"])
 
     def test_api_crawl_contents(self):
+        """
+        Test to get crawl contents using an API end-point.
+        """
         with patch('api_app.views.get_google_cloud_manifest_contents') as mock_cloud:
             mock_cloud.return_value = "Test"
             user = User.objects.create_user('testUser2', 'test2@user.com', 'testpassword')
@@ -57,6 +67,9 @@ class ApiAppViewsTestCase(unittest.TestCase):
             self.assertNotEqual('', response_get.data["crawl_contents"])
 
     def test_api_get_job_status(self):
+        """
+        Test to get status of a job using an API end-point.
+        """
         user = User.objects.create_user('testStatusUser', 'testStatusUser@user.com', 'testpassword')
         client = APIClient()
         crawl_request = CrawlRequest(user=user)

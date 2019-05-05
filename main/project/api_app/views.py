@@ -26,6 +26,9 @@ logger = logging.getLogger(__name__)
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
 def get_api_job_status(request):
+    """
+    Api to get the status of a job from main service.
+    """
     try:
         job = CrawlRequest.objects.get(pk=request.data['job_id'])
         job_info = {
@@ -43,6 +46,9 @@ def get_api_job_status(request):
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
 def authenticate_user(request):
+    """
+    Api to authenticate an user and get the jwt token.
+    """
     try:
         username = request.data['username']
         password = request.data['password']
@@ -71,6 +77,9 @@ def authenticate_user(request):
 #@permission_classes((IsAuthenticated, ))
 @permission_classes([AllowAny, ])
 def api_create_crawl(request):
+    """
+    External api to submit a crawl request.
+    """
     logger.info('In api new job')
     username = request.data['username']
     user_obj = User.objects.get(username=username)
@@ -91,6 +100,12 @@ def api_create_crawl(request):
 #@permission_classes((IsAuthenticated, ))
 @permission_classes([AllowAny, ])
 def api_crawl_contents(request):
+    """
+    External api to get the manifest contents for parameter 'complete_crawl'=0.
+    Manifest file only stores the urls that have been crawled along with the
+    cloud storage locations for their contents.
+    And for 'complete_crawl=1', it returns the contents of the crawled apis too.
+    """
     jobId = request.query_params.get('JOB_ID')
     content = ""
     payload = {}

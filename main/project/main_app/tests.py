@@ -1,5 +1,4 @@
 from django.test import TestCase
-#import unittest
 from unittest.mock import Mock, patch
 from unittest import mock
 from main_app import views,utilities
@@ -13,25 +12,30 @@ from django.test.client import RequestFactory
 import json
 import time
 
-# Create your tests here.
+# Tests for code in main_app.
 
 class MainAppViewsTestCase(TestCase):
     def setUp(self):
         pass
-    
+
     def test_generate_token(self):
-        # To check if a token is getting generated properly or not.
+        """
+        To check if a token is getting generated properly or not.
+        """
         token = views.get_manager_token(100)
         self.assertNotEqual('', token)
-     
+
     def test_register_crawler_manager(self):
+        """
+        Test to check registration of crawler manager.
+        """
         user = User.objects.create_user('testUser3', 'test3@user.com', 'testpassword')
         client = APIClient()
         response_auth = client.post(reverse('authenticate_user'), {'username' : 'testUser3', 'password' : 'testpassword'}, format="json")
         access_token = response_auth.data['token']
         self.assertNotEqual('', access_token)
         client.credentials(HTTP_AUTHORIZATION='Bearer ' + access_token)
-        
+
         crawl_request = CrawlRequest(user=user)
         crawl_request.urls = "http://abc.com"
         crawl_request.save()
@@ -41,6 +45,9 @@ class MainAppViewsTestCase(TestCase):
         self.assertEqual("http://abc.com", payload["urls"][0])
 
     def test_crawl_complete(self):
+        """
+        Test for crawl complete api.
+        """
         with patch('main_app.views.requests.post') as mock_post:
             user = User.objects.create_user('testUser4', 'test4@user.com', 'testpassword')
             client = APIClient()
@@ -48,7 +55,7 @@ class MainAppViewsTestCase(TestCase):
             access_token = response_auth.data['token']
             self.assertNotEqual('', access_token)
             client.credentials(HTTP_AUTHORIZATION='Bearer ' + access_token)
-        
+
             crawl_request = CrawlRequest(user=user)
             crawl_request.urls = "http://abc.com"
             crawl_request.save()
@@ -59,6 +66,9 @@ class MainAppViewsTestCase(TestCase):
             self.assertEqual("done", payload["CrawlComplete"])
 
     def test_welcome(self):
+        """
+        Test for welcome screen.
+        """
         user = User.objects.create_user('testWelcome', 'testWelcome@user.com', 'testpassword')
         client = Client()
         response = client.get(reverse('webcrawler_welcome'))
@@ -69,6 +79,9 @@ class MainAppViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_home(self):
+        """
+        Test for home request.
+        """
         user = User.objects.create_user('testHome', 'testHome@user.com', 'testpassword')
         client = Client()
         client.login(username='testHome', password='testpassword')
@@ -77,6 +90,9 @@ class MainAppViewsTestCase(TestCase):
         self.assertContains(response, 'These are all the current jobs for user')
 
     def test_new_job(self):
+        """
+        Test for creation of a new job.
+        """
         with patch('main_app.views.launch_crawler_manager') as mock_launch:
             user = User.objects.create_user('testNewJob', 'testNewJob@user.com', 'testpassword')
             client = Client()
@@ -90,6 +106,9 @@ class MainAppViewsTestCase(TestCase):
 
 
     def test_launch_crawler_manager(self):
+        """
+        Test for launching a crawler manager.
+        """
         with patch('main_app.views.requests.post') as mock_post:
             rf = RequestFactory()
             request = rf.get('/hello/')
@@ -97,6 +116,9 @@ class MainAppViewsTestCase(TestCase):
             self.assertEqual(ret_code, None)
 
     def test_job_details(self):
+        """
+        Test to get the job details.
+        """
         user = User.objects.create_user('testJobDetails', 'testJobDetails@user.com', 'testpassword')
         crawl_request = CrawlRequest(user=user)
         crawl_request.urls = "http://abc.com"
@@ -108,6 +130,9 @@ class MainAppViewsTestCase(TestCase):
         self.assertContains(response, 'Job Details for crawl job')
 
     def test_crawl_contents(self):
+        """
+        Test to get the crawl contents.
+        """
         with patch('main_app.views.get_google_cloud_manifest_contents') as mock_cloud:
             mock_cloud.return_value = b'Test'
             user = User.objects.create_user('testCrawlContents', 'testCrawlContents@user.com', 'testpassword')
@@ -121,6 +146,9 @@ class MainAppViewsTestCase(TestCase):
             self.assertEqual(response.status_code, 200)
 
     def test_add_model(self):
+        """
+        Test to add a new model.
+        """
         with patch('main_app.views.store_data_in_gcs') as mock_cloud:
             mock_cloud.return_value = b'http://abc.com'
             user = User.objects.create_user('testAddModel', 'testAddModel@user.com', 'testpassword')
@@ -134,6 +162,9 @@ class MainAppViewsTestCase(TestCase):
             self.assertEqual(response.status_code, 200)
 
     def test_ml_model(self):
+        """
+        Test for the MlModel.
+        """
         user = User.objects.create_user('testModelUser', 'testModel@user.com', 'testpassword')
         ml_model_instance = MlModel(user=user)
         ml_model_instance.name = 'modelTest'
@@ -145,6 +176,9 @@ class MainAppViewsTestCase(TestCase):
         self.assertEqual("1 modelTest", str(models[0]))
 
     def test_crawl_request_model(self):
+        """
+        Test for the Crawl Request model.
+        """
         user = User.objects.create_user('testCrawlRequestUser', 'testCrawlRequest@user.com', 'testpassword')
         crawl_instance = CrawlRequest(user=user)
         crawl_instance.name = 'crawl_model_test'
@@ -171,11 +205,14 @@ class MainAppViewsTestCase(TestCase):
         self.assertEqual("1 crawl_model_test", str(crawl_instances[0]))
 
     def test_update_job_status(self):
+        """
+        Test for getting the status of a job from manager and updating it in sql.
+        """
         with patch('main_app.utilities.requests.get') as mock_get:
             user = User.objects.create_user('testUpdateStatus', 'testUpdateStatus@user.com', 'testpassword')
             crawl_request = CrawlRequest(user=user)
             crawl_request.crawler_manager_endpoint = "http://abc.com"
-            crawl_request.name = 'test_update_status' 
+            crawl_request.name = 'test_update_status'
             crawl_request.save()
             mock_response = mock.Mock()
             resp_string = '{"job_id":' + str(crawl_request.id) + ', "processed_count":10}'
@@ -184,17 +221,15 @@ class MainAppViewsTestCase(TestCase):
             utilities.update_job_status(crawl_request)
             crawl_request2 = CrawlRequest(user=user)
             crawl_request2.crawler_manager_endpoint = "http://abc.com"
-            crawl_request2.name = 'test_update_status_second' 
+            crawl_request2.name = 'test_update_status_second'
             crawl_request2.save()
             utilities.update_job_status(crawl_request)
 
     def test_ping(self):
+        """
+        Test for ping api.
+        """
         with patch('main_app.views.requests.get') as mock_get:
             client = APIClient()
             response = client.get(reverse('api_ping'), {'releaseDate':'20190501'})
             self.assertEqual(response.status_code, 200)
-
-
-
-
-

@@ -59,6 +59,11 @@ def home(request):
 
 @login_required()
 def ml_model(request):
+    """
+    Adds the details of a model to the sql database.
+    The model contents are uploaded to a cloud storage location. The storage
+    location is saved in the sql database along with the model details.
+    """
     user = request.user
     ml_model_instance = MlModel(user=user)
     if request.method == "POST":
@@ -66,7 +71,7 @@ def ml_model(request):
         if form.is_valid():
             form_model = form.save(commit=False)
             form_model.user = request.user
-            form_model.save() 
+            form_model.save()
             storage_url = store_data_in_gcs(request)
             form_model.storage_location = storage_url
             logger.info("Cloud_Url: {}".format(storage_url))
@@ -80,6 +85,9 @@ def ml_model(request):
 @api_view(['GET'])
 @permission_classes([AllowAny, ])
 def api_ping(request):
+    """
+    Api provided to ping the manager service.
+    """
     release_date_param = request.GET.get('releaseDate', 'None')
     data = {}
     data['pong'] = f"pang-{release_date_param}"
@@ -95,6 +103,10 @@ def api_ping(request):
 
 
 def crawler_manager_ping(requestUrl):
+    """
+    The local function for pinging the manager service by doing
+    a get request.
+    """
     try:
         manager_url = os.path.join(requestUrl, 'ping')
         logger.info('manager_url === %s', manager_url)
@@ -111,6 +123,15 @@ def crawler_manager_ping(requestUrl):
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def register_crawler_manager(request):
+    """
+    Once the manager service is up in Kubernetes or receives a new
+    crawl request in local environment, it calls this api to register
+    its end-point with the main service.
+    This end-point will be later used by the main service to make requests
+    to crawler-manager service.
+    Also the main service returns all the crawl details as a response to
+    the manager service.
+    """
     logger.info("In Register-Crawl")
     id = request.data['job_id']
     logger.info('JobID main: %s', id)
@@ -145,6 +166,10 @@ def register_crawler_manager(request):
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def complete_crawl(request):
+    """
+    Once the crawling is completed in the manager, the manager calls this
+    api to send the crawl information to the main service.
+    """
     id = request.data['job_id']
     manifest = request.data['manifest']
     resources_count = request.data['resources_count']
@@ -169,6 +194,10 @@ def complete_crawl(request):
 
 
 def get_manager_token(jobId):
+    """
+    Function to create a jwt token that will be used by manager while
+    calling the APIs of the main service.
+    """
     username = CRAWLER_MANAGER_USER_PREFIX + str(jobId)
     email = CRAWLER_MANAGER_USER_PREFIX + str(jobId) + '@' + CRAWLER_MANAGER_USER_PREFIX + '.com'
     password = username
@@ -202,6 +231,11 @@ def new_job(request):
 
 
 def launch_crawler_manager(request, jobId):
+    """
+    For a new crawl request, a Kubernetes job for manager service is
+    launched in prod environment. And in local environment, a new request
+    is made to the crawler manager service.
+    """
     if ENVIRONMENT == 'local' or ENVIRONMENT == 'test':
         # Running in docker compose,
         print("Looks like this is not running on a Kuberenetes cluster, ")
@@ -215,9 +249,11 @@ def launch_crawler_manager(request, jobId):
         print("queued")
 
 
-# TODO: this function should take the Job ID as a parameter.
-# That will be injected into the new Crawler manger Pod
 def getHelmCommand(request):
+    """
+    This function returns the helm command that will be used for launching a
+    Kubernetes job in prod environment.
+    """
     releaseDate = int(time.time())
     releases.append(releaseDate)
     token = get_manager_token(request.id).decode("utf-8")
@@ -249,7 +285,10 @@ def job_details(request, job_id):
 
 @login_required()
 def crawl_contents(request, job_id):
-    print(job_id)
+    """
+    This end-point will be called by the UI to download the manifest
+    contents in the form of a file.
+    """
     try:
         job = CrawlRequest.objects.get(pk=job_id)
     except CrawlRequest.DoesNotExist:
