@@ -188,6 +188,12 @@ class MainAppViewsTestCase(TestCase):
             crawl_request2.save()
             utilities.update_job_status(crawl_request)
 
+    def test_ping(self):
+        with patch('main_app.views.requests.get') as mock_get:
+            client = APIClient()
+            response = client.get(reverse('api_ping'), {'releaseDate':'20190501'})
+            self.assertEqual(response.status_code, 200)
+
 
 
 
