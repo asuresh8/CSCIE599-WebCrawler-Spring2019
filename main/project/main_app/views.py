@@ -23,7 +23,9 @@ from django.http import HttpRequest
 from django.http import HttpResponse
 from io import BytesIO
 from google.cloud import storage
-import uuid
+from .utilities import store_data_in_gcs
+from .utilities import get_google_cloud_manifest_contents
+from .utilities import update_job_status
 
 import requests, jwt, json, os, zipfile, time, sys
 
@@ -35,8 +37,6 @@ logger = logging.getLogger(__name__)
 # set logging level (10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL)
 #logger.setLevel(20)
 
-# when the container is running in docker compose, set IMAGE_TAG = 0
-# when running on Kubernetes, it is the Pipeline Id, which is used for naming the Docker images in the registry.
 NAMESPACE = os.environ.get('NAMESPACE', 'default')
 IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
@@ -52,16 +52,10 @@ def home(request):
     crawl_request = CrawlRequest(user=user)
     form = CrawlRequestForm(instance=crawl_request)
     jobs = CrawlRequest.objects.filter(user=user)
+    for job in jobs:
+        update_job_status(job)
     return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
 
-def store_data_in_gcs(filename, model_id):
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket(os.environ['GCS_BUCKET'])
-    key = 'crawl_models/{}'.format(str(uuid.uuid4()))
-    blob = bucket.blob(key)
-    blob.upload_from_filename(filename)
-    blob.make_public()
-    return blob.public_url
 
 @login_required()
 def ml_model(request):
@@ -72,16 +66,10 @@ def ml_model(request):
         if form.is_valid():
             form_model = form.save(commit=False)
             form_model.user = request.user
-            form_model.save()
-            myfile = request.FILES['myfile']
-            tmp_file = 'tmp_file'
-            data = myfile.read()
-            with open(tmp_file, 'wb') as f:
-                f.write(data)
-            s3_url = store_data_in_gcs(tmp_file, form_model.id)
+            form_model.save() 
+            s3_url = store_data_in_gcs(request)
             form_model.s3_location = s3_url
-            os.remove(tmp_file)
-            print("S3Url: {}".format(s3_url))
+            logger.info("Cloud_Url: {}".format(s3_url))
             form_model.save()
 
     form = MlModelForm(instance=ml_model_instance)
@@ -121,7 +109,6 @@ def crawler_manager_ping(requestUrl):
 
 
 @api_view(['POST'])
-#@permission_classes([AllowAny, ])
 @permission_classes((IsAuthenticated, ))
 def register_crawler_manager(request):
     logger.info("In Register-Crawl")
@@ -156,37 +143,26 @@ def register_crawler_manager(request):
 
 
 @api_view(['POST'])
-#@permission_classes([AllowAny, ])
 @permission_classes((IsAuthenticated, ))
 def complete_crawl(request):
     id = request.data['job_id']
     manifest = request.data['manifest']
     resources_count = request.data['resources_count']
+    downloaded_pages = request.data['downloaded_pages']
 
     logger.info("In Crawl-Complete")
-    logger.info('Crawl-Complete id - %s, manifest - %s', id, manifest)
+    logger.info('Crawl-Complete id - %s, manifest - %s, pages - %d', id, manifest, downloaded_pages)
     crawl_request = CrawlRequest.objects.get(pk=id)
-    logger.info('Crawl-Complete2 id - %s, manifest - %s', id, manifest)
     crawl_request.s3_location = manifest
     crawl_request.manifest = manifest
     crawl_request.status = 3
     crawl_request.docs_collected = resources_count
     crawl_request.save()
     data = {"CrawlComplete" : "done"}
-    logger.info('Crawl-Complete3 id - %s, manifest - %s', id, crawl_request.crawler_manager_endpoint)
     requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), json={})
-    logger.info('Crawl-Complete4 id - %s, manifest - %s', id, manifest)
     user = User.objects.get(username=(CRAWLER_MANAGER_USER_PREFIX + str(id)))
-    logger.info('Crawl-Complete5 id - %s, manifest - %s', id, manifest)
     user.delete()
-    logger.info('Crawl-Complete6 id - %s, manifest - %s', id, manifest)
     return JsonResponse(data)
-
-
-def check_user_password(current_password, incoming_password):
-    salt = current_password.split('$')[2]
-    hashed_password = make_password(incoming_password, salt)
-    return current_password == hashed_password
 
 
 def get_manager_token(jobId):
@@ -211,6 +187,8 @@ def new_job(request):
             logger.info('NewJob created: %s', crawl_request.id)
             logger.info('Received urls: %s', crawl_request.urls)
             launch_crawler_manager(crawl_request, crawl_request.id)
+            crawl_request.status = 2
+            crawl_request.save()
             return redirect('mainapp_home')
     else:
         form = CrawlRequestForm()
@@ -250,20 +228,6 @@ def getHelmCommand(request):
       \"crawler-manager-{releaseDate}\" ./cluster-templates/chart-manager"""
 
 
-@api_view(['GET'])
-#@permission_classes((IsAuthenticated, ))
-def api_job_status(request):
-    """
-    jobId = request.query_params.get('jobId')
-    job = CrawlRequest.objects.get(pk=jobId)
-    job.status = 3
-    job.docs_collected = request.query_params.get('numUrls')
-    job.save()
-    """
-    response_data = {"Message" : "Status Received"}
-    return HttpResponse(json.dumps(response_data), content_type="application/json")
-
-
 @login_required()
 def job_details(request, job_id):
     """
@@ -271,36 +235,10 @@ def job_details(request, job_id):
     """
     try:
         job = CrawlRequest.objects.get(pk=job_id)
+        update_job_status(job)
     except CrawlRequest.DoesNotExist:
         raise Http404("Job does not exist.")
     return render(request, "main_app/job_details.html", {"job": job})
-
-
-#copied to api_app, check if need to be removed from here
-@api_view(['POST'])
-@permission_classes([AllowAny, ])
-def get_api_job_status(request):
-    try:
-        job = CrawlRequest.objects.get(pk=request.data['job_id'])
-        job_info = {
-            "name": job.name,
-            "type": job.type,
-            "domain": job.domain,
-            "urls": job.urls,
-            "status": job.status
-        }
-    except CrawlRequest.DoesNotExist:
-        raise Http404("Job does not exist.")
-
-    return JsonResponse(job_info)
-
-
-def get_google_cloud_manifest_contents(manifest):
-    client = storage.Client()
-    bucket = client.get_bucket(os.environ['GCS_BUCKET'])
-    blob = storage.Blob(manifest, bucket)
-    content = blob.download_as_string()
-    return content
 
 
 @login_required()

@@ -10,7 +10,6 @@ class MlModel(models.Model):
     The model to represent the user Machine Learning Models.
     """
     name = models.CharField(max_length=128)
-    #ml_model = models.FileField(upload_to='models/')
     labels = models.TextField(default='', max_length=100, blank=True)
     created = models.DateTimeField("model creation time", editable=False)
     modified = models.DateTimeField("model modification time")
