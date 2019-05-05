@@ -2,6 +2,7 @@ from django.forms import ModelForm, HiddenInput
 from .models import CrawlRequest, Profile, MlModel
 
 class CrawlRequestForm(ModelForm):
+    """ Form to hold the Crawl Request data """
     class Meta:
         model = CrawlRequest
         fields = ('name', 'type', 'domain', 'urls', 'description', 'docs_all', 'docs_html', 'docs_docx', 'docs_pdf', 'docs_xml', 'docs_txt', 'num_crawlers', 'model', 'model_labels', 'crawl_library', 'num_crawl_pages_limit')
@@ -34,7 +35,7 @@ class CrawlRequestForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        """ Instantiates an onject of type ProfileForm with custom widget attributes """
+        """ Instantiates an object of type CrawlRequestForm with custom widget attributes """
         super(CrawlRequestForm, self).__init__(*args, **kwargs)
         self.fields['name'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Crawl Job Name'})
         self.fields['type'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Crawl Type'})
@@ -56,7 +57,7 @@ class CrawlRequestForm(ModelForm):
 
 
 class ProfileForm(ModelForm):
-    """ Form to show a user's profile data """
+    """ Form to hold a user's profile data """
     class Meta:
         """ The meta class to set several important parameters for the form """
         model = Profile
@@ -72,7 +73,7 @@ class ProfileForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        """ Instantiates an onject of type ProfileForm with custom widget attributes """
+        """ Instantiates an object of type ProfileForm with custom widget attributes """
         super(ProfileForm, self).__init__(*args, **kwargs)
         self.fields['storage_bucket'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter storage URL'})
         self.fields['api_key'].widget.attrs.update({'class': 'form-control', 'placeholder': 'storage API Key'})
@@ -80,7 +81,7 @@ class ProfileForm(ModelForm):
         self.fields['num_crawlers'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of concurrent crawler instances'})
 
 class MlModelForm(ModelForm):
-    """ Form to show a ml_model's data """
+    """ Form to hold a ml_model's data """
     class Meta:
         """ The meta class to set several important parameters for the form """
         model = MlModel
@@ -96,7 +97,7 @@ class MlModelForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        """ Instantiates an onject of type ProfileForm with custom widget attributes """
+        """ Instantiates an object of type MlModelForm with custom widget attributes """
         super(MlModelForm, self).__init__(*args, **kwargs)
         self.fields['name'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter Model'})
         self.fields['labels'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter Model Labels'})

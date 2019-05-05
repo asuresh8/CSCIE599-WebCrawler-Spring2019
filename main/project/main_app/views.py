@@ -42,8 +42,12 @@ CRAWLER_MANAGER_USER_PREFIX = 'admin'
 
 # store the release timestamps here, like a job id meanwhile
 releases = []
+
 @login_required()
 def home(request):
+    """
+    Displays all existing crawl jobs for logged in user
+    """
     user = request.user
     crawl_request = CrawlRequest(user=user)
     form = CrawlRequestForm(instance=crawl_request)
@@ -178,6 +182,9 @@ def get_manager_token(jobId):
 
 @login_required()
 def new_job(request):
+    """
+    Creates a new crawl request job, managed by a crawler manager instance
+    """
     if request.method == "POST":
         crawl_request = CrawlRequest(user=request.user)
         form = CrawlRequestForm(instance=crawl_request, data=request.POST)
@@ -230,7 +237,7 @@ def getHelmCommand(request):
 @login_required()
 def job_details(request, job_id):
     """
-        Displays details for a specific job ID
+    Displays details for a specific job ID
     """
     try:
         job = CrawlRequest.objects.get(pk=job_id)

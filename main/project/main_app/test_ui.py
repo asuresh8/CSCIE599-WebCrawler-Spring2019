@@ -20,6 +20,9 @@ class MySeleniumTests(StaticLiveServerTestCase):
         super(MySeleniumTests, self).tearDown()
     
     def test_create_new_job(self):
+        """
+        Tests creating a new crawl job using Selenium driver.
+        """
         user = User.objects.create_user('testNewJob', 'testNewJob@random42524482827.com', 'testpassword')
         self.selenium.get('%s%s' % (self.live_server_url, '/main_app/login'))
         username_input = self.selenium.find_element_by_name("username")
@@ -69,6 +72,9 @@ class MySeleniumTests(StaticLiveServerTestCase):
         #assert 'Check your email' in selenium.page_source
 
     def test_login(self):
+        """
+         Tests login functionality using Selenium driver.
+         """
         user = User.objects.create_user('testUi', 'testUi@random42524482827.com', 'testpassword')
         self.selenium.get('%s%s' % (self.live_server_url, '/main_app/login'))
         username_input = self.selenium.find_element_by_name("username")
