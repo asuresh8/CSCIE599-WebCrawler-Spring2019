@@ -2,10 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
 
 from .models import CrawlRequest, Profile, MlModel
 from .forms import CrawlRequestForm, ProfileForm, MlModelForm
+from .utilities import store_data_in_gcs
+from .utilities import get_google_cloud_manifest_contents
+from .utilities import update_job_status
 
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -16,16 +18,12 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_jwt.utils import jwt_payload_handler
 from django.conf import settings
-from django.contrib.auth.signals import user_logged_in
 
 from django.http import JsonResponse
 from django.http import HttpRequest
 from django.http import HttpResponse
 from io import BytesIO
 from google.cloud import storage
-from .utilities import store_data_in_gcs
-from .utilities import get_google_cloud_manifest_contents
-from .utilities import update_job_status
 
 import requests, jwt, json, os, zipfile, time, sys
 

@@ -1,30 +1,20 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
 from main_app.models import CrawlRequest
 from main_app.views import launch_crawler_manager
 from main_app.utilities import get_google_cloud_manifest_contents
 from main_app.utilities import get_google_cloud_crawl_pages
 from main_app import utilities
-
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.permissions import BasePermission, IsAuthenticated, AllowAny
-from rest_framework.views import APIView
-from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_jwt.utils import jwt_payload_handler
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
-
 from django.http import JsonResponse
-from django.http import HttpRequest
-from django.http import HttpResponse
-from io import BytesIO
-from google.cloud import storage
 
-import requests, jwt, json, os, zipfile, time, sys
+import requests, jwt, json, os, time, sys
 
 # import the logging library
 import logging
@@ -78,10 +68,9 @@ def authenticate_user(request):
         return Response(res)
 
 @api_view(['POST'])
+#@permission_classes((IsAuthenticated, ))
 @permission_classes([AllowAny, ])
 def api_create_crawl(request):
-    if (utilities.check_post_authentication(request) == False):
-        return Response("Invalid token", status=status.HTTP_401_UNAUTHORIZED)
     logger.info('In api new job')
     username = request.data['username']
     user_obj = User.objects.get(username=username)
@@ -99,10 +88,9 @@ def api_create_crawl(request):
 
 
 @api_view(['GET'])
+#@permission_classes((IsAuthenticated, ))
 @permission_classes([AllowAny, ])
 def api_crawl_contents(request):
-    if (utilities.check_get_authentication(request) == False):
-        return Response("Invalid token", status=status.HTTP_401_UNAUTHORIZED)
     jobId = request.query_params.get('JOB_ID')
     content = ""
     payload = {}
