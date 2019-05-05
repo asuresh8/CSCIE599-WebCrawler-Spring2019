@@ -15,7 +15,10 @@ class BaseScraper:
         self.file_name = key
 
     def do_scrape(self):
+        CrawlGlobal.context().logger.info("Using Base Scraper")
+        CrawlGlobal.context().logger.info("Scraping URL: {}".format(self.base_url))
         try:
+            
             response = requests.get(self.base_url)
             response.raise_for_status()
             return response.content

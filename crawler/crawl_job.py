@@ -67,9 +67,12 @@ class CrawlerJob(object):
         # scraper object is decided (FileScraper, WebScraper, BaseScraper)
         if file_ext:
             scraper = FileScraper(url, key, file_ext)
+        elif not CrawlGlobal.context().is_dynamic_scrape():
+            scraper = BaseScraper(url, key)
         else:
             scraper = WebScraper(url, key)
-        
+            
+
         # scrape the page
         data = scraper.do_scrape()
         

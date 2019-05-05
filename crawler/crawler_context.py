@@ -36,11 +36,17 @@ class Context:
 
         try:
             self.driver = webdriver.Chrome(executable_path= dir_path, options= chrome_options ) 
+            #raise Exception('fake exception for testing')
             self.logger.info('browser initialized')   
         except WebDriverException as e:
             self.driver = None
             self.logger.info("could not instantiate browser: {}".format(str(e)))
+        except Exception as ex:
+            self.driver = None
+            self.logger.info("driver crashed and could not instantiate browser: {}".format(str(ex)))
 
+    def is_dynamic_scrape(self):
+        return True if self.scrape_dynamic == 'selenium' else False
    
     def get_driver(self):
         return self.driver
@@ -59,6 +65,7 @@ class Context:
         self.scrape_all = jsonObj['docs_all']
         self.scrape_docx = jsonObj['docs_docx']
         self.scrape_pdf = jsonObj['docs_pdf']
+        self.scrape_dynamic =  jsonObj['crawl_library']
 
         if self.model_url:
             self.download_model_from_storage()
