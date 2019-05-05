@@ -8,7 +8,6 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
 
-
 class Context:
     def __init__(self, logger):
         self.logger = logger
@@ -37,7 +36,7 @@ class Context:
 
         try:
             self.driver = webdriver.Chrome(executable_path= dir_path, options= chrome_options ) 
-            self.logger.info('browser initialized')       
+            self.logger.info('browser initialized')   
         except WebDriverException as e:
             self.driver = None
             self.logger.info("could not instantiate browser: {}".format(str(e)))

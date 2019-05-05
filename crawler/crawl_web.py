@@ -18,10 +18,8 @@ class WebScraper(BaseScraper):
             return super(WebScraper,self).do_scrape()
 
         try:
-            CrawlGlobal.context().logger.info("Scraping URL: {}".format(self.base_url))
-            driver = CrawlGlobal.context().get_driver()
-            driver.get(self.base_url)     
-            return driver.page_source
+            CrawlGlobal.context().logger.info("Scraping URL: {}".format(self.base_url))    
+            return CrawlGlobal.context().get_data(self.base_url)
         except Exception as e:
             CrawlGlobal.context().logger.info("error in scraping: {}".format(str(e)))
             return None
