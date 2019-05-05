@@ -54,3 +54,15 @@ class ApiAppViewsTestCase(unittest.TestCase):
             params = {'JOB_ID' : id, 'complete_crawl' : 0, 'token' : access_token}
             response_get = client.get(reverse('api_crawl_contents'), params)
             self.assertNotEqual('', response_get.data["crawl_contents"])
+
+    def test_api_get_job_status(self):
+        user = User.objects.create_user('testStatusUser', 'testStatusUser@user.com', 'testpassword')
+        client = APIClient()
+        crawl_request = CrawlRequest(user=user)
+        crawl_request.name = 'test'
+        crawl_request.urls = "http://abc.com"
+        crawl_request.save()
+        data = {'job_id' : crawl_request.id}
+        response = client.post(reverse('api_job_status'), data, format="json")
+        payload = json.loads(response.content)
+        self.assertEqual("test", payload["name"])

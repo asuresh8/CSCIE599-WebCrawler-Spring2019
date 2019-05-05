@@ -45,6 +45,31 @@ def get_google_cloud_manifest_contents(manifest):
     content = blob.download_as_string()
     return content
 
+def get_google_cloud_crawl_pages(manifest):
+    client = storage.Client()
+    bucket = client.get_bucket(os.environ['GCS_BUCKET'])
+    content = {}
+    links = manifest.decode().split('\n')
+    for link in links:
+        logger.info('link: %s', link)
+        link_arr = link.split(',')
+        if (len(link_arr) <= 1):
+            continue
+        url = link_arr[0]
+        file_location = link_arr[1]
+        logger.info('url: %s, file_location: %s', url, file_location)
+        if (url.endswith('.docx') or url.endswith('.pdf')):
+            content[url] = file_location
+        else:
+            file_location_arr = file_location.split('/')
+            directory = file_location_arr[-2].strip()
+            file_name = file_location_arr[-1].strip()
+            file_name = directory + "/" + file_name
+            logger.info('file_name: %s', file_name)
+            blob = storage.Blob(file_name, bucket)
+            content[url] = blob.download_as_string()
+    return content
+
 
 def update_job_status(job):
     if (job.status != 3 and job.status != 4):
