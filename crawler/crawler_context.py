@@ -8,6 +8,8 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.options import Options
 
+LIBRARY_SELENIUM = 1
+
 class Context:
     def __init__(self, logger):
         self.logger = logger
@@ -46,7 +48,7 @@ class Context:
             self.logger.info("driver crashed and could not instantiate browser: {}".format(str(ex)))
 
     def is_dynamic_scrape(self):
-        return True if self.scrape_dynamic == 'selenium' else False
+        return True if self.scrape_dynamic == LIBRARY_SELENIUM else False
    
     def get_driver(self):
         return self.driver

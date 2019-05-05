@@ -4,7 +4,7 @@ from .models import CrawlRequest, Profile, MlModel
 class CrawlRequestForm(ModelForm):
     class Meta:
         model = CrawlRequest
-        fields = ('name', 'type', 'domain', 'urls', 'description', 'docs_all', 'docs_html', 'docs_docx', 'docs_pdf', 'docs_xml', 'docs_txt', 'num_crawlers', 'model', 'model_labels')
+        fields = ('name', 'type', 'domain', 'urls', 'description', 'docs_all', 'docs_html', 'docs_docx', 'docs_pdf', 'docs_xml', 'docs_txt', 'num_crawlers', 'model', 'model_labels', 'crawl_library', 'num_crawl_pages_limit')
         labels = {
             'name': 'Job Name',
             'type': 'Crawl Type',
@@ -20,6 +20,8 @@ class CrawlRequestForm(ModelForm):
             'num_crawlers': 'Number of crawler instances',
             'model' : 'Model Name',
             'model_labels' : 'Model Classification Labels',
+            'crawl_library' : 'Crawl Library',
+            'num_crawl_pages_limit' : 'Num Crawl Pages Limit',
         }
         widgets = {
             'user': HiddenInput(),
@@ -27,6 +29,8 @@ class CrawlRequestForm(ModelForm):
             'modified': HiddenInput(),
             'docs_collected': HiddenInput(),
             'status': HiddenInput(),
+            'docs_uploaded': HiddenInput(),
+            'crawl_time': HiddenInput(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -46,6 +50,8 @@ class CrawlRequestForm(ModelForm):
         self.fields['num_crawlers'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number crawler instances'})
         self.fields['model'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Model Name'})
         self.fields['model_labels'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Model Classification Labels'})
+        self.fields['crawl_library'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Crawl Library'})
+        self.fields['num_crawl_pages_limit'].widget.attrs.update({'class': 'form-control', 'placeholder': 'num_crawl_pages_limit'})
 
 
 
@@ -56,7 +62,7 @@ class ProfileForm(ModelForm):
         model = Profile
         fields = ['storage_bucket', 'api_key', 'api_secret', 'num_crawlers']
         labels = {
-            'storage_bucket': 'Enter Google storage URL',
+            'storage_bucket': 'Enter storage URL',
             'api_key': 'storage API Key',
             'api_secret': 'Secret',
             'num_crawlers': 'Number of crawlers',
@@ -68,7 +74,7 @@ class ProfileForm(ModelForm):
     def __init__(self, *args, **kwargs):
         """ Instantiates an onject of type ProfileForm with custom widget attributes """
         super(ProfileForm, self).__init__(*args, **kwargs)
-        self.fields['storage_bucket'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter Google storage URL'})
+        self.fields['storage_bucket'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter storage URL'})
         self.fields['api_key'].widget.attrs.update({'class': 'form-control', 'placeholder': 'storage API Key'})
         self.fields['api_secret'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Secret'})
         self.fields['num_crawlers'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number of concurrent crawler instances'})

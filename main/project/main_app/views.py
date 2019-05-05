@@ -39,8 +39,6 @@ NAMESPACE = os.environ.get('NAMESPACE', 'default')
 IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 CRAWLER_MANAGER_USER_PREFIX = 'admin'
-NUM_CRAWL_PAGES_LIMIT = 10
-CRAWL_LIBRARY = 'selenium'
 
 # store the release timestamps here, like a job id meanwhile
 releases = []
@@ -134,8 +132,8 @@ def register_crawler_manager(request):
         'num_crawlers': job.num_crawlers,
         'model_location': model_url,
         'labels': job.model_labels.split(';'),
-        'num_crawl_pages_limit' : NUM_CRAWL_PAGES_LIMIT,
-        'crawl_library' : CRAWL_LIBRARY
+        'num_crawl_pages_limit' : job.num_crawl_pages_limit,
+        'crawl_library' : job.crawl_library
     }
     return JsonResponse(payload)
 
@@ -146,15 +144,18 @@ def complete_crawl(request):
     id = request.data['job_id']
     manifest = request.data['manifest']
     resources_count = request.data['resources_count']
-    downloaded_pages = request.data['downloaded_pages']
+    resources_uploaded = request.data['uploaded_pages']
+    time_taken = request.data['time_taken']
 
     logger.info("In Crawl-Complete")
-    logger.info('Crawl-Complete id - %s, manifest - %s, pages - %d', id, manifest, downloaded_pages)
+    logger.info('Crawl-Complete id - %s, manifest - %s, pages - %d', id, manifest, resources_uploaded)
     crawl_request = CrawlRequest.objects.get(pk=id)
     crawl_request.storage_location = manifest
     crawl_request.manifest = manifest
     crawl_request.status = 3
     crawl_request.docs_collected = resources_count
+    crawl_request.docs_uploaded = resources_uploaded
+    crawl_request.crawl_time = time_taken
     crawl_request.save()
     data = {"CrawlComplete" : "done"}
     requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), json={})

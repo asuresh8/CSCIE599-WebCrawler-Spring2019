@@ -163,7 +163,7 @@ def links():
         context.processed_urls.increment()
         context.cache.put(main_url, storage_uri)
         if storage_uri:
-            context.downloaded_pages.increment()
+            context.uploaded_pages.increment()
     context.logger.info('In links, queued urls: %d, in_process_urls: %d', 
                         context.queued_urls.size(), context.in_process_urls.size())
     return ""
@@ -178,7 +178,7 @@ def status():
         'processed_count' : context.processed_urls.get(),
         'processing_count': context.in_process_urls.size(),
         'queued_count' : context.queued_urls.size(),
-        'downloaded_pages' : context.downloaded_pages.get()
+        'uploaded_pages' : context.uploaded_pages.get()
     })
 
 
@@ -267,12 +267,11 @@ def teardown():
             'job_id': JOB_ID,
             'manifest': public_manifest,
             'resources_count': context.processed_urls.get(),
-            'downloaded_pages' : context.downloaded_pages.get(),
+            'uploaded_pages' : context.uploaded_pages.get(),
             'time_taken': time_taken
         }
         header = {'Authorization': TOKEN_PREFIX + TOKEN}
         response = requests.post(crawl_complete_api, json=json_data, headers=header)
-        #response = requests.post(crawl_complete_api, json=json_data)
         response.raise_for_status()
         context.logger.info("crawl_complete call successful")
         context.logger.info("Crawl time taken: %d", time_taken)

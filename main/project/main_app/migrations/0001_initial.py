@@ -58,7 +58,7 @@ class Migration(migrations.Migration):
             name='Profile',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('storage_bucket', models.URLField(blank=True, default='', max_length=500, verbose_name='Google Storage Bucket')),
+                ('storage_bucket', models.URLField(blank=True, default='', max_length=500, verbose_name='Storage Bucket')),
                 ('api_key', models.CharField(max_length=512, verbose_name='API Key')),
                 ('api_secret', models.CharField(max_length=512, verbose_name='API Secret')),
                 ('num_crawlers', models.PositiveIntegerField(default=1, verbose_name='Number crawler instances')),

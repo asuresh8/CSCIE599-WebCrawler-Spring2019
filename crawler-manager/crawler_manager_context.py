@@ -16,7 +16,7 @@ class Context:
         # Count of urls not allowed by site Robots.txt
         self.disallowed_urls = atomic.AtomicCounter()
         # Count of urls downloaded into storage
-        self.downloaded_pages = atomic.AtomicCounter()
+        self.uploaded_pages = atomic.AtomicCounter()
         self.cache = None
         self.parameters = {}
         self.start_time = None
@@ -27,7 +27,7 @@ class Context:
         self.processed_urls.reset()
         self.processed_urls.reset()
         self.disallowed_urls.reset()
-        self.downloaded_pages.reset()
+        self.uploaded_pages.reset()
         if self.cache is not None:
             self.cache.reset()
 

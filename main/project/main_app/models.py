@@ -46,6 +46,10 @@ class CrawlRequest(models.Model):
         (3, 'Finished'),
         (4, 'Failed')
     )
+    CRAWL_LIBRARY_TYPES = (
+        (1, 'Selenium'),
+        (2, 'Python Library')
+    )
     name = models.CharField(max_length=128)
     type = models.PositiveSmallIntegerField("crawl type", default=1, choices=CRAWLTYPES)
     domain = models.URLField(default='', max_length=500, blank=True)
@@ -70,6 +74,10 @@ class CrawlRequest(models.Model):
     modified = models.DateTimeField("crawl request modification time")
     model = models.ForeignKey(MlModel, default='', related_name="crawl_requests_model", on_delete=models.CASCADE, blank=True, null=True)
     model_labels = models.CharField(max_length=128, blank=True)
+    crawl_library = models.PositiveSmallIntegerField("crawl library", default=1, choices=CRAWL_LIBRARY_TYPES)
+    docs_uploaded = models.PositiveIntegerField(default=0, blank=True)
+    num_crawl_pages_limit = models.PositiveIntegerField(default=100, blank=True)
+    crawl_time = models.PositiveIntegerField(default=0, blank=True)
 
     def save(self, *args, **kwargs):
         """ Update created and modified timestamps whenever a Crawl Request is saved """
@@ -99,7 +107,7 @@ class Profile(models.Model):
     The model to represent the user settings.
     """
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
-    storage_bucket = models.URLField("Google Storage Bucket", default='', max_length=500, blank=True)
+    storage_bucket = models.URLField("Storage Bucket", default='', max_length=500, blank=True)
     api_key = models.CharField("API Key", max_length=512)
     api_secret = models.CharField("API Secret", max_length=512)
     num_crawlers = models.PositiveIntegerField("Number crawler instances", default=1)

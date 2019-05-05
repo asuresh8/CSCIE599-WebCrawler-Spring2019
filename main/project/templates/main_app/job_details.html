@@ -88,10 +88,17 @@
                         </tr>
                         <tr>
                             <td>
-                                <b>Resources collected</b>
+                                <b>Resources crawled</b>
                             </td>
                             <td>{{ job.docs_collected|escape }}</td>
                         </tr>
+						<tr>
+                            <td>
+                                <b>Resources stored</b>
+                            </td>
+                            <td>{{ job.docs_uploaded|escape }}</td>
+                        </tr>
+
                         <tr>
                             <td>
                                 <b>Collect Everything</b>
@@ -139,6 +146,24 @@
                                 <b>Model Classification Labels</b>
                             </td>
                             <td>{{ job.model_labels|escape }}</td>
+                        </tr>
+						<tr>
+                            <td>
+                                <b>Crawl Library</b>
+                            </td>
+                            <td>{{ job.get_crawl_library_display|escape }}</td>
+                        </tr>
+						<tr>
+                            <td>
+                                <b>Num Crawl Pages Limit</b>
+                            </td>
+                            <td>{{ job.num_crawl_pages_limit|escape }}</td>
+                        </tr>
+						<tr>
+                            <td>
+                                <b>Crawl Time (milliseconds)</b>
+                            </td>
+                            <td>{{ job.crawl_time|escape }}</td>
                         </tr>
                         <tr>
                             <td>

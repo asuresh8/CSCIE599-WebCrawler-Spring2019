@@ -85,6 +85,7 @@ def update_job_status(job):
                     logger.info('job id: {}'.format(payload["job_id"]))
                     if (payload["job_id"] == job.id):
                         job.docs_collected = payload["processed_count"]
+                        job.docs_uploaded = payload["uploaded_pages"]
                         job.save()
             except Exception as ex:
                 logger.info('Exception in getting status')

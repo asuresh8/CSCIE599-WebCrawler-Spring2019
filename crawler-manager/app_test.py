@@ -21,7 +21,7 @@ class TestCrawlerManagerApp(unittest.TestCase):
             'model_location': '',
             'labels': [],
             'num_crawl_pages_limit': 10,
-            'crawl_library': 'selenium',
+            'crawl_library': 1,
         }
         self.app = app.app.test_client()
         self.app.testing = True

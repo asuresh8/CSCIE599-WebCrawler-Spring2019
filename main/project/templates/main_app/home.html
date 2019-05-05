@@ -27,7 +27,8 @@
                             <th>Crawl Type</th>
                             <th>Status</th>
                             <th>Job date</th>
-                            <th>Docs collected</th>
+                            <th>Docs crawled</th>
+                            <th>Docs stored</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -47,6 +48,9 @@
                             </td>
                             <td>
                                 {{ job.docs_collected|escape }}
+                            </td>
+                            <td>
+                                {{ job.docs_uploaded|escape }}
                             </td>
                         </tr>
                     {% endfor %}
