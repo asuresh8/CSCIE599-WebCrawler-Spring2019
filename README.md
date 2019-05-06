@@ -101,7 +101,9 @@ Crawler Manager container also has an internal Redis service.
     docker exec -it main-app bash -c "./initialize-django.sh"
     ```
     
-**PS:** In case a new field is added to the model, the easiest way to update the database is to drop the database, create it again and then run the initialize script. like this:  
+**Database Migration** 
+In case that a new field is added to the model, the easiest way to update the database 
+is by droping the database, creating it again and then run the initialize script:  
 ```sql
 drop database test;
 create database test;
