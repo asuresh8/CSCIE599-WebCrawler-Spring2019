@@ -13,7 +13,7 @@ import helpers
 class SimpleValidator:
     def __init__(self, action=True):
         self.action = action
-    
+
     def allowed(self, url, agent):
         return self.action
 
@@ -28,7 +28,7 @@ class Processor():
         self.context.logger.info('Waiting for crawlers...')
         while self.context.crawlers.size() == 0:
             time.sleep(4)
-        
+
         self.context.logger.info('Entering processor loop')
 
         # Continue the loop until there are upcoming urls in queue, or urls still being processed and the number of urls crawled
@@ -44,11 +44,11 @@ class Processor():
                 (url_count, url) = self.context.queued_urls.poll()
                 self.context.logger.info('Pulled %s from queue', url)
                 self.context.logger.info('It has a count of %s', url_count)
-                
+
                 # If no urls's in queue
                 if url is None:
                     break
-                
+
                 # add a robot validator for the domain if necessary
                 domain = helpers.get_domain_name(url)
                 root = helpers.get_root_url(url)
@@ -59,12 +59,12 @@ class Processor():
                             os.path.join(root, 'robots.txt'))
                     except:
                         self.robot_validators[domain] = SimpleValidator()
-                
+
                 # If this url is disallowed, then skip it
                 if not self.robot_validators[domain].allowed(url, 'Googlebot'):
                     self.context.logger.info('Skipping %s because disallowed by robots.txt', url)
                     continue
-                
+
                 crawl_api = os.path.join(crawler, "crawl")
                 try:
                     self.context.logger.info("Sending crawl request for %s to %s", url, crawler)
@@ -81,8 +81,3 @@ class Processor():
                 except Exception as e:
                     self.context.in_process_urls.remove(url)
                     self.context.logger.error('Unable to send crawl request to crawler %s: %s', crawler, str(e))
-            
-            # TODO: eliminate this. This is completely arbitrary
-            sleep_time = 0.1
-            self.context.logger.info('Work processor sleeping %f seconds', sleep_time)
-            time.sleep(sleep_time)
