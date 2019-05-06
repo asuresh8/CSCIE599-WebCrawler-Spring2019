@@ -164,7 +164,7 @@ def links():
         context.cache.put(main_url, storage_uri)
         if storage_uri:
             context.uploaded_pages.increment()
-    context.logger.info('In links, queued urls: %d, in_process_urls: %d', 
+    context.logger.info('In links, queued urls: %d, in_process_urls: %d',
                         context.queued_urls.size(), context.in_process_urls.size())
     return ""
 
@@ -223,14 +223,14 @@ def setup():
 
     if ENVIRONMENT != 'local':
         context.logger.info('deploying crawlers')
-        for _ in range(context.parameters['num_crawlers']):
+        for index in range(context.parameters['num_crawlers']):
             helm_command = f"""
                 helm init --service-account tiller && helm upgrade --install \\
                 --set-string image.tag='{IMAGE_TAG}' \\
                 --set-string params.crawlerManagerEndpoint='{CRAWLER_MANAGER_ENDPOINT}' \\
                 --set-string application.namespace='{NAMESPACE}' \\
                 --set-string params.jobId='{JOB_ID}' \\
-                \"crawler-{RELEASE_DATE}\" ./cluster-templates/chart-crawler
+                \"crawler-{RELEASE_DATE}-{index}\" ./cluster-templates/chart-crawler
             """
             context.logger.info('Running helm command: %s', helm_command)
             os.system(helm_command)
