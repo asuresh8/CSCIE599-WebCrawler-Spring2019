@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.workerNumber }}"
+  name: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.crawlerNumber }}"
   namespace: "{{ .Values.application.namespace }}"
   labels:
     jobId: "{{ .Values.params.jobId }}"
@@ -11,7 +11,7 @@ spec:
     metadata:
       name: crawler
       labels:
-        app: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.workerNumber }}"
+        app: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.crawlerNumber }}"
     spec:
       containers:
       - name: crawler
@@ -47,7 +47,7 @@ spec:
         - name: ENVIRONMENT
           value: "prod"
         - name: JOB_IP
-          value: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.workerNumber }}.{{ .Values.application.namespace }}"
+          value: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.crawlerNumber }}.{{ .Values.application.namespace }}"
         - name: URL
           value: "{{ .Values.params.url }}"
         - name: CRAWLER_MANAGER_ENDPOINT
@@ -70,7 +70,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.workerNumber }}"
+  name: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.crawlerNumber }}"
   namespace: "{{ .Values.application.namespace }}"
   labels:
     app: crawler-service
@@ -82,4 +82,4 @@ spec:
     protocol: TCP
     name: {{ .Values.service.name }}
   selector:
-    app: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.workerNumber }}"
+    app: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.crawlerNumber }}"
