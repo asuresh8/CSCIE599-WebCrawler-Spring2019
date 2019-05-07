@@ -190,8 +190,6 @@ class MainAppViewsTestCase(TestCase):
         crawl_instance.docs_html = False
         crawl_instance.docs_docx = False
         crawl_instance.docs_pdf = False
-        crawl_instance.docs_xml = False
-        crawl_instance.docs_txt = False
         crawl_instance.docs_collected = 10
         crawl_instance.status = 1
         crawl_instance.storage_location = 'http://storage.com'

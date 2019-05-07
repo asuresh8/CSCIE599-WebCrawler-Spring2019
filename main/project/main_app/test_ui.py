@@ -43,8 +43,6 @@ class MySeleniumTests(StaticLiveServerTestCase):
         docs_html = self.selenium.find_element_by_id('id_docs_html')
         docs_docx = self.selenium.find_element_by_id('id_docs_docx')
         docs_pdf = self.selenium.find_element_by_id('id_docs_pdf')
-        docs_xml = self.selenium.find_element_by_id('id_docs_xml')
-        docs_txt = self.selenium.find_element_by_id('id_docs_txt')
         num_crawlers = self.selenium.find_element_by_id('id_num_crawlers')
         sub = self.selenium.find_element_by_id('new-job-submit')
 
@@ -59,8 +57,6 @@ class MySeleniumTests(StaticLiveServerTestCase):
         docs_html.send_keys('1')
         docs_docx.send_keys('0')
         docs_pdf.send_keys('1')
-        docs_xml.send_keys('0')
-        docs_txt.send_keys('0')
         num_crawlers.send_keys('2')
 
 
