@@ -230,6 +230,8 @@ def setup():
                 --set-string params.crawlerManagerEndpoint='{CRAWLER_MANAGER_ENDPOINT}' \\
                 --set-string application.namespace='{NAMESPACE}' \\
                 --set-string params.jobId='{JOB_ID}' \\
+                --set-string params.crawlerNumber='{index}' \\
+                --set-string params.releaseDate='{RELEASE_DATE}' \\
                 \"crawler-{RELEASE_DATE}-{index}\" ./cluster-templates/chart-crawler
             """
             context.logger.info('Running helm command: %s', helm_command)
