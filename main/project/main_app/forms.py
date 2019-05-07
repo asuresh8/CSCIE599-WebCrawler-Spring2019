@@ -5,7 +5,8 @@ class CrawlRequestForm(ModelForm):
     """ Form to hold the Crawl Request data """
     class Meta:
         model = CrawlRequest
-        fields = ('name', 'type', 'domain', 'urls', 'description', 'docs_all', 'docs_html', 'docs_docx', 'docs_pdf', 'docs_xml', 'docs_txt', 'num_crawlers', 'model', 'model_labels', 'crawl_library', 'num_crawl_pages_limit')
+        fields = ('name', 'type', 'domain', 'urls', 'description', 'docs_all', 'docs_html', 'docs_docx',
+                  'docs_pdf', 'num_crawlers', 'model', 'model_labels', 'crawl_library', 'num_crawl_pages_limit')
         labels = {
             'name': 'Job Name',
             'type': 'Crawl Type',
@@ -16,8 +17,6 @@ class CrawlRequestForm(ModelForm):
             'docs_html': 'Collect HTML files',
             'docs_docx': 'Collect DOCX files',
             'docs_pdf': 'Collect PDF files',
-            'docs_xml': 'Collect XML files',
-            'docs_txt': 'Collect TXT files',
             'num_crawlers': 'Number of crawler instances',
             'model' : 'Model Name',
             'model_labels' : 'Model Classification Labels',
@@ -46,8 +45,6 @@ class CrawlRequestForm(ModelForm):
         self.fields['docs_html'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect HTML files'})
         self.fields['docs_docx'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect DOCX files'})
         self.fields['docs_pdf'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect PDF files'})
-        self.fields['docs_xml'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect XML files'})
-        self.fields['docs_txt'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Collect TXT files'})
         self.fields['num_crawlers'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Number crawler instances'})
         self.fields['model'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Model Name'})
         self.fields['model_labels'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Model Classification Labels'})
