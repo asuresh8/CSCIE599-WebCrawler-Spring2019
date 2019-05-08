@@ -76,9 +76,9 @@
                         </tr>
                         <tr>
                             <td>
-                                <b>S3 Location</b>
+                                <b>Storage Location</b>
                             </td>
-                            <td><a href="{{ job.s3_location|escape }}" target=_blank>{{ job.s3_location|escape }}</a></td>
+                            <td><a href="{{ job.storage_location|escape }}" target=_blank>{{ job.storage_location|escape }}</a></td>
                         </tr>
                         <tr>
                             <td>
@@ -88,10 +88,17 @@
                         </tr>
                         <tr>
                             <td>
-                                <b>Resources collected</b>
+                                <b>Resources crawled</b>
                             </td>
                             <td>{{ job.docs_collected|escape }}</td>
                         </tr>
+						<tr>
+                            <td>
+                                <b>Resources stored</b>
+                            </td>
+                            <td>{{ job.docs_uploaded|escape }}</td>
+                        </tr>
+
                         <tr>
                             <td>
                                 <b>Collect Everything</b>
@@ -116,29 +123,35 @@
                             </td>
                             <td>{{ job.docs_pdf|escape }}</td>
                         </tr>
-                        <tr>
-                            <td>
-                                <b>Collect XML</b>
-                            </td>
-                            <td>{{ job.docs_xml|escape }}</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <b>Collect TXT</b>
-                            </td>
-                            <td>{{ job.docs_txt|escape }}</td>
-                        </tr>
 						<tr>
                             <td>
                                 <b>Model Name</b>
                             </td>
-                            <td>{{ job.model|escape }}</td>
+                            <td>{{ job.model.name|escape }}</td>
                         </tr>
 						<tr>
                             <td>
                                 <b>Model Classification Labels</b>
                             </td>
                             <td>{{ job.model_labels|escape }}</td>
+                        </tr>
+						<tr>
+                            <td>
+                                <b>Crawl Library</b>
+                            </td>
+                            <td>{{ job.get_crawl_library_display|escape }}</td>
+                        </tr>
+						<tr>
+                            <td>
+                                <b>Num Crawl Pages Limit</b>
+                            </td>
+                            <td>{{ job.num_crawl_pages_limit|escape }}</td>
+                        </tr>
+						<tr>
+                            <td>
+                                <b>Crawl Time (milliseconds)</b>
+                            </td>
+                            <td>{{ job.crawl_time|escape }}</td>
                         </tr>
                         <tr>
                             <td>

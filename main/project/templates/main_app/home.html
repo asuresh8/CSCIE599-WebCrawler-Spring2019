@@ -19,7 +19,6 @@
             <div id="jobs" class="tab-pane fade in active">
                 <h3>Jobs</h3>
                 <p>These are all the current jobs for user {{ user.username }}. Click on a crawl job for details.</p>
-                <p>There will be a <b>button</b> to refresh this list from the MySQL DB, so we don't have to poll crawler_managers.</p>
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
@@ -27,7 +26,8 @@
                             <th>Crawl Type</th>
                             <th>Status</th>
                             <th>Job date</th>
-                            <th>Docs collected</th>
+                            <th>Docs crawled</th>
+                            <th>Docs stored</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -47,6 +47,9 @@
                             </td>
                             <td>
                                 {{ job.docs_collected|escape }}
+                            </td>
+                            <td>
+                                {{ job.docs_uploaded|escape }}
                             </td>
                         </tr>
                     {% endfor %}

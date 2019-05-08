@@ -20,6 +20,8 @@ class TestCrawlerManagerApp(unittest.TestCase):
             'docs_docx': False,
             'model_location': '',
             'labels': [],
+            'num_crawl_pages_limit': 10,
+            'crawl_library': 1,
         }
         self.app = app.app.test_client()
         self.app.testing = True
@@ -46,16 +48,16 @@ class TestCrawlerManagerApp(unittest.TestCase):
 
     def test_post_links(self):
         main_url = 'http://garbage.com'
-        s3_uri = 'https://s3.amazonaws.com/garbage-bucket/garbage-key'
+        storage_uri = 'https://storage.googleapis.com/garbage-bucket/garbage-key'
         child_urls = ['http://garbage.com/1', 'http://garbage.com/2', '/3']
         response = self.app.post('/links', json={
-            'main_url': main_url, 's3_uri': s3_uri, 'child_urls': child_urls})
+            'main_url': main_url, 'storage_uri': storage_uri, 'child_urls': child_urls})
         self.assertEqual(response.status_code, 200)
         self.assertTrue(app.context.queued_urls.contains('http://garbage.com/1'))
         self.assertTrue(app.context.queued_urls.contains('http://garbage.com/2'))
         self.assertTrue(app.context.queued_urls.contains('http://garbage.com/3'))
         self.assertTrue(app.context.cache.exists(main_url))
-        self.assertEqual(app.context.cache.get(main_url), s3_uri)
+        self.assertEqual(app.context.cache.get(main_url), storage_uri)
 
     def test_get_status(self):
         response = self.app.get('/status')

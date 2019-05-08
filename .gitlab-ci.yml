@@ -4,7 +4,9 @@ services:
 stages:
   - test
   - build
+  - integration-setup
   - integration
+  - integration-cleanup
   - deploy
 
 testMain:
@@ -75,8 +77,8 @@ buildCrawlerManager:
   only:
     - develop
 
-integration-tests:
-  stage: integration
+setup:
+  stage: integration-setup
   image: python:3.7.3-alpine
   before_script:
     - echo "$GCLOUD_CREDENTIALS" > service-account.json
@@ -86,18 +88,53 @@ integration-tests:
     - pip install kubernetes==9.0.0
     - ./cluster-setup/kube_setup
     - wget "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-243.0.0-linux-x86_64.tar.gz" -O gcloud.tar.gz
-    - tar xvzf gcloud.tar.gz google-cloud-sdk
+    - tar xvzf gcloud.tar.gz google-cloud-sdk &>/dev/null
     - ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=service-account.json
   script:
     - ./google-cloud-sdk/bin/gcloud container clusters resize $GCLOUD_GKE_CLUSTER --project=$GCLOUD_PROJECT_ID --region=$GCLOUD_REGION --size=3 --quiet
-    - sleep 300
     - helm init --service-account tiller
     - helm upgrade --install --wait --set-string image.tag="$CI_PIPELINE_ID" --set-string application.namespace="development" 'main-application' ./cluster-templates/chart-main
-    - sleep 60
-    - python test.py
+    - sleep 30
+  only:
+    - master
+
+integration-tests:
+  stage: integration
+  image: python:3.7.3-alpine
+  before_script:
+    - pip install requests==2.21.0
+    - pip install kubernetes==9.0.0
+  script:
+    - python -m unittest test.TestCreateJob
+  only:
+    - master
+
+stress-tests:
+  stage: integration
+  image: python:3.7.3-alpine
+  before_script:
+    - pip install requests==2.21.0
+    - pip install kubernetes==9.0.0
+  script:
+    - python -m unittest test.StressTest
+  only:
+    - master
+
+cleanup:
+  stage: integration-cleanup
+  image: python:3.7.3-alpine
+  before_script:
+    - echo "$GCLOUD_CREDENTIALS" > service-account.json
+    - apk add --no-cache curl wget tar bash openssl python2
+    - export CLOUDSDK_PYTHON=$(which python2)
+    - wget "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-243.0.0-linux-x86_64.tar.gz" -O gcloud.tar.gz
+    - tar xvzf gcloud.tar.gz google-cloud-sdk &>/dev/null
+    - ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=service-account.json
+  script:
     - ./google-cloud-sdk/bin/gcloud container clusters resize $GCLOUD_GKE_CLUSTER --project=$GCLOUD_PROJECT_ID --region=$GCLOUD_REGION --size=0 --quiet
   only:
     - master
+  when: always
 
 kube_deploy:
   stage: deploy

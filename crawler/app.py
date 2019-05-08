@@ -11,7 +11,7 @@ import time
 import uuid
 
 import crawler_context
-import helpers
+
 from crawl_job import CrawlerJob
 import _thread
 from crawl_global import CrawlGlobal
@@ -26,9 +26,13 @@ ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 URL = os.environ.get('URL', 'https://google.com')
 DEBUG_MODE = ENVIRONMENT == 'local'
 HOSTNAME = os.environ.get('JOB_IP', 'crawler')
+CRAWLER_HOSTNAME = os.environ.get('CRAWLER_HOSTNAME', 'crawler')
+RELEASE_DATE = os.environ.get('RELEASE_DATE', '0')
+NAMESPACE = os.environ.get('NAMESPACE', 'default')
 MAX_ACTIVE_THREADS = 4
 PORT = 8003
 ENDPOINT = 'http://{}:{}'.format(HOSTNAME, PORT)
+
 
 executor = concurrent.futures.ThreadPoolExecutor(MAX_ACTIVE_THREADS)
 
@@ -54,19 +58,20 @@ def main():
 
 @app.route('/kill', methods=['POST'])
 def kill():
-    @after_this_request
-    def maybe_kill(response):
-        if ENVIRONMENT == 'local':
-            CrawlGlobal.context().logger.info('Not killing crawler because running locally')
-        else:
-            CrawlGlobal.context().logger.info("Kill confirmed")
-            sys.exit()
+    if ENVIRONMENT == 'local':
+        CrawlGlobal.context().logger.info('Not killing crawler because running locally')
+    else:
+        CrawlGlobal.context().logger.info("Will kill flask server in 3 seconds")
+        kill_thread = threading.Thread(target=kill_main_thread)
+        kill_thread.start()
 
-        return response
+    CrawlGlobal.context().logger.info('Kill called')
+    return "ok"
 
-    CrawlGlobal.context().logger.info('Kill called for')
-    return ""
-
+def kill_main_thread():
+    time.sleep(3)
+    CrawlGlobal.context().logger.info("Kill confirmed")
+    os._exit(0)
 
 @app.route('/status', methods=['GET'])
 def status():
@@ -85,21 +90,9 @@ def crawl():
     if CrawlGlobal.context().active_thread_count.get() >= MAX_ACTIVE_THREADS:
         return flask.jsonify({'accepted': False})
 
-    CrawlGlobal.context().active_thread_count.increment() 
+    CrawlGlobal.context().active_thread_count.increment()
     crawljob = CrawlerJob(url)
     executor.submit(crawljob.execute, CRAWLER_MANAGER_ENDPOINT)
-    return flask.jsonify({'accepted': True})
-
-@app.route('/crawler/')
-def do_crawl():
-    url =  flask.request.args.get('crawlurl')
-    CrawlGlobal.context().logger.info('Crawling %s', url)
-    if CrawlGlobal.context().active_thread_count.get() >= MAX_ACTIVE_THREADS:
-        return flask.jsonify({'accepted': False})
-
-    CrawlGlobal.context().active_thread_count.increment()
-    crawljob = CrawlerJob(url,)
-    executor.submit(crawljob.execute,CRAWLER_MANAGER_ENDPOINT)
     return flask.jsonify({'accepted': True})
 
 
@@ -112,11 +105,14 @@ def test_connections():
 
 
 def run_flask():
-    app.run(debug=DEBUG_MODE, host=HOSTNAME, port=PORT, use_reloader=False)
+    CrawlGlobal.context().logger.info("start flask with host: %s", CRAWLER_HOSTNAME)
+    app.run(debug=DEBUG_MODE, host=CRAWLER_HOSTNAME, port=PORT, use_reloader=False)
 
 
 def setup():
     try:
+        CrawlGlobal.context().logger.info("crawler end point: %s", ENDPOINT)
+        CrawlGlobal.context().logger.info("crawler manager end point: %s",CRAWLER_MANAGER_ENDPOINT)
         res = requests.post(os.path.join(CRAWLER_MANAGER_ENDPOINT, 'register_crawler'),
                       json={'endpoint': ENDPOINT})
         CrawlGlobal.context().logger.info("Registreed successfully with crawler manager")
@@ -138,10 +134,9 @@ def ping_crawler_manager():
 if __name__ == "__main__":
     ping_crawler_manager()
     test_connections()
-    if ENVIRONMENT == 'local':
-        run_flask()
-    else:
-        _thread.start_new_thread(run_flask,())
-        crawljob = CrawlerJob(URL)
-        executor.submit(crawljob.execute, URL)
-        sys.exit(0)
+    CrawlGlobal.context().logger.info('ENVIRONMENT -- %s ', ENVIRONMENT)
+    CrawlGlobal.context().logger.info('starting flask app in separate thread')
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.start()
+    if ENVIRONMENT != 'local':
+        setup()

@@ -15,3 +15,10 @@ params:
   url: ""
   crawlerManagerEndpoint: ""
   jobId: 0
+  crawlerHostname: "0.0.0.0"
+  crawlerNumber: "0"
+  releaseDate: "0"
+service:
+  name: crawler
+  externalPort: 8003
+  internalPort: 8003

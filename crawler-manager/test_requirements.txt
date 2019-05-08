@@ -1,3 +1,4 @@
 # add test dependencies here
 fakeredis==1.0.3
 pytest-cov==2.6.1
+responses==0.10.6

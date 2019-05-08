@@ -28,6 +28,7 @@ class RedisClient:
     def put(self, key, value):
         return self.conn.set(key.encode(), json.dumps(value).encode())
     
+    # Keys data stored in redis is written to a file
     def write_manifest(self):
         fd, path = tempfile.mkstemp()
         with os.fdopen(fd, 'w') as tmp:
@@ -39,3 +40,8 @@ class RedisClient:
                 tmp.write(record)
 
         return path
+
+    def reset(self):
+        keys = self.conn.keys()
+        for key in keys:
+            self.conn.delete(key)

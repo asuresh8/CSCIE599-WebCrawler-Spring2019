@@ -17,7 +17,7 @@ class TestCrawlerManagerContext(unittest.TestCase):
     def test_context_queued_url_functionality(self):
         url = 'http://garbage.com'
         self.context.queued_urls.add(url)
-        self.assertEqual(self.context.queued_urls.poll(), url)
+        self.assertEqual(self.context.queued_urls.poll(), (1, 'http://garbage.com'))
         self.assertFalse(self.context.queued_urls.contains(url))
 
     def test_context_crawlers_functionality(self):

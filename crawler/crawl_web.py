@@ -1,7 +1,4 @@
-import os
-from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.chrome.options import Options
+
 from crawl_base import BaseScraper
 from crawl_global import CrawlGlobal
 
@@ -11,42 +8,18 @@ class WebScraper(BaseScraper):
         CrawlGlobal.context().logger.info("instantiating web scraper")
         BaseScraper.__init__(self, base_url, key)
 
-        dir_path = os.path.dirname(os.path.realpath(__file__)) + "/chromedriver"
-        CrawlGlobal.context().logger.info("Chrome driver path: {}".format(dir_path))
-        exists = os.path.isfile(dir_path)
-
-        self.is_initialized = False
-
-        if not exists:
-            return
-
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-setuid-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--remote-debugging-port=9222")
-
-        try:
-            self.driver = webdriver.Chrome(executable_path= dir_path, options= chrome_options ) 
-            CrawlGlobal.context().logger.info('browser initialized') 
-            self.is_initialized = True              
-        except WebDriverException as e:
-            CrawlGlobal.context().logger.info("could not instantiate browser: {}".format(str(e)))
-            self.is_initialized = True
  
     # check if browser is intialized properly
     def is_valid(self):
-        return self.is_initialized
+        return True if CrawlGlobal.context().get_driver() else False
          
     def do_scrape(self):
         if not self.is_valid():
             return super(WebScraper,self).do_scrape()
-
+        CrawlGlobal.context().logger.info("Using Web Scraper")
         try:
-            CrawlGlobal.context().logger.info("Scraping URL: {}".format(self.base_url))
-            self.driver.get(self.base_url)     
-            return self.driver.page_source
+            CrawlGlobal.context().logger.info("Scraping URL: {}".format(self.base_url))    
+            return CrawlGlobal.context().get_data(self.base_url)
         except Exception as e:
             CrawlGlobal.context().logger.info("error in scraping: {}".format(str(e)))
             return None

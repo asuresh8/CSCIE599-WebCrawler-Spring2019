@@ -1,7 +1,14 @@
+import os
 import atomic
 import requests
 import redis_connect
+import threading
 from model_runner import ModelRunner
+from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.chrome.options import Options
+
+LIBRARY_SELENIUM = 1
 
 class Context:
     def __init__(self, logger):
@@ -9,6 +16,47 @@ class Context:
         self.modelrunner = None
         self.active_thread_count = atomic.AtomicCounter()
         self.cache = redis_connect.Cache()
+        self.driver = None
+        self.initialize_driver()
+        self._lock = threading.Lock()
+        
+
+    def initialize_driver(self):
+        dir_path = os.path.dirname(os.path.realpath(__file__)) + "/chromedriver"
+        self.logger.info("Chrome driver path: {}".format(dir_path))
+        exists = os.path.isfile(dir_path)
+    
+        if not exists:
+            return
+
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-setuid-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--remote-debugging-port=9222")
+
+        try:
+            self.driver = webdriver.Chrome(executable_path= dir_path, options= chrome_options ) 
+            #raise Exception('fake exception for testing')
+            self.logger.info('browser initialized')   
+        except WebDriverException as e:
+            self.driver = None
+            self.logger.info("could not instantiate browser: {}".format(str(e)))
+        except Exception as ex:
+            self.driver = None
+            self.logger.info("driver crashed and could not instantiate browser: {}".format(str(ex)))
+
+    def is_dynamic_scrape(self):
+        return True if self.scrape_dynamic == LIBRARY_SELENIUM else False
+   
+    def get_driver(self):
+        return self.driver
+
+    def get_data(self, url):
+        with self._lock:
+            self.driver.get(url)
+            return self.driver.page_source
 
     def set_useroptions(self, jsonObj):   
         if jsonObj is None:
@@ -19,6 +67,7 @@ class Context:
         self.scrape_all = jsonObj['docs_all']
         self.scrape_docx = jsonObj['docs_docx']
         self.scrape_pdf = jsonObj['docs_pdf']
+        self.scrape_dynamic =  jsonObj['crawl_library']
 
         if self.model_url:
             self.download_model_from_storage()
@@ -33,10 +82,12 @@ class Context:
         return self.modelrunner != None
 
     def has_label(self, curval):
-        if curval in self.label_list:
+        if str(curval) in self.label_list:
             return True
         else:
             return False
+
+    
 
     def download_model_from_storage(self):
         if len(self.model_url) == 0:

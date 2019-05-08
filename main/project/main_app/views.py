@@ -2,10 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
 
 from .models import CrawlRequest, Profile, MlModel
 from .forms import CrawlRequestForm, ProfileForm, MlModelForm
+from .utilities import store_data_in_gcs
+from .utilities import get_google_cloud_manifest_contents
+from .utilities import update_job_status
 
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -16,14 +18,12 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_jwt.utils import jwt_payload_handler
 from django.conf import settings
-from django.contrib.auth.signals import user_logged_in
 
 from django.http import JsonResponse
 from django.http import HttpRequest
 from django.http import HttpResponse
 from io import BytesIO
 from google.cloud import storage
-import uuid
 
 import requests, jwt, json, os, zipfile, time, sys
 
@@ -35,35 +35,35 @@ logger = logging.getLogger(__name__)
 # set logging level (10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL)
 #logger.setLevel(20)
 
-# when the container is running in docker compose, set IMAGE_TAG = 0
-# when running on Kubernetes, it is the Pipeline Id, which is used for naming the Docker images in the registry.
 NAMESPACE = os.environ.get('NAMESPACE', 'default')
 IMAGE_TAG = os.environ.get('IMAGE_TAG', '0')
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
 CRAWLER_MANAGER_USER_PREFIX = 'admin'
 
-
 # store the release timestamps here, like a job id meanwhile
 releases = []
+
 @login_required()
 def home(request):
+    """
+    Displays all existing crawl jobs for logged in user
+    """
     user = request.user
     crawl_request = CrawlRequest(user=user)
     form = CrawlRequestForm(instance=crawl_request)
     jobs = CrawlRequest.objects.filter(user=user)
+    for job in jobs:
+        update_job_status(job)
     return render(request, "main_app/home.html", {'form': form, 'jobs': jobs})
 
-def store_data_in_gcs(filename, model_id):
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket(os.environ['GCS_BUCKET'])
-    key = 'crawl_models/{}'.format(str(uuid.uuid4()))
-    blob = bucket.blob(key)
-    blob.upload_from_filename(filename)
-    blob.make_public()
-    return blob.public_url
 
 @login_required()
 def ml_model(request):
+    """
+    Adds the details of a model to the sql database.
+    The model contents are uploaded to a cloud storage location. The storage
+    location is saved in the sql database along with the model details.
+    """
     user = request.user
     ml_model_instance = MlModel(user=user)
     if request.method == "POST":
@@ -72,15 +72,9 @@ def ml_model(request):
             form_model = form.save(commit=False)
             form_model.user = request.user
             form_model.save()
-            myfile = request.FILES['myfile']
-            tmp_file = 'tmp_file'
-            data = myfile.read()
-            with open(tmp_file, 'wb') as f:
-                f.write(data)
-            s3_url = store_data_in_gcs(tmp_file, form_model.id)
-            form_model.s3_location = s3_url
-            os.remove(tmp_file)
-            print("S3Url: {}".format(s3_url))
+            storage_url = store_data_in_gcs(request)
+            form_model.storage_location = storage_url
+            logger.info("Cloud_Url: {}".format(storage_url))
             form_model.save()
 
     form = MlModelForm(instance=ml_model_instance)
@@ -91,6 +85,9 @@ def ml_model(request):
 @api_view(['GET'])
 @permission_classes([AllowAny, ])
 def api_ping(request):
+    """
+    Api provided to ping the manager service.
+    """
     release_date_param = request.GET.get('releaseDate', 'None')
     data = {}
     data['pong'] = f"pang-{release_date_param}"
@@ -106,6 +103,10 @@ def api_ping(request):
 
 
 def crawler_manager_ping(requestUrl):
+    """
+    The local function for pinging the manager service by doing
+    a get request.
+    """
     try:
         manager_url = os.path.join(requestUrl, 'ping')
         logger.info('manager_url === %s', manager_url)
@@ -122,6 +123,15 @@ def crawler_manager_ping(requestUrl):
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def register_crawler_manager(request):
+    """
+    Once the manager service is up in Kubernetes or receives a new
+    crawl request in local environment, it calls this api to register
+    its end-point with the main service.
+    This end-point will be later used by the main service to make requests
+    to crawler-manager service.
+    Also the main service returns all the crawl details as a response to
+    the manager service.
+    """
     logger.info("In Register-Crawl")
     id = request.data['job_id']
     logger.info('JobID main: %s', id)
@@ -130,11 +140,12 @@ def register_crawler_manager(request):
     job = CrawlRequest.objects.get(pk=id)
     job.crawler_manager_endpoint = endpoint
     job.save()
-    models = MlModel.objects.filter(name=job.model)
-    if (len(models) > 0):
-        model_url = models[0].s3_location
-    else:
-        model_url = ""
+    model_url = ""
+    if (job.model != None):
+        models = MlModel.objects.filter(name=job.model.name)
+        if (len(models) > 0):
+            model_url = models[0].storage_location
+    logger.info('Model url: %s', model_url)
     payload = {
         'job_id': id,
         'domain': job.domain.split(';'),
@@ -145,7 +156,9 @@ def register_crawler_manager(request):
         'docs_docx': job.docs_docx,
         'num_crawlers': job.num_crawlers,
         'model_location': model_url,
-        'labels': job.model_labels.split(';')
+        'labels': job.model_labels.split(';'),
+        'num_crawl_pages_limit' : job.num_crawl_pages_limit,
+        'crawl_library' : job.crawl_library
     }
     return JsonResponse(payload)
 
@@ -153,17 +166,25 @@ def register_crawler_manager(request):
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def complete_crawl(request):
+    """
+    Once the crawling is completed in the manager, the manager calls this
+    api to send the crawl information to the main service.
+    """
     id = request.data['job_id']
     manifest = request.data['manifest']
     resources_count = request.data['resources_count']
+    resources_uploaded = request.data['uploaded_pages']
+    time_taken = request.data['time_taken']
 
     logger.info("In Crawl-Complete")
-    logger.info('Crawl-Complete id - %s, manifest - %s', id, manifest)
+    logger.info('Crawl-Complete id - %s, manifest - %s, pages - %d', id, manifest, resources_uploaded)
     crawl_request = CrawlRequest.objects.get(pk=id)
-    crawl_request.s3_location = manifest
+    crawl_request.storage_location = manifest
     crawl_request.manifest = manifest
     crawl_request.status = 3
     crawl_request.docs_collected = resources_count
+    crawl_request.docs_uploaded = resources_uploaded
+    crawl_request.crawl_time = time_taken
     crawl_request.save()
     data = {"CrawlComplete" : "done"}
     requests.post(os.path.join(crawl_request.crawler_manager_endpoint, 'kill'), json={})
@@ -172,13 +193,11 @@ def complete_crawl(request):
     return JsonResponse(data)
 
 
-def check_user_password(current_password, incoming_password):
-    salt = current_password.split('$')[2]
-    hashed_password = make_password(incoming_password, salt)
-    return current_password == hashed_password
-
-
 def get_manager_token(jobId):
+    """
+    Function to create a jwt token that will be used by manager while
+    calling the APIs of the main service.
+    """
     username = CRAWLER_MANAGER_USER_PREFIX + str(jobId)
     email = CRAWLER_MANAGER_USER_PREFIX + str(jobId) + '@' + CRAWLER_MANAGER_USER_PREFIX + '.com'
     password = username
@@ -192,6 +211,9 @@ def get_manager_token(jobId):
 
 @login_required()
 def new_job(request):
+    """
+    Creates a new crawl request job, managed by a crawler manager instance
+    """
     if request.method == "POST":
         crawl_request = CrawlRequest(user=request.user)
         form = CrawlRequestForm(instance=crawl_request, data=request.POST)
@@ -200,6 +222,8 @@ def new_job(request):
             logger.info('NewJob created: %s', crawl_request.id)
             logger.info('Received urls: %s', crawl_request.urls)
             launch_crawler_manager(crawl_request, crawl_request.id)
+            crawl_request.status = 2
+            crawl_request.save()
             return redirect('mainapp_home')
     else:
         form = CrawlRequestForm()
@@ -207,6 +231,11 @@ def new_job(request):
 
 
 def launch_crawler_manager(request, jobId):
+    """
+    For a new crawl request, a Kubernetes job for manager service is
+    launched in prod environment. And in local environment, a new request
+    is made to the crawler manager service.
+    """
     if ENVIRONMENT == 'local' or ENVIRONMENT == 'test':
         # Running in docker compose,
         print("Looks like this is not running on a Kuberenetes cluster, ")
@@ -220,12 +249,14 @@ def launch_crawler_manager(request, jobId):
         print("queued")
 
 
-# TODO: this function should take the Job ID as a parameter.
-# That will be injected into the new Crawler manger Pod
 def getHelmCommand(request):
+    """
+    This function returns the helm command that will be used for launching a
+    Kubernetes job in prod environment.
+    """
     releaseDate = int(time.time())
     releases.append(releaseDate)
-    token = get_manager_token(request.id)
+    token = get_manager_token(request.id).decode("utf-8")
 
     return f"""helm init --service-account tiller && \\
       helm upgrade --install --wait \\
@@ -239,62 +270,25 @@ def getHelmCommand(request):
       \"crawler-manager-{releaseDate}\" ./cluster-templates/chart-manager"""
 
 
-@api_view(['GET'])
-#@permission_classes((IsAuthenticated, ))
-def api_job_status(request):
-    """
-    jobId = request.query_params.get('jobId')
-    job = CrawlRequest.objects.get(pk=jobId)
-    job.status = 3
-    job.docs_collected = request.query_params.get('numUrls')
-    job.save()
-    """
-    response_data = {"Message" : "Status Received"}
-    return HttpResponse(json.dumps(response_data), content_type="application/json")
-
-
 @login_required()
 def job_details(request, job_id):
     """
-        Displays details for a specific job ID
+    Displays details for a specific job ID
     """
     try:
         job = CrawlRequest.objects.get(pk=job_id)
+        update_job_status(job)
     except CrawlRequest.DoesNotExist:
         raise Http404("Job does not exist.")
     return render(request, "main_app/job_details.html", {"job": job})
 
 
-#copied to api_app, check if need to be removed from here
-@api_view(['POST'])
-@permission_classes([AllowAny, ])
-def get_api_job_status(request):
-    try:
-        job = CrawlRequest.objects.get(pk=request.data['job_id'])
-        job_info = {
-            "name": job.name,
-            "type": job.type,
-            "domain": job.domain,
-            "urls": job.urls,
-            "status": job.status
-        }
-    except CrawlRequest.DoesNotExist:
-        raise Http404("Job does not exist.")
-
-    return JsonResponse(job_info)
-
-
-def get_google_cloud_manifest_contents(manifest):
-    client = storage.Client()
-    bucket = client.get_bucket(os.environ['GCS_BUCKET'])
-    blob = storage.Blob(manifest, bucket)
-    content = blob.download_as_string()
-    return content
-
-
 @login_required()
 def crawl_contents(request, job_id):
-    print(job_id)
+    """
+    This end-point will be called by the UI to download the manifest
+    contents in the form of a file.
+    """
     try:
         job = CrawlRequest.objects.get(pk=job_id)
     except CrawlRequest.DoesNotExist:

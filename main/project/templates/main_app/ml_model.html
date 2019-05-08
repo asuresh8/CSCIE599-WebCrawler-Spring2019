@@ -18,14 +18,13 @@
             <div id="models" class="tab-pane fade in active">
                 <h3>Current Models</h3>
                 <p>These are all the current models for user {{ user.username }}.</p>
-                <p>There will be a <b>button</b> to refresh this list from the MySQL DB, so we don't have to poll crawler_managers.</p>
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
                             <th>Model Name</th>
                             <th>Labels</th>
                             <th>Model Creation date</th>
-                            <th>Model S3 Location</th>
+                            <th>Model Storage Location</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -41,7 +40,7 @@
                                 {{ model.created|escape }}
                             </td>
 							<td>
-                                {{ model.s3_location|escape }}
+                                {{ model.storage_location|escape }}
                             </td>
                         </tr>
                     {% endfor %}

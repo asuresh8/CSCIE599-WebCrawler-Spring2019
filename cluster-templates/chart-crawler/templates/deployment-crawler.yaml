@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "crawler-{{date "20060102150405" .Release.Time }}"
+  name: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.crawlerNumber }}"
   namespace: "{{ .Values.application.namespace }}"
   labels:
     jobId: "{{ .Values.params.jobId }}"
@@ -10,6 +10,8 @@ spec:
   template:
     metadata:
       name: crawler
+      labels:
+        app: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.crawlerNumber }}"
     spec:
       containers:
       - name: crawler
@@ -45,20 +47,39 @@ spec:
         - name: ENVIRONMENT
           value: "prod"
         - name: JOB_IP
-          value: "0.0.0.0"
+          value: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.crawlerNumber }}.{{ .Values.application.namespace }}"
         - name: URL
           value: "{{ .Values.params.url }}"
         - name: CRAWLER_MANAGER_ENDPOINT
           value: "{{ .Values.params.crawlerManagerEndpoint }}"
         - name: NAMESPACE
           value: "{{ .Values.application.namespace }}"
+        - name: CRAWLER_HOSTNAME
+          value: "{{ .Values.params.crawlerHostname }}"
         resources:
           requests:
-            cpu: 200m
+            cpu: 400m
             memory: 640Mi
           limits:
-            cpu: 200m
+            cpu: 400m
             memory: 1Gi
       restartPolicy: Never
       imagePullSecrets:
       - name: docker-gitlab
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.crawlerNumber }}"
+  namespace: "{{ .Values.application.namespace }}"
+  labels:
+    app: crawler-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.service.externalPort }}
+    targetPort: {{ .Values.service.internalPort }}
+    protocol: TCP
+    name: {{ .Values.service.name }}
+  selector:
+    app: "crawler-{{ .Values.params.releaseDate }}-{{ .Values.params.crawlerNumber }}"
