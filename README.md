@@ -1,3 +1,14 @@
+### Set GCS credentials
+
+A valid GCS key file must be placed in the following directory in the repository:
+
+```
+/creds/WebCrawler-feb11a08e450.json
+```
+
+In order to generate this json file, see the [instructions](https://cloud.google.com/iam/docs/creating-managing-service-account-keys)
+
+
 ### Run tests locally
 
 Unit tests can be run locally with the following command:
